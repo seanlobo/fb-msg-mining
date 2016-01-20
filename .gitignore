@@ -57,3 +57,11 @@ docs/_build/
 
 # PyBuilder
 target/
+
+
+# my extra files that I dont want
+misc.
+*.txt
+*.htm
+*.html
+*.css
