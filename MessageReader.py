@@ -1,6 +1,6 @@
 class MessageReader():
 
-	def __init__(self, data='data.txt'):
+	def __init__(self, data='/Users/seanlobo/TEMP FOLDER/data.txt'):
 		assert type(data) in [str, dict], ("Invalid constructor:"
 			" must pass a dictionary or ./data.txt path")
 		if type(data) is str:
@@ -9,6 +9,7 @@ class MessageReader():
 			self.data = data
 		self._set_convo_names_freq()
 		self._set_convo_names_alpha()
+		self.names = self.names_freq
 
 	def get_convo_names(self, by_num_msgs=False):
 		if by_num_msgs:
@@ -32,8 +33,6 @@ class MessageReader():
 	def get_convo_len(self, people):
 		convo = self.get_convo(people)
 		return len(convo) if convo is not None else -1
-
-	#def get_all_convos(self, )
 
 	def _set_convo_names_freq(self):
 		self.names_freq = [sorted(ele.split(', ')) for ele, _ in 
@@ -63,6 +62,9 @@ class ConvoReader():
 	def __init__(self, convo_name, convo_list):
 		self.name = convo_name
 		self.convo = convo_list
+		self.msgs = (msg for name, msg, date in self.convo)
+		self.dates = (date for name, msg, date in self.convo)
+
 
 	def __getitem__(self, index):
 		if index >= len(self):
@@ -72,12 +74,19 @@ class ConvoReader():
 	def __len__(self):
 		return len(self.convo)
 
-	def message_gen(self):
-		pass
+	def __str__(self):
+		string = ""
+		for name, msg, date in self.convo:
+			string += name + ": " +  msg + " | " + date
+			string += '\n'
+		return string
 
+	def __repr__(self):
+		return "ConvoReader(" + repr(self.name) +', ' + repr(self.convo) + ")"
 
+convo = a.get_convo("Swetha raman, sean lobo")
 
-
+dates = convo.dates
 
 
 class MessageStats():
