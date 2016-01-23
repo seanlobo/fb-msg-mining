@@ -1,6 +1,8 @@
+from collections import Counter
+
 class MessageReader():
 
-	def __init__(self, data='/Users/seanlobo/TEMP FOLDER/data.txt'):
+	def __init__(self, data='./data.txt'):
 		assert type(data) in [str, dict], ("Invalid constructor:"
 			" must pass a dictionary or ./data.txt path")
 		if type(data) is str:
@@ -8,8 +10,7 @@ class MessageReader():
 		else:
 			self.data = data
 		self._set_convo_names_freq()
-		self._set_convo_names_alpha()
-		self.names = self.names_freq
+		# self._set_convo_names_alpha()
 
 	def get_convo_names(self, by_num_msgs=False):
 		if by_num_msgs:
@@ -17,10 +18,20 @@ class MessageReader():
 		else:
 			return self.names_alpha
 
+	def print_names(self):
+		i = 1
+		for name in self.names:
+			print(str(i) + ": " + name)
+			i += 1
+			
+
 	def get_convo(self, people):
-		assert type(people) in [str, list], (""
+		assert type(people) in [str, list, int], (""
 			"Invalid argument: must pass"
-			"a list of names (as strings) or string")
+			"a list of names (as strings), string, or int")
+
+		if type(people) is int:
+			return ConvoReader(self.names[people - 1], self.data[self.names[people - 1]])
 		if type(people) is str:
 			people = people.title().split(', ')
 		else:
@@ -35,7 +46,7 @@ class MessageReader():
 		return len(convo) if convo is not None else -1
 
 	def _set_convo_names_freq(self):
-		self.names_freq = [sorted(ele.split(', ')) for ele, _ in 
+		self.names = [ele for ele, _ in 
 			sorted([(key, len(val)) for key, val in self.data.items()],
 					key=lambda x: x[1], reverse=True)]
 
@@ -53,9 +64,7 @@ class MessageReader():
 		return True
 
 
-Reader = MessageReader
 
-a = MessageReader()
 
 class ConvoReader():
 
@@ -65,6 +74,8 @@ class ConvoReader():
 		self.msgs = (msg for name, msg, date in self.convo)
 		self.dates = (date for name, msg, date in self.convo)
 
+	def get_stats(self):
+		return MessageStats(self.name, self.convo)
 
 	def __getitem__(self, index):
 		if index >= len(self):
@@ -84,9 +95,7 @@ class ConvoReader():
 	def __repr__(self):
 		return "ConvoReader(" + repr(self.name) +', ' + repr(self.convo) + ")"
 
-convo = a.get_convo("Swetha raman, sean lobo")
 
-dates = convo.dates
 
 
 class MessageStats():
@@ -94,15 +103,76 @@ class MessageStats():
 	def __init__(self, convo_name, convo_list):
 		self.name = convo_name
 		self.convo = convo_list
+		self.people = sorted(self.name.split(', '))
 
-	def get_msgs_over_time(start=None, end=None, group_size=1):
-		pass
+	@classmethod
+	def fromConvoReader(cls, convo):
+		name = convo.name
+		msgs = convo.convo
+		return cls(name, msgs)
+
+	def msgs_per_person(self): 
+		res = dict()
+		for person, msg, date in self.convo:
+			if person not in res:
+				res[person] = 1
+			else:
+				res[person] += 1
+		return sorted([(name, num) for name, num in res.items()], 
+				key=lambda x: x[1], reverse=True)
+
+	def words_per_person(self):
+		res = dict()
+		for person, msg, date in self.convo:
+			if person not in res:
+				res[person] = len(msg.split())
+			else:
+				res[person] += len(msg.split())
+		return sorted([(name, num) for name, num in res.items()], 
+				key=lambda x: x[1], reverse=True)
+
+	def msgs_spoken(self, name):
+		name = name.title()
+		if name not in self.people:
+			return -1
+		num = 0
+		for person, msg, date in self.convo:
+			if person == name:
+				num += 1
+		return num
+
+	def words_spoken(self, name):
+		name = name.title()
+		if name not in self.people:
+			return -1
+		num = 0
+		for person, msg, date in self.convo:
+			if person == name:
+				num += len(msg.split())
+		return num
+
+	def ave_words_per_person(self):
+		return sorted([(name, float(self.words_spoken(name)) / self.msgs_spoken(name)) 
+				for name in self.people], key=lambda x: x[1], reverse=True)
+
+	def ave_words(self, name):
+		name = name.title()
+		if name not in self.people:
+			return -1
+		return words_spoken(self, name) / msgs_spoken(self, name)
+
+	def print_lsts(self, lst):
+		assert type(lst) is list, "must pass list"
+		assert type(lst[0]) in [tuple, list], "wrong type of list"
+
+		for i in range(len(lst)):
+			print(str(i + 1) + ") " + lst[i][0] + ": " + str(lst[i][1]))
 
 
 
-
-
-
+a = MessageReader("/Users/seanlobo/TEMP FOLDER/data.txt")
+stud = a.get_convo(7)
+stats = stud.get_stats()
 
 
 
