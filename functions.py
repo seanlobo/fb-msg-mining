@@ -179,6 +179,22 @@ stats = stud.get_stats()
 
 
 
+def get_msg_ranks(all_msgs_dict=None, msg_html_path='./messages.htm'):
+	assert all_msgs_dict is None or type(all_msgs_dict) is dict, \
+	"you must pass the return from get_all_msgs"
+
+	if all_msgs_dict is None:
+		all_msgs_dict = get_all_msgs_dict(msg_html_path)
+
+	ranks = dict()
+	for key, val in all_msgs_dict.items():
+		if key not in ranks:
+			ranks[key] = len(val)
+		else:
+			ranks[key] += len(val)
+
+	return Counter(ranks)
+
 
 
 
