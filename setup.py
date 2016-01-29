@@ -29,8 +29,14 @@ def get_all_divs(msg_html_path='./messages.htm'):
 
 	thread.contents[0]
 	"""
+	try:
+		text = open(msg_html_path)	
+	except OSError as err:
+		print('OS error: {0}'.format(err))
+		return	
+
 	# soup object that holds all of the html
-	soup = BeautifulSoup(open(msg_html_path), 'html.parser')
+	soup = BeautifulSoup(text, 'html.parser')
 
 	# finds the outer div tag that holds all relevant information
 	divs = []
@@ -159,22 +165,6 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
 	print('\a', end='')
 	return msgs
 
-
-def get_msg_ranks(all_msgs_dict=None, msg_html_path='./messages.htm'):
-	assert all_msgs_dict is None or type(all_msgs_dict) is dict, \
-	"you must pass the return from get_all_msgs"
-
-	if all_msgs_dict is None:
-		all_msgs_dict = get_all_msgs_dict(msg_html_path)
-
-	ranks = dict()
-	for key, val in all_msgs_dict.items():
-		if key not in ranks:
-			ranks[key] = len(val)
-		else:
-			ranks[key] += len(val)
-
-	return Counter(ranks)
 
 
 # with open('./data.txt', mode='w', encoding='utf-8') as f:
