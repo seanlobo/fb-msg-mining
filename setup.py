@@ -6,7 +6,7 @@
 from bs4 import BeautifulSoup
 from collections import Counter
 
-def get_all_divs(msg_html_path='./messages.htm'):
+def get_all_divs(msg_html_path):
 	"""Returns a list of list of divs. Contains all information
 	needed to get full conversation history for any conversation.
 
@@ -37,7 +37,6 @@ def get_all_divs(msg_html_path='./messages.htm'):
 
 	# soup object that holds all of the html
 	soup = BeautifulSoup(text, 'html.parser')
-
 	# finds the outer div tag that holds all relevant information
 	divs = []
 	for div in soup.find_all('div', class_='contents'):
@@ -69,6 +68,8 @@ def get_convo_divs(all_divs, convo_name=None):
 	.
 	]
 	"""
+
+
 	def contents_equal(lst1, lst2):
 		if len(lst1) != len(lst2):
 			return False
@@ -152,6 +153,7 @@ def get_messages_readable(thread, previous=None):
 
 def get_all_msgs_dict(msg_html_path='./messages.htm'):
 	all_divs = get_all_divs(msg_html_path)
+
 	convo_divs = get_convo_divs(all_divs)
 
 	msgs = dict()
@@ -166,10 +168,35 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
 	return msgs
 
 
+def get_msg_data_paths():
+	with open('./paths.txt', mode='r') as paths:
+		lines = []
+		for line in paths:
+			lines.append(line)
+		msgs = None
+		data = None
+		for line in lines:
+			if 'Downloaded Facebook Messages path (e.g. ~/Documents/messages.htm):' in line:
+				msgs = line[line.find(':') + 1:].strip(' \n')
+			elif 'Location to save message data (e.g. ~/Documents/data.txt):' in line:
+				data = line[line.find(':') + 1:].strip(' \n')
+	if msgs == '' or data == '' :
+		print('Could not find path to messages.htm or path to save data.txt.')
+		print('Ensure you have added the paths to paths.txt')
+		raise SystemExit
+	elif msgs == None or data == None:
+		print('Unexpected format, make sure you haven\'t modified paths.txt')
+		print('other than adding the paths after the colons \":\"\n')
+		raise SystemExit
+	return (msgs, data)
 
-# with open('./data.txt', mode='w', encoding='utf-8') as f:
-# 	f.write(str(get_all_msgs_dict()))
-# print('Setup is finished.')
+
+msgs, data = get_msg_data_paths()
+
+
+
+
+
 
 
 

@@ -1,20 +1,17 @@
+from setup import get_msg_data_paths as get_paths, data
+
 from collections import Counter
 
 class MessageReader():
 
-	def __init__(self, data='./data.txt'):
-		assert type(data) in [str, dict], ("Invalid constructor:"
-			" must pass a dictionary or ./data.txt path")
-		if type(data) is str:
-			self.data = eval(open(data).read())
-		else:
-			self.data = data
-		self._set_convo_names_freq()
-		# self._set_convo_names_alpha()
+	def __init__(self):
+		self.data = eval(open(data).read())
+		self.names = self._get_convo_names_freq()
+		self.names_alpha = self._get_convo_names_alpha()
 
 	def get_convo_names(self, by_num_msgs=False):
 		if by_num_msgs:
-			return self.names_freq
+			return self.names
 		else:
 			return self.names_alpha
 
@@ -45,15 +42,15 @@ class MessageReader():
 		convo = self.get_convo(people)
 		return len(convo) if convo is not None else -1
 
-	def _set_convo_names_freq(self):
-		self.names = [ele for ele, _ in 
+	def _get_convo_names_freq(self):
+		return [ele for ele, _ in 
 			sorted([(key, len(val)) for key, val in self.data.items()],
 					key=lambda x: x[1], reverse=True)]
 
 
-	def _set_convo_names_alpha(self):
+	def _get_convo_names_alpha(self):
 		names = [name.split(', ') for name in self.data.keys()]
-		self.names_alpha = sorted([sorted(ele) for ele in names])
+		return sorted([sorted(ele) for ele in names])
 
 	def _contents_equal(self, lst1, lst2):
 		if len(lst1) != len(lst2):
@@ -111,27 +108,43 @@ class MessageStats():
 		msgs = convo.convo
 		return cls(name, msgs)
 
-	def msgs_per_person(self): 
+
+	def print_lsts(self, lst):
+		assert type(lst) is list, "must pass list"
+		assert type(lst[0]) in [tuple, list], "wrong type of list"
+
+		for i in range(len(lst)):
+			print(str(i + 1) + ") " + lst[i][0] + ": " + str(lst[i][1]))
+
+	def msgs(self, name=None):
+		if name is None:
+			return self.__msgs_per_person()
+		else:
+			return self.__msgs_spoken(name)
+
+	def words(self, name=None):
+		if name is None:
+			return self.__words_per_person()
+		else:
+			return self.__words_spoken(name)
+
+	def ave_words(self, name=None):
+		if name is None:
+			return self.__ave_words_per_person()
+		else:
+			return self.__ave_words(name)
+
+	def __msgs_per_person(self): 
 		res = dict()
 		for person, msg, date in self.convo:
 			if person not in res:
 				res[person] = 1
 			else:
 				res[person] += 1
-		return sorted([(name, num) for name, num in res.items()], 
-				key=lambda x: x[1], reverse=True)
+		return Counter(sorted([(name, num) for name, num in res.items()], 
+				key=lambda x: x[1], reverse=True))
 
-	def words_per_person(self):
-		res = dict()
-		for person, msg, date in self.convo:
-			if person not in res:
-				res[person] = len(msg.split())
-			else:
-				res[person] += len(msg.split())
-		return sorted([(name, num) for name, num in res.items()], 
-				key=lambda x: x[1], reverse=True)
-
-	def msgs_spoken(self, name):
+	def __msgs_spoken(self, name):
 		name = name.title()
 		if name not in self.people:
 			return -1
@@ -141,7 +154,16 @@ class MessageStats():
 				num += 1
 		return num
 
-	def words_spoken(self, name):
+	def __words_per_person(self):
+		res = dict()
+		for person, msg, date in self.convo:
+			if person not in res:
+				res[person] = len(msg.split())
+			else:
+				res[person] += len(msg.split())
+		return Counter(res)
+
+	def __words_spoken(self, name):
 		name = name.title()
 		if name not in self.people:
 			return -1
@@ -151,26 +173,30 @@ class MessageStats():
 				num += len(msg.split())
 		return num
 
-	def ave_words_per_person(self):
-		return sorted([(name, float(self.words_spoken(name)) / self.msgs_spoken(name)) 
-				for name in self.people], key=lambda x: x[1], reverse=True)
+	def __ave_words_per_person(self):
+		return Counter(sorted([(name, float(self.words_spoken(name)) / self.msgs_spoken(name)) 
+				for name in self.people], key=lambda x: x[1], reverse=True))
 
-	def ave_words(self, name):
+	def __ave_words(self, name):
 		name = name.title()
 		if name not in self.people:
 			return -1
 		return words_spoken(self, name) / msgs_spoken(self, name)
 
-	def print_lsts(self, lst):
-		assert type(lst) is list, "must pass list"
-		assert type(lst[0]) in [tuple, list], "wrong type of list"
 
-		for i in range(len(lst)):
-			print(str(i + 1) + ") " + lst[i][0] + ": " + str(lst[i][1]))
+	def __len__(self):
+		return len(self.convo)
+
+	def __str__(self):
+		return "Stats for " + self.name
+
+	def __repr__(self):
+		return "MessageStats({0}, {1})".format(self.convo_name, self.convo_list)
 
 
 
-a = MessageReader("/Users/seanlobo/TEMP FOLDER/data.txt")
+
+a = MessageReader()
 stud = a.get_convo(7)
 stats = stud.get_stats()
 
@@ -179,32 +205,9 @@ stats = stud.get_stats()
 
 
 
-def get_msg_ranks(all_msgs_dict=None, msg_html_path='./messages.htm'):
-	assert all_msgs_dict is None or type(all_msgs_dict) is dict, \
-	"you must pass the return from get_all_msgs"
-
-	if all_msgs_dict is None:
-		all_msgs_dict = get_all_msgs_dict(msg_html_path)
-
-	ranks = dict()
-	for key, val in all_msgs_dict.items():
-		if key not in ranks:
-			ranks[key] = len(val)
-		else:
-			ranks[key] += len(val)
-
-	return Counter(ranks)
 
 
-
-
-
-
-
-#########################TO DO##################################
-# impliment str and repr in all classes
-# implement len in some
-# 
+#########################TO DO################################## 
 # 
 # 
 # CONVO READER
