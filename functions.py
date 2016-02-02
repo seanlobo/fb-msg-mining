@@ -187,12 +187,29 @@ class MessageStats():
 	def __len__(self):
 		return len(self.convo)
 
+	def __getitem__(self, index):
+		if type(index) is not int:
+			raise TypeError
+		elif index >= len(self) or index < -len(self):
+			raise IndexError
+		else:
+			return convo[index] if index >= 0 else convo[len(convo) + index]
+
 	def __str__(self):
 		return "Stats for " + self.name
 
 	def __repr__(self):
 		return "MessageStats({0}, {1})".format(self.convo_name, self.convo_list)
 
+
+class Date():
+
+	def __init__(self, date):
+		self.date = date
+		temp = date.split(',')
+		self.week_day = temp[0]
+		self.month, self.day_of_month = stuff[1].split()
+		self.year, _, self.time, self.time_zone = date.split(',')[2].split()
 
 
 
