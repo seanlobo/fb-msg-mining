@@ -2,6 +2,8 @@ from setup import get_msg_data_paths as get_paths, data
 
 from collections import Counter
 
+from datetime import date
+
 class MessageReader():
 
 	def __init__(self):
@@ -69,44 +71,8 @@ class ConvoReader():
 		self.name = convo_name
 		self.convo = convo_list
 		self.msgs = (msg for name, msg, date in self.convo)
-		self.dates = (date for name, msg, date in self.convo)
-
-	def get_stats(self):
-		return MessageStats(self.name, self.convo)
-
-	def __getitem__(self, index):
-		if index >= len(self):
-			raise IndexError
-		return self.convo[index]
-
-	def __len__(self):
-		return len(self.convo)
-
-	def __str__(self):
-		string = ""
-		for name, msg, date in self.convo:
-			string += name + ": " +  msg + " | " + date
-			string += '\n'
-		return string
-
-	def __repr__(self):
-		return "ConvoReader(" + repr(self.name) +', ' + repr(self.convo) + ")"
-
-
-
-
-class MessageStats():
-
-	def __init__(self, convo_name, convo_list):
-		self.name = convo_name
-		self.convo = convo_list
+		self.dates = (CustomDate(date) for name, msg, date in self.convo)
 		self.people = sorted(self.name.split(', '))
-
-	@classmethod
-	def fromConvoReader(cls, convo):
-		name = convo.name
-		msgs = convo.convo
-		return cls(name, msgs)
 
 
 	def print_lsts(self, lst):
@@ -133,6 +99,13 @@ class MessageStats():
 			return self.__ave_words_per_person()
 		else:
 			return self.__ave_words(name)
+
+	def prettify(self):
+		string = ""
+		for name, msg, date in self.convo:
+			string += name + ": " +  msg + " | " + date
+			string += '\n'
+		return string
 
 	def __msgs_per_person(self): 
 		res = dict()
@@ -183,33 +156,49 @@ class MessageStats():
 			return -1
 		return words_spoken(self, name) / msgs_spoken(self, name)
 
-
-	def __len__(self):
-		return len(self.convo)
-
 	def __getitem__(self, index):
 		if type(index) is not int:
 			raise TypeError
 		elif index >= len(self) or index < -len(self):
 			raise IndexError
 		else:
-			return convo[index] if index >= 0 else convo[len(convo) + index]
+			return self.convo[index] if index >= 0 else self.convo[len(self) + index]
+
+	def __len__(self):
+		return len(self.convo)
 
 	def __str__(self):
-		return "Stats for " + self.name
+		return "Converation for " + self.name
 
 	def __repr__(self):
-		return "MessageStats({0}, {1})".format(self.convo_name, self.convo_list)
+		return "ConvoReader(" + repr(self.name) +', ' + repr(self.convo) + ")"
 
 
-class Date():
 
-	def __init__(self, date):
-		self.date = date
-		temp = date.split(',')
+class CustomDate():
+	months = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7, 
+				'August': 8 , 'September': 9, 'October': 10, 'November': 11, 'December': 12, }
+
+	def __init__(self, date_str):
+		self.full_date = date_str
+		temp = date_str.split(',')
 		self.week_day = temp[0]
-		self.month, self.day_of_month = stuff[1].split()
-		self.year, _, self.time, self.time_zone = date.split(',')[2].split()
+		month, day_of_month = temp[1].split()
+		year, _, self.time, self.time_zone = date_str.split(',')[2].split()
+
+		self.date = date(int(year), int(CustomDate.months[month]), int(day_of_month))
+
+	def __sub__(self, other):
+		if type(other) is not type(self):
+			return NotImplemented
+		return (self.date - other.date).days
+
+	def __str__(self):
+		return self.full_date
+
+	def __repr__(self):
+		return "CustomDate({0})".format(self.full_date)
+
 
 
 
