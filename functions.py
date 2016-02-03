@@ -69,18 +69,10 @@ class ConvoReader():
 
 	def __init__(self, convo_name, convo_list):
 		self.name = convo_name
-		self.convo = convo_list
-		self.msgs = (msg for name, msg, date in self.convo)
-		self.dates = (CustomDate(date) for name, msg, date in self.convo)
+		self.convo = [[name, msg, CustomDate(date)] for name, msg, date in convo_list]
+		self.msgs = [msg for name, msg, date in self.convo]
+		self.dates = [date for name, msg, date in self.convo]
 		self.people = sorted(self.name.split(', '))
-
-
-	def print_lsts(self, lst):
-		assert type(lst) is list, "must pass list"
-		assert type(lst[0]) in [tuple, list], "wrong type of list"
-
-		for i in range(len(lst)):
-			print(str(i + 1) + ") " + lst[i][0] + ": " + str(lst[i][1]))
 
 	def msgs(self, name=None):
 		if name is None:
@@ -106,6 +98,44 @@ class ConvoReader():
 			string += name + ": " +  msg + " | " + date
 			string += '\n'
 		return string
+
+	def msgs_per_day(self):
+		start = self.dates[0]
+		end = self.dates[-1]
+		days = end - start
+
+		msg_freq = [[None, 0] for i in range(days + 1)]
+		for person, msg, date in self.convo:
+			msg_freq[date - start][0] = date
+			msg_freq[date - start][1] += 1
+
+		return msg_freq
+
+	def print_msgs_per_day(self, msgs_freq=None):
+		if msgs_freq is None:
+			msgs_freq = msgs_per_day()
+
+		max_msgs = max(msgs_freq, key=lambda x: x[1])
+		value = max_msgs / 50
+		print("Each \"#\" referes to {0} messages".format(max_msgs))
+		print("\n")
+
+		start = msgs_freq[0][0]
+		print(start.to_string() + " |", end="")
+		L = len(start.to_string())
+		for i in range(1, len(msgs_freq + 1)):
+			if i % 50 == 0:
+				print(msgs_freq[i][0] + " |")
+			else:
+				print(L * " " + " |")
+
+			print('#' * (msgs_freq[i][1] / value))
+
+
+
+
+
+
 
 	def __msgs_per_person(self): 
 		res = dict()
@@ -156,6 +186,14 @@ class ConvoReader():
 			return -1
 		return words_spoken(self, name) / msgs_spoken(self, name)
 
+
+
+
+
+
+
+
+
 	def __getitem__(self, index):
 		if type(index) is not int:
 			raise TypeError
@@ -171,7 +209,7 @@ class ConvoReader():
 		return "Converation for " + self.name
 
 	def __repr__(self):
-		return "ConvoReader(" + repr(self.name) +', ' + repr(self.convo) + ")"
+		return "ConvoReader({0}, {1})".format(repr(self.name), repr(self.convo))
 
 
 
@@ -187,6 +225,9 @@ class CustomDate():
 		year, _, self.time, self.time_zone = date_str.split(',')[2].split()
 
 		self.date = date(int(year), int(CustomDate.months[month]), int(day_of_month))
+
+	def to_string(self):
+		return "{0}/{1}/{2}".format(self.date.year, self.date.month, self.date.day)
 
 	def __sub__(self, other):
 		if type(other) is not type(self):
@@ -204,8 +245,6 @@ class CustomDate():
 
 a = MessageReader()
 stud = a.get_convo(7)
-stats = stud.get_stats()
-
 
 
 
@@ -220,16 +259,13 @@ stats = stud.get_stats()
 # get message based on elements
 # find all elements / messages that match a phrase
 # iterator
-# 
-# 
-# 
-# 
-# 
-# 
-# MESSAGE STATS
 # somehow get a graph of messages over tome
-#  - get a list with # of messages / day or time unit
 # average response time?
+# 
+# 
+# 
+# 
+# 
 # 
 # 
 # 
