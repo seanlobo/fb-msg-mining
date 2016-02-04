@@ -1,6 +1,6 @@
 from collections import Counter
 
-import customdate
+from functions.customdate import CustomDate
 
 
 class ConvoReader():
@@ -61,14 +61,20 @@ class ConvoReader():
 		print()
 
 		start = msgs_freq[0][0]
-		L = 10
+		date_len = 12
+		num_len = len(str(max(msgs_freq, key=lambda x:x[1])[1]))
 		for i in range(0, len(msgs_freq)):
+			day = msgs_freq[i][0].to_string()
+			day += ' ' * (date_len - len(day))
+
+			msg_num = str(msgs_freq[i][1])
+			msg_num += " " * (num_len - len(msg_num))
+			
+			string = day + msg_num
 			if i % 2 == 0:
-				day = msgs_freq[i][0].to_string()
-				spaces = len(day)
-				print(day + max(0, L - spaces) * " " + " |", end="")
+				print(string + " |", end="")
 			else:
-				print(L * " " + " |", end="")
+				print(date_len * " " + msg_num + " |", end="")
 
 
 			if msgs_freq[i][1] == 0:

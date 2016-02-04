@@ -1,7 +1,7 @@
-from setup import data
-import convoreader
-import customdate
 
+from functions.convoreader import ConvoReader
+from functions.customdate import CustomDate
+from functions.setup import data
 
 
 
