@@ -2,7 +2,7 @@ from setup import get_msg_data_paths as get_paths, data
 
 from collections import Counter
 
-from datetime import date
+from datetime import date, timedelta
 
 class MessageReader():
 
@@ -106,30 +106,35 @@ class ConvoReader():
 
 		msg_freq = [[None, 0] for i in range(days + 1)]
 		for person, msg, date in self.convo:
-			msg_freq[date - start][0] = date
 			msg_freq[date - start][1] += 1
+		
+		for day in range(len(msg_freq)):
+			msg_freq[day][0] = CustomDate.from_date(start + day)
+
 
 		return msg_freq
 
 	def print_msgs_per_day(self, msgs_freq=None):
 		if msgs_freq is None:
-			msgs_freq = msgs_per_day()
+			msgs_freq = self.msgs_per_day()
 
-		max_msgs = max(msgs_freq, key=lambda x: x[1])
+		max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
 		value = max_msgs / 50
-		print("Each \"#\" referes to {0} messages".format(max_msgs))
-		print("\n")
+		print("\nEach \"#\" referes to {0} messages".format(max_msgs))
+		print()
 
 		start = msgs_freq[0][0]
-		print(start.to_string() + " |", end="")
-		L = len(start.to_string())
-		for i in range(1, len(msgs_freq + 1)):
-			if i % 50 == 0:
-				print(msgs_freq[i][0] + " |")
+		L = 10
+		for i in range(0, len(msgs_freq)):
+			if i % 3 == 0:
+				day = msgs_freq[i][0].to_string()
+				spaces = len(day)
+				print(day + max(0, L - spaces) * " " + " |", end="")
 			else:
-				print(L * " " + " |")
+				print(L * " " + " |", end="")
 
-			print('#' * (msgs_freq[i][1] / value))
+			print('#' * int(msgs_freq[i][1] / value))
+
 
 
 
@@ -217,6 +222,11 @@ class CustomDate():
 	months = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7, 
 				'August': 8 , 'September': 9, 'October': 10, 'November': 11, 'December': 12, }
 
+	months_reversed = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 
+						7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
+
+	days_of_week = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
+
 	def __init__(self, date_str):
 		self.full_date = date_str
 		temp = date_str.split(',')
@@ -226,8 +236,22 @@ class CustomDate():
 
 		self.date = date(int(year), int(CustomDate.months[month]), int(day_of_month))
 
+	@classmethod
+	def from_date(cls, date_obj):
+		date_string = "{0}, {1} {2}, {3} at [unknown-time] [unkown-timezone]".format(
+						CustomDate.days_of_week[date_obj.weekday()], 
+						CustomDate.months_reversed[date_obj.month], 
+						date_obj.day,
+						date_obj.year)
+		return cls(date_string)
+
 	def to_string(self):
 		return "{0}/{1}/{2}".format(self.date.year, self.date.month, self.date.day)
+
+	def __add__(self, other):
+		if type(other) is not int:
+			return NotImplemented
+		return self.date + timedelta(days=other)
 
 	def __sub__(self, other):
 		if type(other) is not type(self):
@@ -243,9 +267,23 @@ class CustomDate():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 a = MessageReader()
 stud = a.get_convo(7)
-
 
 
 
