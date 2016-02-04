@@ -1,4 +1,4 @@
-import setup
+from functions import setup
 
 
 with open(setup.data, mode='w', encoding='utf-8') as f:
