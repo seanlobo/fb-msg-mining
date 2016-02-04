@@ -13,24 +13,42 @@ class ConvoReader():
 		self.people = sorted(self.name.split(', '))
 
 	def msgs(self, name=None):
+		"""Returns either the number of messages spoken by the specified
+		person, or if no name is passed, a Counter object storing the number
+		of mesages as values paired with names of people as keys.
+		"""
+
 		if name is None:
 			return self.__msgs_per_person()
 		else:
 			return self.__msgs_spoken(name)
 
 	def words(self, name=None):
+		"""Returns either the number of words spoken by the specified
+		person, or if no name is passed, a Counter object storing the number
+		of words as values paired with names of people as keys.
+		"""
+
 		if name is None:
 			return self.__words_per_person()
 		else:
 			return self.__words_spoken(name)
 
 	def ave_words(self, name=None):
+		"""Returns either the average number of words spoken per message 
+		by the specified person, or if no name is passed, a Counter object 
+		storing the average number of words per message as values paired 
+		with names of people as keys.
+		"""
+
 		if name is None:
 			return self.__ave_words_per_person()
 		else:
 			return self.__ave_words(name)
 
 	def prettify(self):
+		"""returns a string that \"prettily\" shows the conversation history"""
+		
 		string = ""
 		for name, msg, date in self.convo:
 			string += name + ": " +  msg + " | " + date
@@ -38,6 +56,10 @@ class ConvoReader():
 		return string
 
 	def msgs_per_day(self):
+		"""Returns a list of length 2 lists that store a day as element 0
+		and the number of total messages sent that day as element 1
+		"""
+
 		start = self.dates[0]
 		end = self.dates[-1]
 		days = end - start
@@ -52,6 +74,8 @@ class ConvoReader():
 		return msg_freq
 
 	def print_msgs_per_day(self, msgs_freq=None):
+		"""Prettily prints to the screen the message history of a chat"""
+
 		if msgs_freq is None:
 			msgs_freq = self.msgs_per_day()
 
@@ -81,6 +105,19 @@ class ConvoReader():
 				print("(none)")
 			else:
 				print('#' * int(msgs_freq[i][1] / value))
+
+	def msg_by_weekday(self):
+		weekday_freq = [0 for i in range(7)]
+		check = self.dates[0]
+		msgs = 0
+		for person, msg, date in self.convo:
+			if check - date == 0:
+				msgs += 1
+			else:
+				weekday_freq[date.weekday()] += msgs
+				msgs = 1
+
+		return [day / sum(weekday_freq) for day in weekday_freq]
 
 
 	def __msgs_per_person(self): 

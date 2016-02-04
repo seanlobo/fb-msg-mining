@@ -32,6 +32,18 @@ class CustomDate():
 	def to_string(self):
 		return "{0}/{1}/{2}".format(self.date.month, self.date.day, self.date.year)
 
+	def day(self):
+		return self.date.day
+
+	def month(self):
+		return self.date.month
+
+	def weekday(self):
+		return self.date.weekday()
+
+	def year(self):
+		return self.date.year
+
 	def __add__(self, other):
 		if type(other) is not int:
 			return NotImplemented
