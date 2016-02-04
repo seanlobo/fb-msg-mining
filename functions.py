@@ -1,4 +1,4 @@
-from setup import get_msg_data_paths as get_paths, data
+from setup import data
 
 from collections import Counter
 
@@ -65,6 +65,18 @@ class MessageReader():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 class ConvoReader():
 
 	def __init__(self, convo_name, convo_list):
@@ -119,21 +131,26 @@ class ConvoReader():
 			msgs_freq = self.msgs_per_day()
 
 		max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
-		value = max_msgs / 50
-		print("\nEach \"#\" referes to {0} messages".format(max_msgs))
+		value = max_msgs / 100
+		print("\nEach \"#\" referes to {0} messages".format(value))
 		print()
 
 		start = msgs_freq[0][0]
 		L = 10
 		for i in range(0, len(msgs_freq)):
-			if i % 3 == 0:
+			if i % 2 == 0:
 				day = msgs_freq[i][0].to_string()
 				spaces = len(day)
 				print(day + max(0, L - spaces) * " " + " |", end="")
 			else:
 				print(L * " " + " |", end="")
 
-			print('#' * int(msgs_freq[i][1] / value))
+
+			if msgs_freq[i][1] == 0:
+				print("(none)")
+			else:
+				print('#' * int(msgs_freq[i][1] / value))
+
 
 
 
@@ -218,6 +235,18 @@ class ConvoReader():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 class CustomDate():
 	months = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7, 
 				'August': 8 , 'September': 9, 'October': 10, 'November': 11, 'December': 12, }
@@ -246,7 +275,7 @@ class CustomDate():
 		return cls(date_string)
 
 	def to_string(self):
-		return "{0}/{1}/{2}".format(self.date.year, self.date.month, self.date.day)
+		return "{0}/{1}/{2}".format(self.date.month, self.date.day, self.date.year)
 
 	def __add__(self, other):
 		if type(other) is not int:
@@ -284,7 +313,7 @@ class CustomDate():
 
 a = MessageReader()
 stud = a.get_convo(7)
-
+ss = a.get_convo(1)
 
 
 
