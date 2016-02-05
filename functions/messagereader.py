@@ -12,13 +12,20 @@ class MessageReader():
 		self.names = self._get_convo_names_freq()
 		self.names_alpha = self._get_convo_names_alpha()
 
-	def get_convo_names(self, by_num_msgs=True):
-		if by_num_msgs:
+	def get_convo_names(self, alpha=False):
+		"""Returns a list of lists, where each inner list is 
+		the members of a conversation. By default is arranged 
+		with most active chat first in decreasing order, but 
+		can pass alpha=True to order by alphabetical
+		"""
+		if alpha:
 			return self.names
 		else:
 			return self.names_alpha
 
 	def print_names(self):
+		"""Prints to screen conversation names in order of most 
+		active to least active"""
 		i = 1
 		for name in self.names:
 			print(str(i) + ": " + name)
@@ -26,6 +33,10 @@ class MessageReader():
 			
 
 	def get_convo(self, people):
+		"""Returns a ConvoReader object reprsenting the conversation
+		passed as a list of names, string name or index of conversation
+		(from print_names). If an invalid parameter is passed return None
+		"""
 		assert type(people) in [str, list, int], (""
 			"Invalid argument: must pass"
 			"a list of names (as strings), string, or int")
@@ -40,11 +51,6 @@ class MessageReader():
 			if self._contents_equal(name.split(', '), people):
 				return ConvoReader(name, self.data[name])
 		return None
-
-	def len_convo(self, people):
-		assert type(people) in [int, list, str], "Invalid opperand"
-		convo = self.get_convo(people)
-		return len(convo)
 
 	def _get_convo_names_freq(self):
 		return [ele for ele, _ in 
