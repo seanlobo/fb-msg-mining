@@ -3,7 +3,7 @@
 # find all elements / messages that match a phrase
 # iterator
 # average response time?
-# 
+# number of messages sent in arbitrary time period (a certain day? a group of days?)
 # 
 # 
 # MSG READER
