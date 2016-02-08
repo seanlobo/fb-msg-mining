@@ -1,0 +1,3 @@
+Downloaded Facebook Messages path (e.g. ~/Documents/messages.htm): 
+
+Location to save message data (e.g. ~/Documents/data.txt): 
