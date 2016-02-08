@@ -62,7 +62,6 @@ target/
 # my extra files that I dont want
 misc.
 *.txt
-!paths.txt
 !requirements.txt
 *.htm
 *.html
