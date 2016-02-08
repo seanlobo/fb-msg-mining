@@ -63,6 +63,7 @@ target/
 misc.
 *.txt
 !paths.txt
+!requirements.txt
 *.htm
 *.html
 *.css
