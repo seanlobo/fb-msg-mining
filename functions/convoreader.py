@@ -6,11 +6,17 @@ from functions.customdate import CustomDate
 class ConvoReader():
 
 	def __init__(self, convo_name, convo_list):
-		self.name = convo_name
+		self.name = convo_name.lower()
 		self.convo = [[name, msg, CustomDate(date)] for name, msg, date in convo_list]
 		self.msgs = [msg for name, msg, date in self.convo]
 		self.dates = [date for name, msg, date in self.convo]
 		self.people = sorted(self.name.split(', '))
+
+	def get_people(self):
+		res = ""
+		for i, pers in enumerate(self.people):
+			res += "{0}) {1}\n".format(i + 1, pers.title())
+		print(res)
 
 	def msgs(self, name=None):
 		"""Returns either the number of messages spoken by the specified
@@ -55,10 +61,28 @@ class ConvoReader():
 			string += '\n'
 		return string
 
-	def msgs_per_day(self):
+	def msgs_graph(self, contact=None):
 		"""Returns a list of length 2 lists that store a day as element 0
 		and the number of total messages sent that day as element 1
 		"""
+		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
+		if type(contact) is list:
+			for i, ele in enumerate(contact):
+				assert type(ele) is str, "Each element in contact must be a string"
+				contact[i] = ele.lower()
+			for ele in contact:	
+				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											ele, str(self.people))
+		elif type(contact) is str:
+			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											contact, str(self.people)) 
+			contact = [contact]
+
+
+		if contact is not None:
+			filt = lambda x: x in contact 
+		else:
+			filt = lambda x: True
 
 		start = self.dates[0]
 		end = self.dates[-1]
@@ -66,18 +90,19 @@ class ConvoReader():
 
 		msg_freq = [[None, 0] for i in range(days + 1)]
 		for person, msg, date in self.convo:
-			msg_freq[date - start][1] += 1
+			if filt(person.lower()):
+				msg_freq[date - start][1] += 1
 		
 		for day in range(len(msg_freq)):
 			msg_freq[day][0] = CustomDate.from_date(start + day)
 
 		return msg_freq
 
-	def print_msgs_per_day(self, msgs_freq=None):
+	def print_msgs_graph(self, contact=None, msgs_freq=None):
 		"""Prettily prints to the screen the message history of a chat"""
 
 		if msgs_freq is None:
-			msgs_freq = self.msgs_per_day()
+			msgs_freq = self.msgs_per_day(contact)
 
 		max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
 		value = max_msgs / 100

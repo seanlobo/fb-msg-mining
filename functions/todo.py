@@ -10,6 +10,6 @@
 # frequency of conversation by day of week
 #  - generalize to take optional parameters for people
 # 
-# 
+# default conversation for people who don't have data to load
 # 
 # 

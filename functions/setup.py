@@ -182,12 +182,14 @@ def get_msg_data_paths():
 				data = line[line.find(':') + 1:].strip(' \n')
 	if msgs == '' or data == '' :
 		print('Could not find path to messages.htm or path to save data.txt.')
-		print('Ensure you have added the paths to paths.txt')
-		raise SystemExit
+		print('Ensure you have added the paths to paths.txt, which is currently:\n')
+		list(map(lambda x: print("   ", x, end=""), lines))
+		print()
+		exit()
 	elif msgs == None or data == None:
 		print('Unexpected format, make sure you haven\'t modified paths.txt')
-		print('other than adding the paths after the colons \":\"\n')
-		raise SystemExit
+		print('other than adding the paths after the colons \":\"')
+		exit()
 	return (msgs, data)
 
 
