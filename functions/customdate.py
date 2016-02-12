@@ -1,3 +1,4 @@
+from math import ceil
 from datetime import date, timedelta
 
 
@@ -43,6 +44,29 @@ class CustomDate():
 
 	def year(self):
 		return self.date.year
+
+	def time(self):
+		return self.time
+
+	def minutes(self):
+		minutes = self.time[:-2]
+		minutes = int(minutes[:minutes.find(':')]) * 60 + int(minutes[minutes.find(':') + 1:])
+		if 'pm' in self.time:
+			minutes += 12 * 60
+		return minutes
+
+	def minutes_to_time(minutes):
+		assert minutes >= 0, "You can't have negative minutes"
+		assert minutes <= 24 * 60, "You passed more than 1 day of minutes"
+		hours = ceil(minutes // 60)
+		if hours == 0:
+			hours = 12
+		elif hours > 12:
+			hours -= 12
+		mins = str(minutes % 60)
+		if len(mins) == 1:
+			mins += '0'
+		return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes > 12 * 60 else 'am')
 
 	def __add__(self, other):
 		if type(other) is not int:

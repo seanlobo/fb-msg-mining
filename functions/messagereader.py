@@ -53,10 +53,25 @@ class MessageReader():
 		return None
 
 	def _get_convo_names_freq(self):
-		return [ele for ele, _ in 
+		lst = [ele for ele, l in 
 			sorted([(key, len(val)) for key, val in self.data.items()],
 					key=lambda x: x[1], reverse=True)]
+		# new = True
+		# for i in range(len(lst) - 1):
+		# 	if new:
+		# 		temp = []
 
+		# 	if lst[i][1] == lst[i + 1]:
+		# 		temp.append(i)
+		# 		new = False
+		# 	else:
+		# 		temp.append(i + 1)
+		# 		if len(temp) != 1:
+		# 			sort = sort([lst[i] for i in temp], key=lambda x: x[0])
+		# 			for temp_ind, lst_ind in enumerate(temp):
+		# 				lst[lst_ind] = temp[temp_ind]
+		# 		new = True
+		return lst
 
 	def _get_convo_names_alpha(self):
 		names = [name.split(', ') for name in self.data.keys()]

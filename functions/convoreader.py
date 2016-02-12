@@ -1,4 +1,5 @@
 from collections import Counter
+from math import ceil
 
 from functions.customdate import CustomDate
 
@@ -7,18 +8,21 @@ class ConvoReader():
 
 	def __init__(self, convo_name, convo_list):
 		self.name = convo_name.lower()
-		self.convo = [[name, msg, CustomDate(date)] for name, msg, date in convo_list]
+		self.convo = [[name.lower(), msg, CustomDate(date)] for name, msg, date in convo_list]
 		self.msgs = [msg for name, msg, date in self.convo]
 		self.dates = [date for name, msg, date in self.convo]
 		self.people = sorted(self.name.split(', '))
 
-	def get_people(self):
+	def print_people(self):
+		"""Prints to the screen an alphabetically sorted list of people
+		in the conversation
+		"""
 		res = ""
 		for i, pers in enumerate(self.people):
 			res += "{0}) {1}\n".format(i + 1, pers.title())
 		print(res)
 
-	def msgs(self, name=None):
+	def messages(self, name=None):
 		"""Returns either the number of messages spoken by the specified
 		person, or if no name is passed, a Counter object storing the number
 		of mesages as values paired with names of people as keys.
@@ -57,7 +61,7 @@ class ConvoReader():
 		
 		string = ""
 		for name, msg, date in self.convo:
-			string += name + ": " +  msg + " | " + date
+			string += name + ": " +  msg + " | " + str(date)
 			string += '\n'
 		return string
 
@@ -94,15 +98,14 @@ class ConvoReader():
 				msg_freq[date - start][1] += 1
 		
 		for day in range(len(msg_freq)):
-			msg_freq[day][0] = CustomDate.from_date(start + day)
+			msg_freq[day][0] = self.dates[day]
 
 		return msg_freq
 
-	def print_msgs_graph(self, contact=None, msgs_freq=None):
+	def print_msgs_graph(self, contact=None):
 		"""Prettily prints to the screen the message history of a chat"""
 
-		if msgs_freq is None:
-			msgs_freq = self.msgs_per_day(contact)
+		msgs_freq = self.msgs_graph(contact)
 
 		max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
 		value = max_msgs / 100
@@ -131,7 +134,10 @@ class ConvoReader():
 			else:
 				print('#' * int(msgs_freq[i][1] / value))
 
-	def msg_by_weekday(self):
+	def msgs_by_weekday(self):
+		"""Returns a list containing frequency of chatting by days
+		of week, ordered by index, with 0 being Monday and 6 Sunday
+		"""
 		weekday_freq = [0 for i in range(7)]
 		check = self.dates[0]
 		msgs = 0
@@ -144,6 +150,25 @@ class ConvoReader():
 
 		return [day / sum(weekday_freq) for day in weekday_freq]
 
+	def msgs_by_day(self, window=60):
+		"""Returns a list containing average frequency of chatting by 
+		times in days, starting at 12:00 am. Default window is 60 minute 
+		interval.If time less than the passed window is left at the end,
+		it is put at the end of the list
+		"""
+		total_msgs = 0
+		msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(int(60*24 // window))]
+
+		for person, msg, date in self.convo:
+			msg_bucket[(int(date.minutes() // window) % 24)][1] += 1
+			total_msgs += 1
+		for i in range(len(msg_bucket)):
+			msg_bucket[i][1] /= (total_msgs / 100)
+		return msg_bucket 
+
+	def print_msgs_by_day(self):
+		"""Prints to the screen a graphical result of msgs_by_day"""
+		pass
 
 	def __msgs_per_person(self): 
 		res = dict()
@@ -152,13 +177,12 @@ class ConvoReader():
 				res[person] = 1
 			else:
 				res[person] += 1
-		return Counter(sorted([(name, num) for name, num in res.items()], 
-				key=lambda x: x[1], reverse=True))
+		return Counter(res)
 
 	def __msgs_spoken(self, name):
-		name = name.title()
+		name = name.lower()
 		if name not in self.people:
-			return -1
+			raise Exception("Invalid name passed")
 		num = 0
 		for person, msg, date in self.convo:
 			if person == name:
@@ -175,9 +199,9 @@ class ConvoReader():
 		return Counter(res)
 
 	def __words_spoken(self, name):
-		name = name.title()
+		name = name.lower()
 		if name not in self.people:
-			return -1
+			raise Exception("Invalid name passed")
 		num = 0
 		for person, msg, date in self.convo:
 			if person == name:
@@ -185,8 +209,16 @@ class ConvoReader():
 		return num
 
 	def __ave_words_per_person(self):
-		return Counter(sorted([(name, float(self.words_spoken(name)) / self.msgs_spoken(name)) 
-				for name in self.people], key=lambda x: x[1], reverse=True))
+		words = []
+		for name in self.people:
+			msgs = float(self.__msgs_spoken(name))
+			tot_words = float(self.__words_spoken(name))
+			if msgs > 0:
+				words.append( (name, tot_words / msgs) )
+		res = Counter()
+		for name, ave in words:
+			res[name] = ave
+		return res
 
 	def __ave_words(self, name):
 		name = name.title()
