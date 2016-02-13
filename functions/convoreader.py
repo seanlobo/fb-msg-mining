@@ -27,7 +27,6 @@ class ConvoReader():
 		person, or if no name is passed, a Counter object storing the number
 		of mesages as values paired with names of people as keys.
 		"""
-
 		if name is None:
 			return self.__msgs_per_person()
 		else:
@@ -215,6 +214,8 @@ class ConvoReader():
 
 		
 
+
+
 	def __msgs_per_person(self): 
 		res = dict()
 		for person, msg, date in self.convo:
@@ -270,6 +271,9 @@ class ConvoReader():
 		if name not in self.people:
 			return -1
 		return words_spoken(self, name) / msgs_spoken(self, name)
+
+
+
 
 
 	def __getitem__(self, index):
