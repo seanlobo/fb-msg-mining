@@ -4,11 +4,18 @@ from functions.customdate import CustomDate
 from functions.setup import data
 
 
+# class MessageReader():
+
+# 	def __init__(self):
+# 		pass
+
 
 class MessageReader():
 
 	def __init__(self):
-		self.data = eval(open(data).read())
+		with open(data, mode='r') as f:
+			self.data = eval(f.readline())
+			self.download = f.readline()
 		self.names = self._get_convo_names_freq()
 		self.names_alpha = self._get_convo_names_alpha()
 
@@ -53,25 +60,9 @@ class MessageReader():
 		return None
 
 	def _get_convo_names_freq(self):
-		lst = [ele for ele, l in 
+		return [ele for ele, _ in 
 			sorted([(key, len(val)) for key, val in self.data.items()],
-					key=lambda x: x[1], reverse=True)]
-		# new = True
-		# for i in range(len(lst) - 1):
-		# 	if new:
-		# 		temp = []
-
-		# 	if lst[i][1] == lst[i + 1]:
-		# 		temp.append(i)
-		# 		new = False
-		# 	else:
-		# 		temp.append(i + 1)
-		# 		if len(temp) != 1:
-		# 			sort = sort([lst[i] for i in temp], key=lambda x: x[0])
-		# 			for temp_ind, lst_ind in enumerate(temp):
-		# 				lst[lst_ind] = temp[temp_ind]
-		# 		new = True
-		return lst
+					key=lambda x: (-x[1], x[0]))]
 
 	def _get_convo_names_alpha(self):
 		names = [name.split(', ') for name in self.data.keys()]
@@ -85,18 +76,10 @@ class MessageReader():
 				return False
 		return True
 
+	def __str__(self):
+		return self.download
 
-
-
-
-
-
-
-
-
-
-
-
-
+	def __repr__(self):
+		return 'MessageReader()'
 
 

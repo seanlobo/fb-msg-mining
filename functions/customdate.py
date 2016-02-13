@@ -13,6 +13,8 @@ class CustomDate():
 	days_of_week = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 
 	def __init__(self, date_str):
+		if  type(date_str) is type(self):
+			date_str = date_str.full_date
 		self.full_date = date_str
 		temp = date_str.split(',')
 		self.week_day = temp[0]
@@ -58,6 +60,7 @@ class CustomDate():
 	def minutes_to_time(minutes):
 		assert minutes >= 0, "You can't have negative minutes"
 		assert minutes <= 24 * 60, "You passed more than 1 day of minutes"
+
 		hours = ceil(minutes // 60)
 		if hours == 0:
 			hours = 12
@@ -65,7 +68,7 @@ class CustomDate():
 			hours -= 12
 		mins = str(minutes % 60)
 		if len(mins) == 1:
-			mins += '0'
+			mins = '0' + mins
 		return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes > 12 * 60 else 'am')
 
 	def __add__(self, other):

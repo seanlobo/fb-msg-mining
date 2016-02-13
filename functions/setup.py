@@ -33,7 +33,7 @@ def get_all_divs(msg_html_path):
 		text = open(msg_html_path)	
 	except OSError as err:
 		print('OS error: {0}'.format(err))
-		return	
+		exit()	
 
 	# soup object that holds all of the html
 	soup = BeautifulSoup(text, 'html.parser')
@@ -42,6 +42,10 @@ def get_all_divs(msg_html_path):
 	for div in soup.find_all('div', class_='contents'):
 	    divs.append(div)
 	div_tag = divs[0]
+
+	footer = []
+	for foot in soup('div', class_='footer'):
+		footer.append(foot)
 
 	divs = None
 	soup = None
@@ -52,7 +56,7 @@ def get_all_divs(msg_html_path):
 	for div in div_tag("div", recursive=False):
 		all_divs.append(div)
 
-	return all_divs
+	return (all_divs, footer[0].contents[0])
 
 def get_convo_divs(all_divs, convo_name=None):
 	"""Returns a list of message_divs (threads) whose contents
@@ -68,7 +72,7 @@ def get_convo_divs(all_divs, convo_name=None):
 	.
 	]
 	"""
-
+	all_divs, footer = all_divs
 
 	def contents_equal(lst1, lst2):
 		if len(lst1) != len(lst2):
@@ -89,7 +93,7 @@ def get_convo_divs(all_divs, convo_name=None):
 			if convo_name is None or contents_equal(person, convo_name):
 				bucket.append(msg_div)
 
-	return bucket
+	return (bucket, footer)
 
 def get_messages_dict(msg_div, convo_dict=None):
 	"""Returns a dictionary of chat histories paired with Person Name"""
@@ -154,7 +158,7 @@ def get_messages_readable(thread, previous=None):
 def get_all_msgs_dict(msg_html_path='./messages.htm'):
 	all_divs = get_all_divs(msg_html_path)
 
-	convo_divs = get_convo_divs(all_divs)
+	convo_divs, footer = get_convo_divs(all_divs)
 
 	msgs = dict()
 	for thread in convo_divs:
@@ -165,7 +169,7 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
 			msgs[convo_name] = get_messages_readable(thread)
 
 	print('\a', end='')
-	return msgs
+	return (msgs, str(footer))
 
 
 def get_msg_data_paths():

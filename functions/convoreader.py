@@ -63,7 +63,7 @@ class ConvoReader():
 		for name, msg, date in self.convo:
 			string += name + ": " +  msg + " | " + str(date)
 			string += '\n'
-		return string
+		print(string)
 
 	def msgs_graph(self, contact=None):
 		"""Returns a list of length 2 lists that store a day as element 0
@@ -104,8 +104,10 @@ class ConvoReader():
 
 	def print_msgs_graph(self, contact=None):
 		"""Prettily prints to the screen the message history of a chat"""
-
 		msgs_freq = self.msgs_graph(contact)
+
+		if contact is not None:
+			print('Graph for {0}'.format(str(contact)))
 
 		max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
 		value = max_msgs / 100
@@ -150,25 +152,68 @@ class ConvoReader():
 
 		return [day / sum(weekday_freq) for day in weekday_freq]
 
-	def msgs_by_day(self, window=60):
+	def msgs_by_day(self, window=60, contact=None):
 		"""Returns a list containing average frequency of chatting by 
 		times in days, starting at 12:00 am. Default window is 60 minute 
 		interval.If time less than the passed window is left at the end,
 		it is put at the end of the list
 		"""
+		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
+		if type(contact) is list:
+			for i, ele in enumerate(contact):
+				assert type(ele) is str, "Each element in contact must be a string"
+				contact[i] = ele.lower()
+			for ele in contact:	
+				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											ele, str(self.people))
+		elif type(contact) is str:
+			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											contact, str(self.people)) 
+			contact = [contact]
+
+
+		if contact is not None:
+			filt = lambda x: x in contact 
+		else:
+			filt = lambda x: True
+
 		total_msgs = 0
-		msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(int(60*24 // window))]
+		msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(ceil(60*24 // window))]
 
 		for person, msg, date in self.convo:
-			msg_bucket[(int(date.minutes() // window) % 24)][1] += 1
-			total_msgs += 1
+			if filt(person.lower()):
+				msg_bucket[(int(date.minutes() // window) % (len(msg_bucket) - 1))][1] += 1
+				total_msgs += 1
 		for i in range(len(msg_bucket)):
 			msg_bucket[i][1] /= (total_msgs / 100)
 		return msg_bucket 
 
-	def print_msgs_by_day(self):
+	def print_msgs_by_day(self, window=60, threshold=None, contact=None):
 		"""Prints to the screen a graphical result of msgs_by_day"""
-		pass
+		frequencies = self.msgs_by_day(window, contact)
+
+		if threshold is None:
+			threshold = window / 120
+		else:
+			assert threshold > 0
+
+		to_print = ''
+		time_len = 9
+		num_len = 6
+		for time, freq in frequencies:
+			time_str = time + (time_len - len(time) + 1) * ' '
+			freq_str = str(freq)[:6]
+			freq_str += (num_len - len(freq_str)) * '0' + '%'
+			to_print += time_str
+			to_print += freq_str
+			to_print += ' |'
+
+			to_print += '#' * int(freq / threshold)
+
+			to_print += '\n'
+		print(to_print)
+
+		
 
 	def __msgs_per_person(self): 
 		res = dict()
@@ -228,6 +273,7 @@ class ConvoReader():
 
 
 	def __getitem__(self, index):
+		"""Returns the tuple (person, message, datetime) for the corresponding index"""
 		if type(index) is not int:
 			raise TypeError
 		elif index >= len(self) or index < -len(self):
@@ -236,12 +282,17 @@ class ConvoReader():
 			return self.convo[index] if index >= 0 else self.convo[len(self) + index]
 
 	def __len__(self):
+		"""Returns the number of messages in self"""
 		return len(self.convo)
 
 	def __str__(self):
+		"""Returns a string with the alphabetically sorted names of people
+		in this conversation
+		"""
 		return "Converation for " + self.name
 
 	def __repr__(self):
+		"""Returns a valid constructor for this object"""
 		return "ConvoReader({0}, {1})".format(repr(self.name), repr(self.convo))
 
 
