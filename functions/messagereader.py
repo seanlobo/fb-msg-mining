@@ -4,12 +4,6 @@ from functions.customdate import CustomDate
 from functions.setup import data
 
 
-# class MessageReader():
-
-# 	def __init__(self):
-# 		pass
-
-
 class MessageReader():
 
 	def __init__(self):

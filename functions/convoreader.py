@@ -62,7 +62,7 @@ class ConvoReader():
 		for name, msg, date in self.convo:
 			string += name + ": " +  msg + " | " + str(date)
 			string += '\n'
-		print(string)
+		return string
 
 	def msgs_graph(self, contact=None):
 		"""Returns a list of length 2 lists that store a day as element 0
@@ -97,7 +97,7 @@ class ConvoReader():
 				msg_freq[date - start][1] += 1
 		
 		for day in range(len(msg_freq)):
-			msg_freq[day][0] = self.dates[day]
+			msg_freq[day][0] = CustomDate.from_date(start + day)
 
 		return msg_freq
 
