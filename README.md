@@ -10,6 +10,7 @@ To install dependencies run:
 ## Step 1:
 
 Request a copy of your Facebook data
+
 Settings -> "Download a copy" link near the bottom of page
 
 
@@ -32,7 +33,7 @@ Rename `paths.txt.examples` --> `paths.txt`
 
 Add the absolute path to `html/messages.htm` to `paths.txt`
 
-Add the absolute path to `data.txt`, the location where chat data will be stored
+Add the absolute path to `data.txt`, the location where chat data will be stored, to `paths.txt`
 
 
 ## Step 6:
