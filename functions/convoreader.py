@@ -2,6 +2,8 @@ from collections import Counter
 from math import ceil
 
 from functions.customdate import CustomDate
+from functions.filter_messages import get_words, write_to_files
+from functions.setup import data as path
 
 
 class ConvoReader():
@@ -12,6 +14,8 @@ class ConvoReader():
 		self.msgs = [msg for name, msg, date in self.convo]
 		self.dates = [date for name, msg, date in self.convo]
 		self.people = sorted(self.name.split(', '))
+
+		self.path = path[:path.find('data.txt')]
 
 	def print_people(self):
 		"""Prints to the screen an alphabetically sorted list of people
@@ -56,7 +60,7 @@ class ConvoReader():
 			return self.__ave_words(name)
 
 	def prettify(self):
-		"""returns a string that \"prettily\" shows the conversation history"""
+		"""Returns a string that \"prettily\" shows the conversation history"""
 		
 		string = ""
 		for name, msg, date in self.convo:
@@ -212,7 +216,14 @@ class ConvoReader():
 			to_print += '\n'
 		print(to_print)
 
-		
+	def save_word_freq(self):
+		words = get_words(self)
+
+		if len(self.name) > 255:
+			name = self.name[:255]
+		else:
+			name = self.name
+		write_to_files(self.path, name)
 
 
 

@@ -88,9 +88,9 @@ def get_words(convoReader):
 
 
 
-def write_to_files(words, directory):
+def write_to_files(words, directory, chat):
 	for person, counter in words.items():
-		with open(directory + str(person) + '_word_freq.txt', 'w', encoding='utf-8') as f:
+		with open(directory + chat + '/' + str(person) + '_word_freq.txt', 'w', encoding='utf-8') as f:
 			lst = []
 			for key, val in counter.items():
 				lst.append( (key, val))

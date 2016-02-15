@@ -4,8 +4,6 @@ from functions.customdate import CustomDate
 
 
 
-
-
 m = MessageReader()
 stud = m.get_convo(7)
 ss = m.get_convo(1)
