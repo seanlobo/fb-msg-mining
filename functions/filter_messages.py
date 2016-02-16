@@ -1,5 +1,5 @@
 #	Author: Sean Lobo
-#	Date: Jan 11, 2016
+#	Date: Feb 16, 2016
 #	File Purpose: Clean up facebook chat data
 
 from collections import Counter

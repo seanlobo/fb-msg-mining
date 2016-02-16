@@ -67,3 +67,4 @@ misc.
 *.html
 *.css
 .DS_Store
+test.py

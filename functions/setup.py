@@ -1,5 +1,5 @@
 #	Author: Sean Lobo
-#	Date: Jan 15, 2016
+#	Date: Feb 16, 2016
 #	File Purpose: Trying to improve composition of project
 #				  and consolidate functions
 
