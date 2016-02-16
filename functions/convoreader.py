@@ -113,7 +113,7 @@ class ConvoReader():
 			print('Graph for {0}'.format(str(contact)))
 
 		max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
-		value = max_msgs / 100
+		value = max_msgs / 50
 		print("\nEach \"#\" referes to ~{0} messages".format(value))
 		print()
 
@@ -198,7 +198,7 @@ class ConvoReader():
 		if threshold is None:
 			threshold = window / 120
 		else:
-			assert threshold > 0
+			assert threshold > 0, "Threshold must be a possitive number"
 
 		to_print = ''
 		time_len = 9
@@ -223,7 +223,7 @@ class ConvoReader():
 			name = self.name[:255]
 		else:
 			name = self.name
-		write_to_files(self.path, name)
+		write_to_files(words, self.path, name)
 
 
 

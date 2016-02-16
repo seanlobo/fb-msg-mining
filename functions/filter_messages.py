@@ -3,6 +3,7 @@
 #	File Purpose: Clean up facebook chat data
 
 from collections import Counter
+import os
 
 def bsearch(lst, word, low=0, high=None):
 	if high is None:
@@ -19,11 +20,11 @@ def bsearch(lst, word, low=0, high=None):
 
 
 def get_words(convoReader):
-	common_words = 
+	common_words = \
 		("'' i you to the it a me and that so my for we be " + \
 		"in of if is just with was then do have i'm your " + \
 		"what on too but in not when how get much don't " + \
-		"ok it's i'll up what at can this ").split()
+		"ok it's i'll up what at can this are").split()
 	common_words.append('\"\"')	
 
 	def raw_msgs(convo):
@@ -89,8 +90,9 @@ def get_words(convoReader):
 
 
 def write_to_files(words, directory, chat):
+	os.makedirs(directory + chat, exist_ok=True)
 	for person, counter in words.items():
-		with open(directory + chat + '/' + str(person) + '_word_freq.txt', 'w', encoding='utf-8') as f:
+		with open(directory + chat + '/' + str(person) + '_word_freq.txt', 'x', encoding='utf-8') as f:
 			lst = []
 			for key, val in counter.items():
 				lst.append( (key, val))
