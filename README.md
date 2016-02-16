@@ -33,7 +33,7 @@ Rename `paths.txt.examples` --> `paths.txt`
 
 Add the absolute path to `html/messages.htm` to `paths.txt`
 
-Create and add the absolute path to `data.txt`, the location where chat data will be stored, to `paths.txt`
+Add the absolute path to `data.txt`, the location where chat data will be stored, to `paths.txt`
 
 
 ## Step 6:

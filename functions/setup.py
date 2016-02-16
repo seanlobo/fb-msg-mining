@@ -180,9 +180,9 @@ def get_msg_data_paths():
 		msgs = None
 		data = None
 		for line in lines:
-			if 'Downloaded Facebook Messages path (e.g. Users/[user]/Documents/messages.htm):' in line:
+			if 'Downloaded Facebook Messages path (e.g. ~/Documents/messages.htm):' in line:
 				msgs = line[line.find(':') + 1:].strip(' \n')
-			elif 'Location to save all message data (e.g. Users/[user]/Documents/facebook_data/data.txt):' in line:
+			elif 'Location to save message data (e.g. ~/Documents/data.txt):' in line:
 				data = line[line.find(':') + 1:].strip(' \n')
 	if msgs == '' or data == '' :
 		print('Could not find path to messages.htm or path to save data.txt.')
