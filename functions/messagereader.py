@@ -34,7 +34,7 @@ class MessageReader():
 			
 
 	def get_convo(self, people):
-		"""Returns a ConvoReader object reprsenting the conversation
+		"""Returns a ConvoReader object representing the conversation
 		passed as a list of names, string name or index of conversation
 		(from print_names). If an invalid parameter is passed return None
 		"""
