@@ -14,7 +14,7 @@ class ConvoReader():
 		self.msgs = [msg for name, msg, date in self.convo]
 		self.dates = [date for name, msg, date in self.convo]
 		self.people = sorted(self.name.split(', '))
-		self.words = get_words(self)
+		self.individual_words = get_words(self)
 		self.len = len(self.convo)
 		self.path = path[:path.find('data.txt')]
 
@@ -247,7 +247,7 @@ class ConvoReader():
 			name = self.name[:255]
 		else:
 			name = self.name
-		write_to_files(self.words, self.path, name)
+		write_to_files(self.individual_words, self.path, name)
 
 
 
