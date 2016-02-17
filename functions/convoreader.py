@@ -249,10 +249,19 @@ class ConvoReader():
 
 	def save_word_freq(self):
 		"""Saves to a file the ordered rankings of word frequencies by person in the chat"""
-		if len(self.name) > 255:
-			name = self.name[:255]
+		dir_name = ""
+		for person in self.people:
+			split = person.split(' ')
+			for i in range(len(split) - 1):
+				dir_name += split[i]
+				dir_name += '-'
+			dir_name += split[-1]
+			dir_name += '_'
+		dir_name = dir_name[:-1]
+		if len(dir_name) > 255:
+			name = dir_name[:255]
 		else:
-			name = self.name
+			name = dir_name
 		write_to_files(self.individual_words, self.path, name)
 
 

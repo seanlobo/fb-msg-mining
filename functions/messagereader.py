@@ -7,7 +7,7 @@ from functions.setup import data
 class MessageReader():
 
 	def __init__(self):
-		with open(data, mode='r') as f:
+		with open(data, mode='r', encoding='UTF8') as f:
 			self.data = eval(f.readline())
 			self.download = f.readline()
 		self.names = self._get_convo_names_freq()

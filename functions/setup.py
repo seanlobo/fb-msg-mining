@@ -30,7 +30,7 @@ def get_all_divs(msg_html_path):
 	thread.contents[0]
 	"""
 	try:
-		text = open(msg_html_path)	
+		text = open(msg_html_path, mode='r', encoding='UTF8')	
 	except OSError as err:
 		print('OS error: {0}'.format(err))
 		exit()	
@@ -173,7 +173,7 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
 
 
 def get_msg_data_paths():
-	with open('./paths.txt', mode='r') as paths:
+	with open('./paths.txt', mode='r', encoding='UTF8') as paths:
 		lines = []
 		for line in paths:
 			lines.append(line)
