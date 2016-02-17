@@ -20,12 +20,6 @@ def bsearch(lst, word, low=0, high=None):
 
 
 def get_words(convoReader):
-	common_words = \
-		("'' i you to the it a me and that so my for we be " + \
-		"in of if is just with was then do have i'm your " + \
-		"what on too but in not when how get much don't " + \
-		"ok it's i'll up what at can this are").split()
-	common_words.append('\"\"')	
 
 	def raw_msgs(convo):
 		freqs = dict()
@@ -52,6 +46,7 @@ def get_words(convoReader):
 			cleaned[key] = sorted(val)
 
 		for key, val in cleaned.items():
+			end = 0
 			for i in range(len(val)):
 				end = i
 				if val[i] > 'z' * 10:
@@ -73,18 +68,12 @@ def get_words(convoReader):
 
 		return cleaned
 
-	def filter_words(words, exclude):
-		res = []
-		for word in words:
-			if word not in exclude:
-				res.append(word)
-		return res
 
 
 	cleaned = clean_words(raw_words(raw_msgs(convoReader)))
 	res = dict()
 	for key, val in cleaned.items():
-		res[key] = Counter(filter_words(val, common_words))
+		res[key] = Counter(val)
 	return res
 
 

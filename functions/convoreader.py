@@ -14,7 +14,8 @@ class ConvoReader():
 		self.msgs = [msg for name, msg, date in self.convo]
 		self.dates = [date for name, msg, date in self.convo]
 		self.people = sorted(self.name.split(', '))
-
+		self.words = get_words(self)
+		self.len = len(self.convo)
 		self.path = path[:path.find('data.txt')]
 
 	def print_people(self):
@@ -58,6 +59,31 @@ class ConvoReader():
 			return self.__ave_words_per_person()
 		else:
 			return self.__ave_words(name)
+
+	def frequency(self, person=None, word=None):
+		if person is not None:
+			person = person.lower()
+			assert person in self.name, "The person you passed is not in this conversation"
+		if word is not None:
+			word = word.lower()
+		if person is not None:
+			try:
+				if word is not None:
+					return self.words[person][word]
+				else:
+					return self.words[person]
+			except KeyError:
+				print("\n{0} has never spoken in this conversation. Returning 0\n".format(person.title()))
+				return 0
+		else:
+			if word is not None:
+				res = 0
+				for key, val in self.words.items():
+					res += self.words[key][word]
+				return res
+			else:
+				return self.words
+
 
 	def prettify(self):
 		"""Returns a string that \"prettily\" shows the conversation history"""
@@ -217,13 +243,11 @@ class ConvoReader():
 		print(to_print)
 
 	def save_word_freq(self):
-		words = get_words(self)
-
 		if len(self.name) > 255:
 			name = self.name[:255]
 		else:
 			name = self.name
-		write_to_files(words, self.path, name)
+		write_to_files(self.words, self.path, name)
 
 
 
@@ -298,7 +322,7 @@ class ConvoReader():
 
 	def __len__(self):
 		"""Returns the number of messages in self"""
-		return len(self.convo)
+		return self.len
 
 	def __str__(self):
 		"""Returns a string with the alphabetically sorted names of people

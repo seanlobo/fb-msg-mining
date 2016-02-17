@@ -43,7 +43,10 @@ class MessageReader():
 			"a list of names (as strings), string, or int")
 
 		if type(people) is int:
-			return ConvoReader(self.names[people - 1], self.data[self.names[people - 1]])
+			if people > 0:
+				return ConvoReader(self.names[people - 1], self.data[self.names[people - 1]])
+			else:
+				return ConvoReader(self.names[len(self.names) + people], self.data[self.names[len(self.names) + people]])
 		if type(people) is str:
 			people = people.title().split(', ')
 		else:
@@ -69,6 +72,9 @@ class MessageReader():
 			if ele not in lst2:
 				return False
 		return True
+
+	def __len__(self):
+		return len(self.names)
 
 	def __str__(self):
 		return self.download
