@@ -40,7 +40,7 @@ class ConvoReader():
 	def words(self, name=None):
 		"""Returns either the number of words spoken by the specified
 		person, or if no name is passed, a Counter object storing the number
-		of words as values paired with names of people as keys.
+		of words as values paired with names of people as keys for all peope in the chat.
 		"""
 
 		if name is None:
@@ -61,6 +61,11 @@ class ConvoReader():
 			return self.__ave_words(name)
 
 	def frequency(self, person=None, word=None):
+		"""If word is passed, returns the frequency of that word in the conversation, 
+		either for the person specified or an aggregate sum of all people.
+		If word is left out, returns either a Counter object representing the word frequencies
+		for a person, or a dictionary of Counters for every person.
+		"""
 		if person is not None:
 			person = person.lower()
 			assert person in self.name, "The person you passed is not in this conversation"
@@ -243,6 +248,7 @@ class ConvoReader():
 		print(to_print)
 
 	def save_word_freq(self):
+		"""Saves to a file the ordered rankings of word frequencies by person in the chat"""
 		if len(self.name) > 255:
 			name = self.name[:255]
 		else:
