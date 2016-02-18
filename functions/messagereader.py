@@ -18,6 +18,10 @@ class MessageReader():
 		the members of a conversation. By default is arranged 
 		with most active chat first in decreasing order, but 
 		can pass alpha=True to order by alphabetical
+		Parameters:
+			alpha (optional): False by default, in which case conversation names are 
+				returned in order of most frequent first, and then alphabetical. If True
+				conversations names are ranked in order of alphabetical first
 		"""
 		if alpha:
 			return self.names
@@ -37,6 +41,10 @@ class MessageReader():
 		"""Returns a ConvoReader object representing the conversation
 		passed as a list of names, string name or index of conversation
 		(from print_names). If an invalid parameter is passed return None
+		Parameters:
+			people: Which conversation you would like to get. Either the number from the output of 
+			print_names(), the name of the conversation you want (e.g. 'sean lobo, jason perrin') 
+			or a list of names (e.g. ['jason perrin', 'sean lobo'])
 		"""
 		assert type(people) in [str, list, int], (""
 			"Invalid argument: must pass"

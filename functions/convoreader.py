@@ -343,7 +343,7 @@ class ConvoReader():
 		"""Returns a string with the alphabetically sorted names of people
 		in this conversation
 		"""
-		return "Converation for " + self.name
+		return "Converation for " + self.name.title()
 
 	def __repr__(self):
 		"""Returns a valid constructor for this object"""

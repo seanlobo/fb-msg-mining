@@ -4,7 +4,7 @@
 # iterator
 # average response time?
 # number of messages sent in arbitrary time period (a certain day? a group of days?)
-# 
+# FILTER most commonly used words
 # 
 # MSG READER
 # frequency of conversation by day of week
@@ -13,7 +13,7 @@
 # default conversation for people who don't have data to load
 # 
 # 
-# 
+# agregate word count
 # 
 # 
 # 
