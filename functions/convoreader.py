@@ -74,30 +74,30 @@ class ConvoReader():
 		if person is not None:
 			try:
 				if word is not None:
-					return self.words[person][word]
+					return self.individual_words[person][word]
 				else:
-					return self.words[person]
+					return self.individual_words[person]
 			except KeyError:
 				print("\n{0} has never spoken in this conversation. Returning 0\n".format(person.title()))
 				return 0
 		else:
 			if word is not None:
 				res = 0
-				for key, val in self.words.items():
-					res += self.words[key][word]
+				for key, val in self.individual_words.items():
+					res += self.individual_words[key][word]
 				return res
 			else:
-				return self.words
+				return self.individual_words
 
 
 	def prettify(self):
-		"""Returns a string that \"prettily\" shows the conversation history"""
+		"""Prints a "pretty" version of the conversation history"""
 		
 		string = ""
 		for name, msg, date in self.convo:
-			string += name + ": " +  msg + " | " + str(date)
+			string += name.title() + ": " +  msg + " | " + str(date)
 			string += '\n'
-		return string
+		print('\n' + string)
 
 	def msgs_graph(self, contact=None):
 		"""Returns a list of length 2 lists that store a day as element 0
