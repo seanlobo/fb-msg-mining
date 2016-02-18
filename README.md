@@ -65,32 +65,106 @@ Below are descriptions of the two main classes, MessageReader and ConvoReader.
 |ConvoReader | Holds all the chat history for a specific conversation, including all messages sent, and for each message the time and person who sent them. Can perform analysis on chat history, see below for more details |
 
 
-You start with a MessageReader object stored in the variable m, which holds all your chat history for all contacts.
+You start with a MessageReader object stored in the variable m, which holds all your chat history for all contacts. You can use this object to get ConvoReader instances, which allow you to process data for specific CONVersations. The following outline common methods and uses:
 
 
+### MessageReader
+
+####`print_names()` 
+
+Prints to the screen your contacts in decreasing order of chatted frequency, e.g. :
 ```python
-### MessageReader class ###
-m.print_names() # prints to the screen your contacts in decreasing order of chatted frequency
- # 1) Most chatted
- # 2) Second most common
- # 3) etc.
-
-nth_convo = m.get_convo(n) # returns the nth conversation, where n referres to the output of m.print_names()
+1) Most chatted chat
+2) Second most chatted chat
+3) etc.
 ```
+
+###`get_convo(people)`
+Returns a ConvoReader object representing the conversation
+passed as a list of names, string name or index of conversation
+(from print_names). If an invalid parameter is passed return None
+
+	Parameters:
+		people: Which conversation you would like to get. Either the number from the output of 
+			print_names(), the name of the conversation you want (e.g. 'sean lobo, jason perrin') 
+			or a list of names (e.g. ['jason perrin', 'sean lobo'])
+
 
 ### ConvoReader class ###
 
-| Method   | Description |
-|-------------|-------------|
-|print_people( ) | Prints to the screen an alphabetically sorted list of people in the conversation |
-|messages(name=None) | Returns either the number of messages spoken by the specified person, or if no name is passed, a Counter object storing the number of mesages as values paired with names of people as keys for all people in the chat |
-|ave_words(name=None) | Returns either the average number of words spoken per message by the specified person, or if no name is passed, a Counter object storing the average number of words per message as values paired with names of people as keys
-|frequency(person=None, word=None) | Returns either the average number of words spoken per message by the specified person, or if no name is passed, a Counter object storing the average number of words per message as values paired with names of people as keys.
-| prettify( ) | Returns a string that \"prettily\" shows the conversation history |
-| print_msgs_graph(contact=None) | Prettily prints to the screen the message history of a chat |
-| msgs_by_weekday( ) | Returns a list containing frequency of chatting by days of week, ordered by index, with 0 being Monday and 6 Sunday |
-| print_msgs_by_day(window=60, threshold=None, contact=None) | Prints to the screen a graphical result of msgs_by_day |
-| save_word_freq( ) | Saves to a file the ordered rankings of word frequencies by person in the chat |
+####`print_people()`
+Prints to the screen an alphabetically sorted list of peoplein the conversation
+
+####`messages(name=None)`
+Number of messages for people in the chat 
+
+	Parameters:
+		name (optional): The name (as a string) of the person you are interested in
+	Return:
+		A number if name is not passed, otherwise a Counter object storing the number
+		of mesages as values paired with names of people as keys.
+
+
+####`word(name=None)`
+Number of words for people in the chat
+
+		Parameters:
+			name (optional): The name (as a string) of the person you are interested in
+		Return:
+			A number if name is not passed, otherwise a Counter object storing the number
+			of words as values paired with names of people as keys.
+
+
+####`ave_words(name=None)`
+Average number of words for people in the chat
+
+	Parameters:
+		name (optional): The name (as a string) of the person you are interested in
+	Return:
+		A number if name is not passed, otherwise a Counter object storing the average
+		number of words as values paired with names of people as keys.
+
+
+####`frequency(person=None, word=None)`
+Frequency of words for people in the chat
+	
+	Parameters:
+		person (optional): The name (as a string) of the person you are interested in
+		word (optional): The word (as a string) you are interested in
+	Return:
+		There are 4 different return types depending on the arguments passed:
+		Yes person and Yes word: the number of times the specified person has 
+			said the specified word
+		Yes person and No word: A counter object representing the frequency of words
+			for the specified person
+		No person and Yes word: The number of times the specified word has been said by 
+			anyone in the chat
+		No person and No word: A dictionary with keys being the names of people in the conversation
+			and values being counter objects with frequency of words
+
+####`prettify()`
+
+Prints a "pretty" version of the conversation history
+
+####`print_msgs_graph(contact=None)`
+Prettily prints to the screen the message history of a chat
+	
+	Parameter:
+		contact (optional): the name (as a string) of the person you are interested in.
+			(default: all contacts)
+
+
+####`msgs_by_weekday()`
+
+Returns a list containing frequency of chatting by days of week, ordered by index, with 0 being Monday and 6 Sunday
+
+####`print_msgs_by_day(window=60, contact=None, threshold=None)`
+Prints to the screen a graphical result of messages sent by day
+	
+	Parameters:
+		window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
+		contact (optional): The contact you are interested in. (default, all contacts)
+		threshold (optional): The minimum threshold needed to print one '#'
 
 
 
