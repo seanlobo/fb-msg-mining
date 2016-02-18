@@ -89,7 +89,7 @@ class ConvoReader():
 			return
 
 		if type(value) is int:
-			if not person and not word:
+			if person is not None and word is not None: # specified a person and word
 				string = ""
 				string += person.title() + ": \n"
 				string += "\t" + word.lower() + ": " + str(value)

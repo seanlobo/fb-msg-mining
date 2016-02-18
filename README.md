@@ -105,7 +105,7 @@ Number of messages for people in the chat
 		of mesages as values paired with names of people as keys.
 
 
-####`word(name=None)`
+####`words(name=None)`
 Number of words for people in the chat
 
 		Parameters:
