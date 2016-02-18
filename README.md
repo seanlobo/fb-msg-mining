@@ -125,22 +125,15 @@ Average number of words for people in the chat
 		number of words as values paired with names of people as keys.
 
 
-####`frequency(person=None, word=None)`
-Frequency of words for people in the chat
+####`frequency(person=None, word=None, limit=True)`
+Prints the requency of words for people in the chat
 	
 	Parameters:
 		person (optional): The name (as a string) of the person you are interested in
 		word (optional): The word (as a string) you are interested in
-	Return:
-		There are 4 different return types depending on the arguments passed:
-		Yes person and Yes word: the number of times the specified person has 
-			said the specified word
-		Yes person and No word: A counter object representing the frequency of words
-			for the specified person
-		No person and Yes word: The number of times the specified word has been said by 
-			anyone in the chat
-		No person and No word: A dictionary with keys being the names of people in the conversation
-			and values being counter objects with frequency of words
+		limit (optional): bool or int. If int desplays maximum that many words, 
+				if false desplays all words, if true desplays top 10. Should only be used
+				if word is left out, and is ignored if a value for word is given
 
 ####`prettify()`
 
