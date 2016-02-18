@@ -87,10 +87,8 @@ nth_convo = m.get_convo(n) # returns the nth conversation, where n referres to t
 |ave_words(name=None) | Returns either the average number of words spoken per message by the specified person, or if no name is passed, a Counter object storing the average number of words per message as values paired with names of people as keys
 |frequency(person=None, word=None) | Returns either the average number of words spoken per message by the specified person, or if no name is passed, a Counter object storing the average number of words per message as values paired with names of people as keys.
 | prettify( ) | Returns a string that \"prettily\" shows the conversation history |
-| msgs_graph(contact=None) | Returns a list of length 2 lists that store a day as element 0 and the number of total messages sent that day as element 1 |
 | print_msgs_graph(contact=None) | Prettily prints to the screen the message history of a chat |
 | msgs_by_weekday( ) | Returns a list containing frequency of chatting by days of week, ordered by index, with 0 being Monday and 6 Sunday |
-| msgs_by_day(window=60, contact=None) | Returns a list containing average frequency of chatting by times in days, starting at 12:00 am. Default window is 60 minute interval.If time less than the passed window is left at the end, it is put at the end of the list |
 | print_msgs_by_day(window=60, threshold=None, contact=None) | Prints to the screen a graphical result of msgs_by_day |
 | save_word_freq( ) | Saves to a file the ordered rankings of word frequencies by person in the chat |
 
