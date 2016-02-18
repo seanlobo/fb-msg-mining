@@ -84,7 +84,7 @@ class ConvoReader():
 		"""
 		assert type(limit) in [type(True), type(False), int], "limit must be an int or a boolean"
 
-		value = self.raw_frequency(person, word)
+		value = self._raw_frequency(person, word)
 		if value == -1:
 			return
 
@@ -139,7 +139,7 @@ class ConvoReader():
 			contact (optional): the name (as a string) of the person you are interested in.
 				(default: all contacts)
 		"""
-		msgs_freq = self.msgs_graph(contact)
+		msgs_freq = self._msgs_graph(contact)
 
 		if contact is not None:
 			print('Graph for {0}'.format(str(contact)))
@@ -172,20 +172,12 @@ class ConvoReader():
 				print('#' * int(msgs_freq[i][1] / value))
 
 	def msgs_by_weekday(self):
-		"""Returns a list containing frequency of chatting by days
-		of week, ordered by index, with 0 being Monday and 6 Sunday
+		"""Prints out chat frequency by day of week
 		"""
-		weekday_freq = [0 for i in range(7)]
-		check = self.dates[0]
-		msgs = 0
-		for person, msg, date in self.convo:
-			if check - date == 0:
-				msgs += 1
-			else:
-				weekday_freq[date.weekday()] += msgs
-				msgs = 1
-
-		return [day / sum(weekday_freq) for day in weekday_freq]
+		by_weeday = self._raw_msgs_by_weekday()
+		for day, freq in enumerate(by_weeday):
+			print("{0}: {1}%".format(CustomDate.days_of_week[day], str(freq * 100)[:5]))
+		print()
 
 	def print_msgs_by_day(self, window=60, contact=None, threshold=None):
 		"""Prints to the screen a graphical result of msgs_by_day
@@ -194,7 +186,7 @@ class ConvoReader():
 			contact (optional): The contact you are interested in. (default, all contacts)
 			threshold (optional): The minimum threshold needed to print one '#'
 		"""
-		frequencies = self.msgs_by_day(window, contact)
+		frequencies = self._msgs_by_day(window, contact)
 
 		if threshold is None:
 			threshold = window / 120
@@ -372,7 +364,7 @@ class ConvoReader():
 			msg_bucket[i][1] /= (total_msgs / 100)
 		return msg_bucket 
 
-	def raw_frequency(self, person=None, word=None):
+	def _raw_frequency(self, person=None, word=None):
 		"""Frequency of words for people in the chat
 		Parameters:
 			person (optional): The name (as a string) of the person you are interested in
@@ -411,7 +403,21 @@ class ConvoReader():
 			else:
 				return self.individual_words
 
+	def _raw_msgs_by_weekday(self):
+		"""Returns a list containing frequency of chatting by days
+		of week, ordered by index, with 0 being Monday and 6 Sunday
+		"""
+		weekday_freq = [0 for i in range(7)]
+		check = self.dates[0]
+		msgs = 0
+		for person, msg, date in self.convo:
+			if check - date == 0:
+				msgs += 1
+			else:
+				weekday_freq[date.weekday()] += msgs
+				msgs = 1
 
+		return [day / sum(weekday_freq) for day in weekday_freq]
 
 
 
