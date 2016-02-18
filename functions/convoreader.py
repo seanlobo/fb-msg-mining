@@ -103,23 +103,24 @@ class ConvoReader():
 				print()
 		
 		else:
-			if limit is False:
-				limit = len(value)
-			elif limit is True:
-				limit = 10
-			else:
-				pass
-
 			if type(value) is dict and type(value) is not Counter:
 				for key, val in value.items():
+					if limit is True:
+						lim = 10
+					elif limit is False:
+						lim = len(val)
 					i = 1
 					string = key + "\n"
-					for word, freq in val.most_common(limit):
+					for word, freq in val.most_common(lim):
 						string += "\t{0}) {1}: {2}\n".format(str(i), word, freq)
 						i += 1
 					print(string)
 					print()
 			else:
+				if limit is True:
+					limit = 10
+				elif limit is False:
+					limit = len(value)
 				string = person + "\n"
 				i = 1
 				for word, freq in value.most_common(limit):
