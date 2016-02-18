@@ -31,14 +31,15 @@ class ConvoReader():
 		"""Number of messages for people in the chat 
 		Parameters:
 			name (optional): The name (as a string) of the person you are interested in
-		Return:
-			A number if name is not passed, otherwise a Counter object storing the number
-			of mesages as values paired with names of people as keys.
 		"""
-		if name is None:
-			return self.__msgs_per_person()
+		value = self._raw_messages(name)
+		if type(value) is int:
+			print(value)
 		else:
-			return self.__msgs_spoken(name)
+			for person, msgs in value.most_common():
+				print("{0}: {1}".format(person, msgs))
+		print()
+
 
 	def words(self, name=None):
 		"""Number of words for people in the chat
@@ -48,11 +49,13 @@ class ConvoReader():
 			A number if name is not passed, otherwise a Counter object storing the number
 			of words as values paired with names of people as keys.
 		"""
-
-		if name is None:
-			return self.__words_per_person()
+		value = self._raw_words(name)
+		if type(value) is int:
+			print(value)
 		else:
-			return self.__words_spoken(name)
+			for person, msgs in value.most_common():
+				print("{0}: {1}".format(person, msgs))
+		print()
 
 	def ave_words(self, name=None):
 		"""Average number of words for people in the chat
@@ -62,102 +65,72 @@ class ConvoReader():
 			A number if name is not passed, otherwise a Counter object storing the average
 			number of words as values paired with names of people as keys.
 		"""
-
-		if name is None:
-			return self.__ave_words_per_person()
+		value = self._raw_ave_words(name)
+		if type(value) is int:
+			print(value)
 		else:
-			return self.__ave_words(name)
+			for person, msgs in value.most_common():
+				print("{0}: {1}".format(person, msgs))
+		print()
 
-	def frequency(self, person=None, word=None):
+	def frequency(self, person=None, word=None, limit=True):
 		"""Frequency of words for people in the chat
 		Parameters:
 			person (optional): The name (as a string) of the person you are interested in
 			word (optional): The word (as a string) you are interested in
-		Return:
-			There are 4 different return types depending on the arguments passed:
-			Yes person and Yes word: the number of times the specified person has 
-				said the specified word
-			Yes person and No word: A counter object representing the frequency of words
-				for the specified person
-			No person and Yes word: The number of times the specified word has been said by 
-				anyone in the chat
-			No person and No word: A dictionary with keys being the names of people in the conversation
-				and values being counter objects with frequency of words
+			limit (optional): bool or int. If int desplays maximum that many words, 
+				if false desplays all words, if true desplays top 10. Should only be used
+				if word is left out, and is ignored if a value for word is given
 		"""
-		if person is not None:
-			person = person.lower()
-			assert person in self.name, "The person you passed is not in this conversation"
-		if word is not None:
-			word = word.lower()
-		if person is not None:
-			try:
-				if word is not None:
-					return self.individual_words[person][word]
-				else:
-					return self.individual_words[person]
-			except KeyError:
-				print("\n{0} has never spoken in this conversation. Returning 0\n".format(person.title()))
-				return 0
-		else:
-			if word is not None:
-				res = 0
-				for key, val in self.individual_words.items():
-					res += self.individual_words[key][word]
-				return res
-			else:
-				return self.individual_words
+		assert type(limit) in [type(True), type(False), int], "limit must be an int or a boolean"
 
+		value = self.raw_frequency(person, word)
+		if value == -1:
+			return
+
+		if type(value) is int:
+			if not person and not word:
+				string = ""
+				string += person.title() + ": \n"
+				string += "\t" + word.lower() + ": " + str(value)
+				print(string)
+				print()
+			else:
+				string = ""
+				string += "Everyone in total: \n"
+				string += "\t" + word.lower() + ": " + str(value)
+				print(string)
+				print()
+		
+		else:
+			if limit is False:
+				limit = len(value)
+			elif limit is True:
+				limit = 10
+			else:
+				pass
+
+			if type(value) is dict and type(value) is not Counter:
+				for key, val in value.items():
+					i = 1
+					string = key + "\n"
+					for word, freq in val.most_common(limit):
+						string += "\t{0}) {1}: {2}\n".format(str(i), word, freq)
+						i += 1
+					print(string)
+					print()
+			else:
+				string = person + "\n"
+				i = 1
+				for word, freq in value.most_common(limit):
+					string += "\t{0}) {1}: {2}\n".format(str(i), word, freq)
+					i += 1
+				print(string)
+				print()
 
 	def prettify(self):
 		"""Prints a "pretty" version of the conversation history"""
-		
-		string = ""
-		for name, msg, date in self.convo:
-			string += name.title() + ": " +  msg + " | " + str(date)
-			string += '\n'
-		print('\n' + string)
-
-	def msgs_graph(self, contact=None):
-		"""The raw data used by print_msgs_graph to display message graphs
-		Parameters:
-			contact (optional): the name (as a string) of the person you are interested in
-				(default: all contacts)
-		Return:
-			A 2D list with inner lists being of length 2 lists and storing a day as element 0
-			and the number of total messages sent that day as element 1
-		"""
-		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
-		if type(contact) is list:
-			for i, ele in enumerate(contact):
-				assert type(ele) is str, "Each element in contact must be a string"
-				contact[i] = ele.lower()
-			for ele in contact:	
-				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-											ele, str(self.people))
-		elif type(contact) is str:
-			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-											contact, str(self.people)) 
-			contact = [contact]
-
-
-		if contact is not None:
-			filt = lambda x: x in contact 
-		else:
-			filt = lambda x: True
-
-		start = self.dates[0]
-		end = self.dates[-1]
-		days = end - start
-
-		msg_freq = [[None, 0] for i in range(days + 1)]
-		for person, msg, date in self.convo:
-			if filt(person.lower()):
-				msg_freq[date - start][1] += 1
-		
-		for day in range(len(msg_freq)):
-			msg_freq[day][0] = CustomDate.from_date(start + day)
-
-		return msg_freq
+		print('\n' + self._raw_prettify())
 
 	def print_msgs_graph(self, contact=None):
 		"""Prettily prints to the screen the message history of a chat
@@ -213,47 +186,6 @@ class ConvoReader():
 
 		return [day / sum(weekday_freq) for day in weekday_freq]
 
-	def msgs_by_day(self, window=60, contact=None):
-		"""The percent of conversation by time of day
-		Parameters:
-			window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
-			contact (optional): The contact you are interested in. (default, all contacts)
-		Return:
-			a list containing average frequency of chatting by 
-			times in days, starting at 12:00 am. Default window is 60 minute 
-			interval.If time less than the passed window is left at the end,
-			it is put at the end of the list
-		"""
-		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
-		if type(contact) is list:
-			for i, ele in enumerate(contact):
-				assert type(ele) is str, "Each element in contact must be a string"
-				contact[i] = ele.lower()
-			for ele in contact:	
-				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-											ele, str(self.people))
-		elif type(contact) is str:
-			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-											contact, str(self.people)) 
-			contact = [contact]
-
-
-		if contact is not None:
-			filt = lambda x: x in contact 
-		else:
-			filt = lambda x: True
-
-		total_msgs = 0
-		msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(ceil(60*24 // window))]
-
-		for person, msg, date in self.convo:
-			if filt(person.lower()):
-				msg_bucket[(int(date.minutes() // window) % (len(msg_bucket) - 1))][1] += 1
-				total_msgs += 1
-		for i in range(len(msg_bucket)):
-			msg_bucket[i][1] /= (total_msgs / 100)
-		return msg_bucket 
-
 	def print_msgs_by_day(self, window=60, contact=None, threshold=None):
 		"""Prints to the screen a graphical result of msgs_by_day
 		Parameters:
@@ -300,6 +232,186 @@ class ConvoReader():
 		else:
 			name = dir_name
 		write_to_files(self.individual_words, self.path, name)
+
+
+
+
+
+
+
+	def _raw_messages(self, name=None):
+		"""Number of messages for people in the chat 
+		Parameters:
+			name (optional): The name (as a string) of the person you are interested in
+		Return:
+			A number if name is not passed, otherwise a Counter object storing the number
+			of mesages as values paired with names of people as keys.
+		"""
+		if name is None:
+			return self.__msgs_per_person()
+		else:
+			return self.__msgs_spoken(name)
+
+	def _raw_words(self, name=None):
+		"""Number of words for people in the chat
+		Parameters:
+			name (optional): The name (as a string) of the person you are interested in
+		Return:
+			A number if name is not passed, otherwise a Counter object storing the number
+			of words as values paired with names of people as keys.
+		"""
+
+		if name is None:
+			return self.__words_per_person()
+		else:
+			return self.__words_spoken(name)
+
+	def _raw_ave_words(self, name=None):
+		"""Average number of words for people in the chat
+		Parameters:
+			name (optional): The name (as a string) of the person you are interested in
+		Return:
+			A number if name is not passed, otherwise a Counter object storing the average
+			number of words as values paired with names of people as keys.
+		"""
+
+		if name is None:
+			return self.__ave_words_per_person()
+		else:
+			return self.__ave_words(name)
+
+	def _raw_prettify(self):
+		"""Returns a "pretty" version of the conversation history as a string"""
+		string = ""
+		for name, msg, date in self.convo:
+			string += name.title() + ": " +  msg + " | " + str(date)
+			string += '\n'
+		return string
+
+	def _msgs_graph(self, contact=None):
+		"""The raw data used by print_msgs_graph to display message graphs
+		Parameters:
+			contact (optional): the name (as a string) of the person you are interested in
+				(default: all contacts)
+		Return:
+			A 2D list with inner lists being of length 2 lists and storing a day as element 0
+			and the number of total messages sent that day as element 1
+		"""
+		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
+		if type(contact) is list:
+			for i, ele in enumerate(contact):
+				assert type(ele) is str, "Each element in contact must be a string"
+				contact[i] = ele.lower()
+			for ele in contact:	
+				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											ele, str(self.people))
+		elif type(contact) is str:
+			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											contact, str(self.people)) 
+			contact = [contact]
+
+
+		if contact is not None:
+			filt = lambda x: x in contact 
+		else:
+			filt = lambda x: True
+
+		start = self.dates[0]
+		end = self.dates[-1]
+		days = end - start
+
+		msg_freq = [[None, 0] for i in range(days + 1)]
+		for person, msg, date in self.convo:
+			if filt(person.lower()):
+				msg_freq[date - start][1] += 1
+		
+		for day in range(len(msg_freq)):
+			msg_freq[day][0] = CustomDate.from_date(start + day)
+
+		return msg_freq
+
+	def _msgs_by_day(self, window=60, contact=None):
+		"""The percent of conversation by time of day
+		Parameters:
+			window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
+			contact (optional): The contact you are interested in. (default, all contacts)
+		Return:
+			a list containing average frequency of chatting by 
+			times in days, starting at 12:00 am. Default window is 60 minute 
+			interval.If time less than the passed window is left at the end,
+			it is put at the end of the list
+		"""
+		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
+		if type(contact) is list:
+			for i, ele in enumerate(contact):
+				assert type(ele) is str, "Each element in contact must be a string"
+				contact[i] = ele.lower()
+			for ele in contact:	
+				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											ele, str(self.people))
+		elif type(contact) is str:
+			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											contact, str(self.people)) 
+			contact = [contact]
+
+
+		if contact is not None:
+			filt = lambda x: x in contact 
+		else:
+			filt = lambda x: True
+
+		total_msgs = 0
+		msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(ceil(60*24 // window))]
+
+		for person, msg, date in self.convo:
+			if filt(person.lower()):
+				msg_bucket[(int(date.minutes() // window) % (len(msg_bucket) - 1))][1] += 1
+				total_msgs += 1
+		for i in range(len(msg_bucket)):
+			msg_bucket[i][1] /= (total_msgs / 100)
+		return msg_bucket 
+
+	def raw_frequency(self, person=None, word=None):
+		"""Frequency of words for people in the chat
+		Parameters:
+			person (optional): The name (as a string) of the person you are interested in
+			word (optional): The word (as a string) you are interested in
+		Return:
+			There are 4 different return types depending on the arguments passed:
+			Yes person and Yes word: the number of times the specified person has 
+				said the specified word
+			Yes person and No word: A counter object representing the frequency of words
+				for the specified person
+			No person and Yes word: The number of times the specified word has been said by 
+				anyone in the chat
+			No person and No word: A dictionary with keys being the names of people in the conversation
+				and values being counter objects with frequency of words
+		"""
+		if person is not None:
+			person = person.lower()
+			assert person in self.name, "The person you passed is not in this conversation"
+		if word is not None:
+			word = word.lower()
+		if person is not None:
+			try:
+				if word is not None:
+					return self.individual_words[person][word]
+				else:
+					return self.individual_words[person]
+			except KeyError:
+				print("\n{0} has never spoken in this conversation.\n".format(person.title()))
+				return -1
+		else:
+			if word is not None:
+				res = 0
+				for key, val in self.individual_words.items():
+					res += self.individual_words[key][word]
+				return res
+			else:
+				return self.individual_words
+
+
+
 
 
 
