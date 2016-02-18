@@ -28,9 +28,12 @@ class ConvoReader():
 		print(res)
 
 	def messages(self, name=None):
-		"""Returns either the number of messages spoken by the specified
-		person, or if no name is passed, a Counter object storing the number
-		of mesages as values paired with names of people as keys.
+		"""Number of messages for people in the chat 
+		Parameters:
+			name (optional): The name (as a string) of the person you are interested in
+		Return:
+			A number if name is not passed, otherwise a Counter object storing the number
+			of mesages as values paired with names of people as keys.
 		"""
 		if name is None:
 			return self.__msgs_per_person()
@@ -38,9 +41,12 @@ class ConvoReader():
 			return self.__msgs_spoken(name)
 
 	def words(self, name=None):
-		"""Returns either the number of words spoken by the specified
-		person, or if no name is passed, a Counter object storing the number
-		of words as values paired with names of people as keys for all peope in the chat.
+		"""Number of words for people in the chat
+		Parameters:
+			name (optional): The name (as a string) of the person you are interested in
+		Return:
+			A number if name is not passed, otherwise a Counter object storing the number
+			of words as values paired with names of people as keys.
 		"""
 
 		if name is None:
@@ -49,10 +55,12 @@ class ConvoReader():
 			return self.__words_spoken(name)
 
 	def ave_words(self, name=None):
-		"""Returns either the average number of words spoken per message 
-		by the specified person, or if no name is passed, a Counter object 
-		storing the average number of words per message as values paired 
-		with names of people as keys.
+		"""Average number of words for people in the chat
+		Parameters:
+			name (optional): The name (as a string) of the person you are interested in
+		Return:
+			A number if name is not passed, otherwise a Counter object storing the average
+			number of words as values paired with names of people as keys.
 		"""
 
 		if name is None:
@@ -61,10 +69,20 @@ class ConvoReader():
 			return self.__ave_words(name)
 
 	def frequency(self, person=None, word=None):
-		"""If word is passed, returns the frequency of that word in the conversation, 
-		either for the person specified or an aggregate sum of all people.
-		If word is left out, returns either a Counter object representing the word frequencies
-		for a person, or a dictionary of Counters for every person.
+		"""Frequency of words for people in the chat
+		Parameters:
+			person (optional): The name (as a string) of the person you are interested in
+			word (optional): The word (as a string) you are interested in
+		Return:
+			There are 4 different return types depending on the arguments passed:
+			Yes person and Yes word: the number of times the specified person has 
+				said the specified word
+			Yes person and No word: A counter object representing the frequency of words
+				for the specified person
+			No person and Yes word: The number of times the specified word has been said by 
+				anyone in the chat
+			No person and No word: A dictionary with keys being the names of people in the conversation
+				and values being counter objects with frequency of words
 		"""
 		if person is not None:
 			person = person.lower()
@@ -100,8 +118,13 @@ class ConvoReader():
 		print('\n' + string)
 
 	def msgs_graph(self, contact=None):
-		"""Returns a list of length 2 lists that store a day as element 0
-		and the number of total messages sent that day as element 1
+		"""The raw data used by print_msgs_graph to display message graphs
+		Parameters:
+			contact (optional): the name (as a string) of the person you are interested in
+				(default: all contacts)
+		Return:
+			A 2D list with inner lists being of length 2 lists and storing a day as element 0
+			and the number of total messages sent that day as element 1
 		"""
 		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
 		if type(contact) is list:
@@ -137,7 +160,11 @@ class ConvoReader():
 		return msg_freq
 
 	def print_msgs_graph(self, contact=None):
-		"""Prettily prints to the screen the message history of a chat"""
+		"""Prettily prints to the screen the message history of a chat
+		Parameter:
+			contact (optional): the name (as a string) of the person you are interested in.
+				(default: all contacts)
+		"""
 		msgs_freq = self.msgs_graph(contact)
 
 		if contact is not None:
@@ -187,10 +214,15 @@ class ConvoReader():
 		return [day / sum(weekday_freq) for day in weekday_freq]
 
 	def msgs_by_day(self, window=60, contact=None):
-		"""Returns a list containing average frequency of chatting by 
-		times in days, starting at 12:00 am. Default window is 60 minute 
-		interval.If time less than the passed window is left at the end,
-		it is put at the end of the list
+		"""The percent of conversation by time of day
+		Parameters:
+			window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
+			contact (optional): The contact you are interested in. (default, all contacts)
+		Return:
+			a list containing average frequency of chatting by 
+			times in days, starting at 12:00 am. Default window is 60 minute 
+			interval.If time less than the passed window is left at the end,
+			it is put at the end of the list
 		"""
 		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
 		if type(contact) is list:
@@ -222,8 +254,13 @@ class ConvoReader():
 			msg_bucket[i][1] /= (total_msgs / 100)
 		return msg_bucket 
 
-	def print_msgs_by_day(self, window=60, threshold=None, contact=None):
-		"""Prints to the screen a graphical result of msgs_by_day"""
+	def print_msgs_by_day(self, window=60, contact=None, threshold=None):
+		"""Prints to the screen a graphical result of msgs_by_day
+		Parameters:
+			window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
+			contact (optional): The contact you are interested in. (default, all contacts)
+			threshold (optional): The minimum threshold needed to print one '#'
+		"""
 		frequencies = self.msgs_by_day(window, contact)
 
 		if threshold is None:
