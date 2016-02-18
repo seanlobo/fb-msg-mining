@@ -9,45 +9,64 @@ To install dependencies run:
 
 ## Step 1:
 
-Request a copy of your Facebook data
+Request a copy of your Facebook data:
 
-Settings -> "Download a copy" link near the bottom of page
+Go to Facebook and click on Settings -> "Download a copy" link near the middle of the page.
+You'll need to put in your facebook password in order to request the download, and you should
+recieve an email from facebook immediately, sent to the email you used when signing up.
 
 
 ## Step 2:
 
-Use the link emailed to you by facebook to download a copy of your data
+When you get an email with the download link, use the link emailed to you by facebook 
+to download a copy of your data
 
 
 ## Step 3:
 
-Extract the zip you get and put `html/messages.htm` in a location you have access to
+Extract the zip you get and put `html/messages.htm` in a location you have access to. 
 
 
 ## Step 4:
 
-Rename `paths.txt.examples` --> `paths.txt`
+Run `git clone https://github.com/seanlobo/fb-msg-mining.git` where you would like to clone the project
 
 
 ## Step 5:
 
-Add the absolute path to `html/messages.htm` to `paths.txt`
-
-Add the absolute path to `data.txt`, the location where chat data will be stored, to `paths.txt`
+Rename `paths.txt.examples` --> `paths.txt`
 
 
 ## Step 6:
 
-Run `main.py`
+Add the absolute path to `html/messages.htm` to `paths.txt`
+
+Create a directory where you would like to store all of you facebook data, and create a 
+`data.txt` file inside that directory
+Add the absolute path to `data.txt` to `paths.txt`
+
+
+## Step 7:
+
+Run `python3 main.py`
+
+If you have errors at this step and can't figure out why, email me at `seanlobo2010@gmail.com`
 
 
 ## Using Fb-msg-mining
 
 After setup is complete, run `python3 -i test.py`
 
+Below are descriptions of the two main classes, MessageReader and ConvoReader.
+
+| Class   | Description |
+|-------------|-------------|
+|MessageReader | Holds information for all chats, as well as the time and date history was downloaded at. Has methods to get ConvoReader objects for specific chats |
+|ConvoReader | Holds all the chat history for a specific conversation, including all messages sent, and for each message the time and person who sent them. Can perform analysis on chat history, see below for more details |
+
+
 You start with a MessageReader object stored in the variable m, which holds all your chat history for all contacts.
 
-Example uses of methods
 
 ```python
 ### MessageReader class ###
