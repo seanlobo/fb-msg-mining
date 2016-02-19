@@ -146,6 +146,8 @@ class ConvoReader():
 				(default: all contacts)
 		"""
 		msgs_freq = self._msgs_graph(contact)
+		if msgs_freq == -1:
+			return
 
 		if contact is not None:
 			print('Graph for {0}'.format(str(contact)))
@@ -193,11 +195,17 @@ class ConvoReader():
 			threshold (optional): The minimum threshold needed to print one '#'
 		"""
 		frequencies = self._msgs_by_day(window, contact)
+		if frequencies == -1:
+			return
 
 		if threshold is None:
 			threshold = window / 120
 		else:
-			assert threshold > 0, "Threshold must be a possitive number"
+			try:
+				assert threshold > 0, "Threshold must be a possitive number"
+			except AssertionError as e:
+				print(e)
+				return
 
 		to_print = ''
 		time_len = 9
@@ -319,19 +327,22 @@ class ConvoReader():
 			A 2D list with inner lists being of length 2 lists and storing a day as element 0
 			and the number of total messages sent that day as element 1
 		"""
-		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
-		if type(contact) is list:
-			for i, ele in enumerate(contact):
-				assert type(ele) is str, "Each element in contact must be a string"
-				contact[i] = ele.lower()
-			for ele in contact:	
-				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-											ele, str(self.people))
-		elif type(contact) is str:
-			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-											contact, str(self.people)) 
-			contact = [contact]
-
+		try:
+			assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
+			if type(contact) is list:
+				for i, ele in enumerate(contact):
+					assert type(ele) is str, "Each element in contact must be a string"
+					contact[i] = ele.lower()
+				for ele in contact:	
+					assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+												ele, str(self.people))
+			elif type(contact) is str:
+				assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+												contact, str(self.people)) 
+				contact = [contact]
+		except AssertionError as e:
+			print(e)
+			return -1
 
 		if contact is not None:
 			filt = lambda x: x in contact 
@@ -363,19 +374,22 @@ class ConvoReader():
 			interval.If time less than the passed window is left at the end,
 			it is put at the end of the list
 		"""
-		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
-		if type(contact) is list:
-			for i, ele in enumerate(contact):
-				assert type(ele) is str, "Each element in contact must be a string"
-				contact[i] = ele.lower()
-			for ele in contact:	
-				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-											ele, str(self.people))
-		elif type(contact) is str:
-			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-											contact, str(self.people)) 
-			contact = [contact]
-
+		try:
+			assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
+			if type(contact) is list:
+				for i, ele in enumerate(contact):
+					assert type(ele) is str, "Each element in contact must be a string"
+					contact[i] = ele.lower()
+				for ele in contact:	
+					assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+												ele, str(self.people))
+			elif type(contact) is str:
+				assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+												contact, str(self.people)) 
+				contact = [contact]
+		except AssertionError as e:
+			print(e)
+			return -1
 
 		if contact is not None:
 			filt = lambda x: x in contact 
