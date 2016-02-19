@@ -87,7 +87,7 @@ def write_to_files(words, directory, chat):
 			pers += split[i]
 			pers += '-'
 		pers += split[-1]
-		with open(directory + chat + '/' + pers + '_word_freq.txt', 'x', encoding='utf-8') as f:
+		with open(directory + chat + '/' + pers + '_word_freq.txt', mode='x', encoding='utf-8') as f:
 			lst = []
 			for key, val in counter.items():
 				lst.append( (key, val))
@@ -95,6 +95,11 @@ def write_to_files(words, directory, chat):
 				f.write("{0}: {1}".format(key, val) + "\n")	
 
 
+def write_to_file_total(tot_words, directory, chat):
+	os.makedirs(directory + chat, exist_ok=True)
+	with open(directory + chat + '/total.txt', mode='x', encoding='utf-8') as f:
+		for key, val in tot_words.most_common():
+			f.write("{0}: {1}".format(key, val) + "\n")
 
 
 

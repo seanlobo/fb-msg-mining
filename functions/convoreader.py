@@ -2,7 +2,7 @@ from collections import Counter
 from math import ceil
 
 from functions.customdate import CustomDate
-from functions.filter_messages import get_words, write_to_files
+from functions.filter_messages import get_words, write_to_files, write_to_file_total
 from functions.setup import data as path
 
 
@@ -109,6 +109,8 @@ class ConvoReader():
 						lim = 10
 					elif limit is False:
 						lim = len(val)
+					else:
+						lim = limit
 					i = 1
 					string = key + "\n"
 					for word, freq in val.most_common(lim):
@@ -224,9 +226,32 @@ class ConvoReader():
 			name = dir_name[:255]
 		else:
 			name = dir_name
-		write_to_files(self.individual_words, self.path, name)
+		try:
+			write_to_files(self.individual_words, self.path, name)
+		except FileExistsError:
+			print("You already created this directory. It is located at {0}".format(self.path))
 
-
+	def save_word_freq_total(self):
+		dir_name = ""
+		for person in self.people:
+			split = person.split(' ')
+			for i in range(len(split) - 1):
+				dir_name += split[i]
+				dir_name += '-'
+			dir_name += split[-1]
+			dir_name += '_'
+		dir_name = dir_name[:-1]
+		if len(dir_name) > 255:
+			name = dir_name[:255]
+		else:
+			name = dir_name
+		count = Counter()
+		for key, val in self.individual_words.items():
+			count += val
+		try:
+			write_to_file_total(count, self.path, name)
+		except FileExistsError:
+			print("You already created this directory. It is located at {0}".format(self.path))
 
 
 
