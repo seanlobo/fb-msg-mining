@@ -82,9 +82,13 @@ class ConvoReader():
 				if false desplays all words, if true desplays top 10. Should only be used
 				if word is left out, and is ignored if a value for word is given
 		"""
-		assert type(limit) in [type(True), type(False), int], "limit must be an int or a boolean"
+		try:
+			assert type(limit) in [type(True), type(False), int], "limit must be an int or boolean"
+		except AssertionError as e:
+			print(e)
+			return
 
-		value = self._raw_frequency(person, word)
+		value = self._raw_frequency(person=person, word=word)
 		if value == -1:
 			return
 
@@ -407,7 +411,11 @@ class ConvoReader():
 		"""
 		if person is not None:
 			person = person.lower()
-			assert person in self.name, "The person you passed is not in this conversation"
+			try:
+				assert person in self.name, "\"{0}\" is not in this conversation".format(person.title())
+			except AssertionError as e:
+				print(e)
+				return -1
 		if word is not None:
 			word = word.lower()
 		if person is not None:
@@ -417,7 +425,7 @@ class ConvoReader():
 				else:
 					return self.individual_words[person]
 			except KeyError:
-				print("\n{0} has never spoken in this conversation.\n".format(person.title()))
+				print("{0} has never spoken in this conversation.\n".format(person.title()))
 				return -1
 		else:
 			if word is not None:
