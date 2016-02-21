@@ -55,7 +55,7 @@ If you have errors at this step and can't figure out why, email me at `seanlobo2
 
 ## Using Fb-msg-mining
 
-After setup is complete, run `python3 -i test.py`
+After setup is complete, run `python3 -i playground.py`
 
 Below are descriptions of the two main classes, MessageReader and ConvoReader.
 
@@ -92,7 +92,7 @@ passed as a list of names, string name or index of conversation
 
 Sample usage:
 ```python
-m = MessageReader() # Done for you in test.py
+m = MessageReader() # Done for you in playground.py
 
 m.print_names()
 1) 
