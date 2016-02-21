@@ -95,8 +95,10 @@ Sample usage:
 m = MessageReader() # Done for you in playground.py
 
 m.print_names()
-1) 
-
+1) Most contacted person
+2) 2nd most contacted
+3) etc.
+```
 ### ConvoReader class ###
 
 ####`print_people()`
