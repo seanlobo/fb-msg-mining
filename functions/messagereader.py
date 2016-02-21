@@ -62,6 +62,7 @@ class MessageReader():
 		for name in self.data.keys():
 			if self._contents_equal(name.split(', '), people):
 				return ConvoReader(name, self.data[name])
+		print("You haven't talked with {0} before".format(people))
 		return None
 
 	def _get_convo_names_freq(self):

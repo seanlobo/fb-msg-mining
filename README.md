@@ -90,6 +90,13 @@ passed as a list of names, string name or index of conversation
 			or a list of names (e.g. ['jason perrin', 'sean lobo'])
 
 
+Sample usage:
+```python
+m = MessageReader() # Done for you in test.py
+
+m.print_names()
+1) 
+
 ### ConvoReader class ###
 
 ####`print_people()`
