@@ -1,5 +1,6 @@
 from collections import Counter
 from math import ceil
+import re
 
 from functions.customdate import CustomDate
 from functions.filter_messages import get_words, write_to_files, write_to_file_total
@@ -66,7 +67,7 @@ class ConvoReader():
 			number of words as values paired with names of people as keys.
 		"""
 		value = self._raw_ave_words(name)
-		if type(value) is int:
+		if type(value) is float:
 			print(value)
 		else:
 			for person, msgs in value.most_common():
@@ -84,13 +85,10 @@ class ConvoReader():
 		"""
 		try:
 			assert type(limit) in [type(True), type(False), int], "limit must be an int or boolean"
+			value = self._raw_frequency(person=person, word=word)
 		except AssertionError as e:
 			print(e)
-			return
-
-		value = self._raw_frequency(person=person, word=word)
-		if value == -1:
-			return
+			return 
 
 		if type(value) is int:
 			if person is not None and word is not None: # specified a person and word
@@ -139,18 +137,22 @@ class ConvoReader():
 		"""Prints a "pretty" version of the conversation history"""
 		print('\n' + self._raw_prettify())
 
-	def print_msgs_graph(self, contact=None):
+	def print_msgs_graph(self, contact=None, start=None, end=None):
 		"""Prettily prints to the screen the message history of a chat
 		Parameter:
 			contact (optional): the name (as a string) of the person you are interested in.
 				(default: all contacts)
 		"""
-		msgs_freq = self._msgs_graph(contact)
-		if msgs_freq == -1:
+		try:
+			msgs_freq = self._msgs_graph(contact)
+			passed = self.__assert_dates(start, end)
+		except AssertionError as e:
+			print(e)
 			return
 
+
 		if contact is not None:
-			print('Graph for {0}'.format(str(contact)))
+			print('Graph for {0}'.format(str(contact.title())))
 
 		max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
 		value = max_msgs / 50
@@ -178,6 +180,7 @@ class ConvoReader():
 				print("(none)")
 			else:
 				print('#' * int(msgs_freq[i][1] / value))
+		print()
 
 	def msgs_by_weekday(self):
 		"""Prints out chat frequency by day of week
@@ -194,9 +197,11 @@ class ConvoReader():
 			contact (optional): The contact you are interested in. (default, all contacts)
 			threshold (optional): The minimum threshold needed to print one '#'
 		"""
-		frequencies = self._msgs_by_day(window, contact)
-		if frequencies == -1:
-			return
+		try:
+			frequencies = self._msgs_by_day(window, contact)
+		except AssertionError as e:
+			print(e)
+			return 
 
 		if threshold is None:
 			threshold = window / 120
@@ -205,7 +210,7 @@ class ConvoReader():
 				assert threshold > 0, "Threshold must be a possitive number"
 			except AssertionError as e:
 				print(e)
-				return
+				return 
 
 		to_print = ''
 		time_len = 9
@@ -269,6 +274,20 @@ class ConvoReader():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	def _raw_messages(self, name=None):
 		"""Number of messages for people in the chat 
 		Parameters:
@@ -327,22 +346,7 @@ class ConvoReader():
 			A 2D list with inner lists being of length 2 lists and storing a day as element 0
 			and the number of total messages sent that day as element 1
 		"""
-		try:
-			assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
-			if type(contact) is list:
-				for i, ele in enumerate(contact):
-					assert type(ele) is str, "Each element in contact must be a string"
-					contact[i] = ele.lower()
-				for ele in contact:	
-					assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-												ele, str(self.people))
-			elif type(contact) is str:
-				assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-												contact, str(self.people)) 
-				contact = [contact]
-		except AssertionError as e:
-			print(e)
-			return -1
+		contact = self.__assert_contact(contact)
 
 		if contact is not None:
 			filt = lambda x: x in contact 
@@ -374,22 +378,7 @@ class ConvoReader():
 			interval.If time less than the passed window is left at the end,
 			it is put at the end of the list
 		"""
-		try:
-			assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
-			if type(contact) is list:
-				for i, ele in enumerate(contact):
-					assert type(ele) is str, "Each element in contact must be a string"
-					contact[i] = ele.lower()
-				for ele in contact:	
-					assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-												ele, str(self.people))
-			elif type(contact) is str:
-				assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-												contact, str(self.people)) 
-				contact = [contact]
-		except AssertionError as e:
-			print(e)
-			return -1
+		contact = self.__assert_contact(contact)
 
 		if contact is not None:
 			filt = lambda x: x in contact 
@@ -425,22 +414,14 @@ class ConvoReader():
 		"""
 		if person is not None:
 			person = person.lower()
-			try:
-				assert person in self.name, "\"{0}\" is not in this conversation".format(person.title())
-			except AssertionError as e:
-				print(e)
-				return -1
+			assert person in self.name, "\"{0}\" is not in this conversation".format(person.title())
 		if word is not None:
 			word = word.lower()
 		if person is not None:
-			try:
-				if word is not None:
-					return self.individual_words[person][word]
-				else:
-					return self.individual_words[person]
-			except KeyError:
-				print("{0} has never spoken in this conversation.\n".format(person.title()))
-				return -1
+			if word is not None:
+				return self.individual_words[person][word]
+			else:
+				return self.individual_words[person]
 		else:
 			if word is not None:
 				res = 0
@@ -465,6 +446,17 @@ class ConvoReader():
 				msgs = 1
 
 		return [day / sum(weekday_freq) for day in weekday_freq]
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -520,10 +512,45 @@ class ConvoReader():
 		return res
 
 	def __ave_words(self, name):
-		name = name.title()
+		name = name.lower()
 		if name not in self.people:
 			return -1
-		return words_spoken(self, name) / msgs_spoken(self, name)
+		return self.__words_spoken(name) / self.__msgs_spoken(name)
+
+	def __assert_dates(self, start, end):
+		assert type(start) in [type(None), str], "Start needs to be a date string"
+		assert type(end) in [type(None), str], "End needs to be a date string"
+		if type(start) is str:
+			r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
+			assert r.fullmatch(start) is not None, ("{0} is not a valid date, it must be in the format ".format(start) + \
+													"{month}/{day}/{year}")
+			r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
+			assert r.fullmatch(start) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
+		if type(end) is str:
+			r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
+			assert r.fullmatch(end) is not None, ("{0} is not a valid date, it must be in the format ".format(end) + \
+													"{month}/{day}/{year}")
+			r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
+			assert r.fullmatch(end) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
+
+	def __assert_contact(self, contact):
+		assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
+		if type(contact) is list:
+			for i, ele in enumerate(contact):
+				assert type(ele) is str, "Each element in contact must be a string"
+				contact[i] = ele.lower()
+			for ele in contact:	
+				assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											ele, str(self.people))
+		elif type(contact) is str:
+			assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
+											contact, str(self.people)) 
+			contact = [contact]
+
+		return contact
+
+
+
 
 
 
