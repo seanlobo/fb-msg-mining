@@ -69,3 +69,4 @@ misc.
 .DS_Store
 test.py
 facebook*
+*data*

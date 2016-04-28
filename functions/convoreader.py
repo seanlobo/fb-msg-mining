@@ -4,7 +4,6 @@ import re
 
 from functions.customdate import CustomDate
 from functions.filter_messages import get_words, write_to_files, write_to_file_total
-from functions.setup import data as path
 
 
 class ConvoReader():
@@ -17,7 +16,7 @@ class ConvoReader():
 		self.people = sorted(self.name.split(', '))
 		self.individual_words = get_words(self)
 		self.len = len(self.convo)
-		self.path = path[:path.find('data.txt')]
+		self.path = 'data/'
 
 	def print_people(self):
 		"""Prints to the screen an alphabetically sorted list of people

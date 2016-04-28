@@ -172,32 +172,32 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
 	return (msgs, str(footer))
 
 
-def get_msg_data_paths():
-	with open('./paths.txt', mode='r', encoding='UTF8') as paths:
-		lines = []
-		for line in paths:
-			lines.append(line)
-		msgs = None
-		data = None
-		for line in lines:
-			if 'Downloaded Facebook Messages path (e.g. Users/[user]/Documents/messages.htm):' in line:
-				msgs = line[line.find(':') + 1:].strip(' \n')
-			elif 'Location to save all message data (e.g. Users/[user]/Documents/facebook_data/data.txt):' in line:
-				data = line[line.find(':') + 1:].strip(' \n')
-	if msgs == '' or data == '' :
-		print('Could not find path to messages.htm or path to save data.txt.')
-		print('Ensure you have added the paths to paths.txt, which is currently:\n')
-		list(map(lambda x: print("   ", x, end=""), lines))
-		print()
-		exit()
-	elif msgs == None or data == None:
-		print('Unexpected format, make sure you haven\'t modified paths.txt')
-		print('other than adding the paths after the colons \":\"')
-		exit()
-	return (msgs, data)
+# def get_msg_data_paths():
+# 	with open('./paths.txt', mode='r', encoding='UTF8') as paths:
+# 		lines = []
+# 		for line in paths:
+# 			lines.append(line)
+# 		msgs = None
+# 		data = None
+# 		for line in lines:
+# 			if 'Downloaded Facebook Messages path (e.g. Users/[user]/Documents/messages.htm):' in line:
+# 				msgs = line[line.find(':') + 1:].strip(' \n')
+# 			elif 'Location to save all message data (e.g. Users/[user]/Documents/facebook_data/data.txt):' in line:
+# 				data = line[line.find(':') + 1:].strip(' \n')
+# 	if msgs == '' or data == '' :
+# 		print('Could not find path to messages.htm or path to save data.txt.')
+# 		print('Ensure you have added the paths to paths.txt, which is currently:\n')
+# 		list(map(lambda x: print("   ", x, end=""), lines))
+# 		print()
+# 		exit()
+# 	elif msgs == None or data == None:
+# 		print('Unexpected format, make sure you haven\'t modified paths.txt')
+# 		print('other than adding the paths after the colons \":\"')
+# 		exit()
+# 	return (msgs, data)
 
 
-msgs, data = get_msg_data_paths()
+# msgs, data = get_msg_data_paths()
 
 
 
