@@ -3,6 +3,7 @@ from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
 
 
+# noinspection PyPep8,PyPep8,PyPep8
 class MessageReader():
 
 	def __init__(self):
