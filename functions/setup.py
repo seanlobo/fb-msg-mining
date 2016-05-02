@@ -5,6 +5,7 @@
 
 from bs4 import BeautifulSoup
 
+
 def get_all_divs(msg_html_path):
     """Returns a list of list of divs. Contains all information
     needed to get full conversation history for any conversation.
@@ -126,7 +127,6 @@ def get_messages_readable(thread, previous=None):
     return previous
 
 
-
 def get_all_msgs_dict(msg_html_path='./messages.htm'):
     all_divs = get_all_divs(msg_html_path)
 
@@ -139,7 +139,6 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
             msgs[convo_name].extend(get_messages_readable(thread))
         else:
             msgs[convo_name] = get_messages_readable(thread)
-
 
     print('\a', '')
     return (msgs, str(footer))

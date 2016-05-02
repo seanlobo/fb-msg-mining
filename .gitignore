@@ -59,17 +59,18 @@ docs/_build/
 target/
 
 
-# my extra files that I dont want
+# my extra files that I don't want
 misc.
 *.txt
 !requirements.txt
 *.htm
-*.html
+*html
 *.css
 .DS_Store
 test.py
 facebook*
 *data*
+temp.py
 
 
 #Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
