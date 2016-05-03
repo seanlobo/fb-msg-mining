@@ -28,13 +28,15 @@ class MessageReader():
         else:
             return self.names_alpha
 
-    def print_names(self):
+    def print_names(self, limit=None):
         """Prints to screen conversation names in order of most
         active to least active"""
         i = 1
         for name in self.names:
             print(str(i) + ": " + name)
             i += 1
+            if limit is not None and i > limit:
+                break
 
 
     def get_convo(self, people):

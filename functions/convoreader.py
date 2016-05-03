@@ -19,8 +19,8 @@ class ConvoReader():
 
     def print_people(self):
         """Prints to the screen an alphabetically sorted list of people
-		in the conversation
-		"""
+        in the conversation
+        """
         res = ""
         for i, pers in enumerate(self.people):
             res += "{0}) {1}\n".format(i + 1, pers.title())
@@ -28,9 +28,9 @@ class ConvoReader():
 
     def messages(self, name=None):
         """Number of messages for people in the chat
-		Parameters:
-			name (optional): The name (as a string) of the person you are interested in
-		"""
+        Parameters:
+            name (optional): The name (as a string) of the person you are interested in
+        """
         value = self._raw_messages(name)
         if type(value) is int:
             print(value)
@@ -41,12 +41,12 @@ class ConvoReader():
 
     def words(self, name=None):
         """Number of words for people in the chat
-		Parameters:
-			name (optional): The name (as a string) of the person you are interested in
-		Return:
-			A number if name is not passed, otherwise a Counter object storing the number
-			of words as values paired with names of people as keys.
-		"""
+        Parameters:
+            name (optional): The name (as a string) of the person you are interested in
+        Return:
+            A number if name is not passed, otherwise a Counter object storing the number
+            of words as values paired with names of people as keys.
+        """
         value = self._raw_words(name)
         if type(value) is int:
             print(value)
@@ -57,12 +57,12 @@ class ConvoReader():
 
     def ave_words(self, name=None):
         """Average number of words for people in the chat
-		Parameters:
-			name (optional): The name (as a string) of the person you are interested in
-		Return:
-			A number if name is not passed, otherwise a Counter object storing the average
-			number of words as values paired with names of people as keys.
-		"""
+        Parameters:
+            name (optional): The name (as a string) of the person you are interested in
+        Return:
+            A number if name is not passed, otherwise a Counter object storing the average
+            number of words as values paired with names of people as keys.
+        """
         value = self._raw_ave_words(name)
         if type(value) is float:
             print(value)
@@ -73,13 +73,13 @@ class ConvoReader():
 
     def frequency(self, person=None, word=None, limit=True):
         """Frequency of words for people in the chat
-		Parameters:
-			person (optional): The name (as a string) of the person you are interested in
-			word (optional): The word (as a string) you are interested in
-			limit (optional): bool or int. If int desplays maximum that many words, 
-				if false desplays all words, if true desplays top 10. Should only be used
-				if word is left out, and is ignored if a value for word is given
-		"""
+        Parameters:
+            person (optional): The name (as a string) of the person you are interested in
+            word (optional): The word (as a string) you are interested in
+            limit (optional): bool or int. If int desplays maximum that many words,
+                if false desplays all words, if true desplays top 10. Should only be used
+                if word is left out, and is ignored if a value for word is given
+        """
         try:
             assert type(limit) in [type(True), type(False), int], "limit must be an int or boolean"
             value = self._raw_frequency(person=person, word=word)
@@ -136,10 +136,10 @@ class ConvoReader():
 
     def print_msgs_graph(self, contact=None, start=None, end=None):
         """Prettily prints to the screen the message history of a chat
-		Parameter:
-			contact (optional): the name (as a string) of the person you are interested in.
-				(default: all contacts)
-		"""
+        Parameter:
+            contact (optional): the name (as a string) of the person you are interested in.
+                (default: all contacts)
+        """
         try:
             msgs_freq = self._msgs_graph(contact)
             passed = self.__assert_dates(start, end)
@@ -179,7 +179,7 @@ class ConvoReader():
 
     def msgs_by_weekday(self):
         """Prints out chat frequency by day of week
-		"""
+        """
         by_weeday = self._raw_msgs_by_weekday()
         for day, freq in enumerate(by_weeday):
             print("{0}: {1}%".format(CustomDate.days_of_week[day], str(freq * 100)[:5]))
@@ -187,11 +187,11 @@ class ConvoReader():
 
     def print_msgs_by_day(self, window=60, contact=None, threshold=None):
         """Prints to the screen a graphical result of msgs_by_day
-		Parameters:
-			window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
-			contact (optional): The contact you are interested in. (default, all contacts)
-			threshold (optional): The minimum threshold needed to print one '#'
-		"""
+        Parameters:
+            window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
+            contact (optional): The contact you are interested in. (default, all contacts)
+            threshold (optional): The minimum threshold needed to print one '#'
+        """
         try:
             frequencies = self._msgs_by_day(window, contact)
         except AssertionError as e:
@@ -267,12 +267,12 @@ class ConvoReader():
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
-		Parameters:
-			name (optional): The name (as a string) of the person you are interested in
-		Return:
-			A number if name is not passed, otherwise a Counter object storing the number
-			of mesages as values paired with names of people as keys.
-		"""
+        Parameters:
+            name (optional): The name (as a string) of the person you are interested in
+        Return:
+            A number if name is not passed, otherwise a Counter object storing the number
+            of mesages as values paired with names of people as keys.
+        """
         if name is None:
             return self.__msgs_per_person()
         else:
@@ -280,12 +280,12 @@ class ConvoReader():
 
     def _raw_words(self, name=None):
         """Number of words for people in the chat
-		Parameters:
-			name (optional): The name (as a string) of the person you are interested in
-		Return:
-			A number if name is not passed, otherwise a Counter object storing the number
-			of words as values paired with names of people as keys.
-		"""
+        Parameters:
+            name (optional): The name (as a string) of the person you are interested in
+        Return:
+            A number if name is not passed, otherwise a Counter object storing the number
+            of words as values paired with names of people as keys.
+        """
 
         if name is None:
             return self.__words_per_person()
@@ -294,12 +294,12 @@ class ConvoReader():
 
     def _raw_ave_words(self, name=None):
         """Average number of words for people in the chat
-		Parameters:
-			name (optional): The name (as a string) of the person you are interested in
-		Return:
-			A number if name is not passed, otherwise a Counter object storing the average
-			number of words as values paired with names of people as keys.
-		"""
+        Parameters:
+            name (optional): The name (as a string) of the person you are interested in
+        Return:
+            A number if name is not passed, otherwise a Counter object storing the average
+            number of words as values paired with names of people as keys.
+        """
 
         if name is None:
             return self.__ave_words_per_person()
@@ -316,13 +316,13 @@ class ConvoReader():
 
     def _msgs_graph(self, contact=None):
         """The raw data used by print_msgs_graph to display message graphs
-		Parameters:
-			contact (optional): the name (as a string) of the person you are interested in
-				(default: all contacts)
-		Return:
-			A 2D list with inner lists being of length 2 lists and storing a day as element 0
-			and the number of total messages sent that day as element 1
-		"""
+        Parameters:
+            contact (optional): the name (as a string) of the person you are interested in
+                (default: all contacts)
+        Return:
+            A 2D list with inner lists being of length 2 lists and storing a day as element 0
+            and the number of total messages sent that day as element 1
+        """
         contact = self.__assert_contact(contact)
 
         if contact is not None:
@@ -346,15 +346,15 @@ class ConvoReader():
 
     def _msgs_by_day(self, window=60, contact=None):
         """The percent of conversation by time of day
-		Parameters:
-			window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
-			contact (optional): The contact you are interested in. (default, all contacts)
-		Return:
-			a list containing average frequency of chatting by 
-			times in days, starting at 12:00 am. Default window is 60 minute 
-			interval.If time less than the passed window is left at the end,
-			it is put at the end of the list
-		"""
+        Parameters:
+            window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
+            contact (optional): The contact you are interested in. (default, all contacts)
+        Return:
+            a list containing average frequency of chatting by
+            times in days, starting at 12:00 am. Default window is 60 minute
+            interval.If time less than the passed window is left at the end,
+            it is put at the end of the list
+        """
         contact = self.__assert_contact(contact)
 
         if contact is not None:
@@ -363,11 +363,12 @@ class ConvoReader():
             filt = lambda x: True
 
         total_msgs = 0
-        msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(ceil(60 * 24 // window))]
+        msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(ceil(60 * 24 / window))]
 
         for person, msg, date in self.convo:
             if filt(person.lower()):
-                msg_bucket[(int(date.minutes() // window) % (len(msg_bucket) - 1))][1] += 1
+                index = (date.minutes() // window) % (len(msg_bucket))
+                msg_bucket[index][1] += 1
                 total_msgs += 1
         for i in range(len(msg_bucket)):
             msg_bucket[i][1] /= (total_msgs / 100)
@@ -375,20 +376,20 @@ class ConvoReader():
 
     def _raw_frequency(self, person=None, word=None):
         """Frequency of words for people in the chat
-		Parameters:
-			person (optional): The name (as a string) of the person you are interested in
-			word (optional): The word (as a string) you are interested in
-		Return:
-			There are 4 different return types depending on the arguments passed:
-			Yes person and Yes word: the number of times the specified person has 
-				said the specified word
-			Yes person and No word: A counter object representing the frequency of words
-				for the specified person
-			No person and Yes word: The number of times the specified word has been said by 
-				anyone in the chat
-			No person and No word: A dictionary with keys being the names of people in the conversation
-				and values being counter objects with frequency of words
-		"""
+        Parameters:
+            person (optional): The name (as a string) of the person you are interested in
+            word (optional): The word (as a string) you are interested in
+        Return:
+            There are 4 different return types depending on the arguments passed:
+            Yes person and Yes word: the number of times the specified person has
+                said the specified word
+            Yes person and No word: A counter object representing the frequency of words
+                for the specified person
+            No person and Yes word: The number of times the specified word has been said by
+                anyone in the chat
+            No person and No word: A dictionary with keys being the names of people in the conversation
+                and values being counter objects with frequency of words
+        """
         if person is not None:
             person = person.lower()
             assert person in self.name, "\"{0}\" is not in this conversation".format(person.title())
@@ -410,8 +411,8 @@ class ConvoReader():
 
     def _raw_msgs_by_weekday(self):
         """Returns a list containing frequency of chatting by days
-		of week, ordered by index, with 0 being Monday and 6 Sunday
-		"""
+        of week, ordered by index, with 0 being Monday and 6 Sunday
+        """
         weekday_freq = [0 for i in range(7)]
         check = self.dates[0]
         msgs = 0
@@ -528,8 +529,8 @@ class ConvoReader():
 
     def __str__(self):
         """Returns a string with the alphabetically sorted names of people
-		in this conversation
-		"""
+        in this conversation
+        """
         return "Converation for " + self.name.title()
 
     def __repr__(self):

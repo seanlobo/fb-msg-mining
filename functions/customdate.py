@@ -51,7 +51,8 @@ class CustomDate():
 
     def minutes(self):
         minutes = self.time[:-2]
-        minutes = int(minutes[:minutes.find(':')]) * 60 + int(minutes[minutes.find(':') + 1:])
+        minutes = (int((minutes[:minutes.find(':')])) % 12) \
+                  * 60 + int(minutes[minutes.find(':') + 1:])
         if 'pm' in self.time:
             minutes += 12 * 60
         return minutes
@@ -68,7 +69,7 @@ class CustomDate():
         mins = str(minutes % 60)
         if len(mins) == 1:
             mins = '0' + mins
-        return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes > 12 * 60 else 'am')
+        return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes >= 12 * 60 else 'am')
 
     def __add__(self, other):
         if type(other) is not int:
@@ -84,4 +85,4 @@ class CustomDate():
         return self.full_date
 
     def __repr__(self):
-        return "CustomDate({0})".format(self.full_date)
+        return "CustomDate({0})".format(repr(self.full_date))
