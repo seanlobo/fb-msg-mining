@@ -4,14 +4,13 @@ import re
 
 from functions.customdate import CustomDate
 from functions.filter_messages import get_words, write_to_files, write_to_file_total
+from functions import emojis
 
 
 class ConvoReader():
     def __init__(self, convo_name, convo_list):
         self.name = convo_name.lower()
-        self.convo = [[name.lower(), msg, CustomDate(date)] for name, msg, date in convo_list]
-        self.msgs = [msg for name, msg, date in self.convo]
-        self.dates = [date for name, msg, date in self.convo]
+        self.convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
         self.people = sorted(self.name.split(', '))
         self.individual_words = get_words(self)
         self.len = len(self.convo)
@@ -129,6 +128,26 @@ class ConvoReader():
                     i += 1
                 print(string)
                 print()
+
+    def characters(self):
+        res = Counter()
+        for person, msg, date in self.convo:
+            res.update(msg)
+        return res
+
+    def emojis(self):
+        chars = self.characters()
+        res = Counter()
+        for key, val in chars.most_common():
+            if '\\U000' in repr(key) and key is not None:
+                try:
+                    res[emojis.src_to_emoiji(key)] = val
+                except KeyError:
+                    res[key] = val
+        return res
+
+    def get_emoji(self, text):
+        return emojis.src_to_emoiji(text)
 
     def prettify(self):
         """Prints a "pretty" version of the conversation history"""
@@ -330,8 +349,8 @@ class ConvoReader():
         else:
             filt = lambda x: True
 
-        start = self.dates[0]
-        end = self.dates[-1]
+        start = self.convo[0][2]
+        end = self.convo[-1][2]
         days = end - start
 
         msg_freq = [[None, 0] for i in range(days + 1)]
@@ -414,7 +433,7 @@ class ConvoReader():
         of week, ordered by index, with 0 being Monday and 6 Sunday
         """
         weekday_freq = [0 for i in range(7)]
-        check = self.dates[0]
+        check = self.convo[0][2]
         msgs = 0
         for person, msg, date in self.convo:
             if check - date == 0:

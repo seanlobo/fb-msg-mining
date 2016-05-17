@@ -1,10 +1,9 @@
 
 from functions.convoreader import ConvoReader
-from functions.customdate import CustomDate
 
 
 # noinspection PyPep8,PyPep8,PyPep8
-class MessageReader():
+class MessageReader:
 
     def __init__(self):
         with open('data/data.txt', mode='r', encoding='UTF8') as f:
