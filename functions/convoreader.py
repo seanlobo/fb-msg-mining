@@ -141,9 +141,20 @@ class ConvoReader():
         for key, val in chars.most_common():
             if '\\U000' in repr(key) and key is not None:
                 try:
-                    res[emojis.src_to_emoiji(key)] = val
+                    temp_emoji = emojis.src_to_emoiji(key)
+                    if temp_emoji in res:
+                        res[temp_emoji] += val
+                    else:
+                        res[temp_emoji] = val
                 except KeyError:
                     res[key] = val
+            else:
+                for unicode_emoji in emojis.UNICODE_EMOJI:
+                    if unicode_emoji == key:
+                        if key in res:
+                            res[key] += val
+                        else:
+                            res[key] = val
         return res
 
     def get_emoji(self, text):

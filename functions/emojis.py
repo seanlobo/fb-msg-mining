@@ -1517,7 +1517,7 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000fe367': u'SYMPATHETIC FACE',
     u'\U000fe364': u'UPSIDE DOWN FACE',
     u'\U000fe365': u'INJURED FACE',
-    u'\U000fe34a': u'HAPPY AND CRYING CAT FACE',
+    u'\U000fe34a': u'CRYING CAT FACE',
     u'\U000fe34b': u'CAT FACE KISSING',
     u'\U000fe348': u'CAT FACE WITH OPEN MOUTH',
     u'\U000fe349': u'HAPPY CAT FACE WITH GRIN',
@@ -2051,21 +2051,38 @@ def caps_to_underscores(string):
     return string.lower().replace(' ', '_')
 
 
-def src_to_emoiji(code):
+def emojify(message):
+    """Replaces python src codes with their corresponding emoji, if found"""
+    if '\\' in repr(message):
+        for key in SRC_CODES_TO_CAP_NAME:
+            message = message.replace(key, src_to_emoiji(key))
+    return message
+
+
+
+def src_to_emoiji(code, safe=True):
     """Takes in a python src encoding in UTF8 of an emoji, and returns the emoji
     as a string if it exists in the above dictionary, otherwise the value passed
     as default
     """
     try:
         name = caps_to_underscores(SRC_CODES_TO_CAP_NAME.get(code))
-    except AttributeError:
-        name = None
-    if name is None:
-        return code
-    return EMOJI_UNICODE[
-        ':' + name + ':']
+        return EMOJI_UNICODE[':' + name + ':']
+    except (AttributeError, KeyError) as e:
+        if safe:
+            return code
+        else:
+            raise e
 
-def emoji_to_src(emoji):
+
+
+def emoji_to_src(emoji, safe=True):
     """Takes in an emoji as a string and returns the python src encoding string"""
-    emoji = UNICODE_EMOJI[emoji].strip(':')
-    return NAMES_TO_CODES[emoji.upper().replace('_', ' ')]
+    try:
+        emoji = UNICODE_EMOJI[emoji].strip(':')
+        return NAMES_TO_CODES[emoji.upper().replace('_', ' ')]
+    except (AttributeError, KeyError) as e:
+        if safe:
+            return emoji
+        else:
+            raise e
