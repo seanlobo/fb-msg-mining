@@ -1479,10 +1479,10 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000fe32b': u'FACE SAVOURING DELICIOUS FOOD',
     u'\U000fe328': u'FACE WITH LOOK OF TRIUMPH',
     u'\U000fe329': u'FACE WITH STUCK-OUT TONGUE AND WINKING EYE',
-    u'\U000fe32e': u'FACE WITH MASK',
+    u'\U000fe32e': u'FACE WITH MEDICAL MASK',
     u'\U000fe32f': u'FLUSHED FACE',
     u'\U000fe32c': u'FACE THROWING A KISS',
-    u'\U000fe32d': u'FACE KISSING',
+    u'\U000fe32d': u'KISSING FACE WITH CLOSED EYES',
     u'\U000fe322': u'ASTONISHED FACE',
     u'\U000fe323': u'DISAPPOINTED FACE',
     u'\U000fe320': u'ANGRY FACE',
@@ -1499,14 +1499,14 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000fe33f': u'CONFOUNDED FACE',
     u'\U000fe33c': u'PERSEVERING FACE',
     u'\U000fe33d': u'POUTING FACE',
-    u'\U000fe332': u'HAPPY FACE WITH OPEN MOUTH AND CLOSED EYES',
-    u'\U000fe333': u'HAPPY FACE WITH GRIN',
-    u'\U000fe330': u'HAPPY FACE WITH OPEN MOUTH',
-    u'\U000fe331': u'HAPPY FACE WITH OPEN MOUTH AND COLD SWEAT',
+    u'\U000fe332': u'SMILING FACE WITH OPEN MOUTH AND TIGHTLY-CLOSED EYES',
+    u'\U000fe333': u'GRINNING FACE WITH SMILING EYES',
+    u'\U000fe330': u'SMILING FACE WITH OPEN MOUTH',
+    u'\U000fe331': u'SMILING FACE WITH OPEN MOUTH AND COLD SWEAT',
     u'\U000fe336': u'WHITE SMILING FACE',
     u'\U000fe337': u'HAPPY FACE',
     u'\U000fe334': u'FACE WITH TEARS OF JOY',
-    u'\U000fe335': u'HAPPY FACE WITH WIDE MOUTH AND RAISED EYEBROWS',
+    u'\U000fe335': u'SMILING FACE WITH SMILING EYES',
     u'\U000fe368': u'THIN FACE',
     u'\U000fe369': u'ROBOT',
     u'\U000fe362': u'FACE WITH SLANTED MOUTH',
@@ -1517,7 +1517,7 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000fe367': u'SYMPATHETIC FACE',
     u'\U000fe364': u'UPSIDE DOWN FACE',
     u'\U000fe365': u'INJURED FACE',
-    u'\U000fe34a': u'CRYING CAT FACE',
+    u'\U000fe34a': u'CAT FACE WITH TEARS OF JOY',
     u'\U000fe34b': u'CAT FACE KISSING',
     u'\U000fe348': u'CAT FACE WITH OPEN MOUTH',
     u'\U000fe349': u'HAPPY CAT FACE WITH GRIN',
@@ -1543,7 +1543,7 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000fe35d': u'HUG FACE',
     u'\U000fe352': u'FACE WITH OK GESTURE',
     u'\U000fe353': u'PERSON BOWING DEEPLY',
-    u'\U000fe350': u'ANGUISHED CAT FACE',
+    u'\U000fe350': u'WEARY CAT FACE',
     u'\U000fe351': u'FACE WITH NO GOOD GESTURE',
     u'\U000fe356': u'HEAR-NO-EVIL MONKEY',
     u'\U000fe357': u'PERSON RAISING ONE HAND',
@@ -1556,7 +1556,7 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000feafa': u'BLACK RIGHTWARDS ARROW',
     u'\U000feb07': u'WAVY DASH',
     u'\U000feb8f': u'BOOKMARK',
-    u'\U000feb5c': u'DROP OF WATER',
+    u'\U000feb5c': u'DROPLET',
     u'\U000feafb': u'LEFTWARDS BLACK ARROW',
     u'\U000feb00': u'DOWN-POINTING SMALL RED TRIANGLE',
     u'\U000feb85': u'LEFT-POINTING MAGNIFYING GLASS',
@@ -1607,11 +1607,11 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000fe83a': u'MOBILE PHONE OFF',
     u'\U000fe83b': u'KEYCAP TEN',
     u'\U000fe834': u'KEYCAP 7',
-    u'\U000fe835': u'KEYCAP 8',
-    u'\U000fe836': u'KEYCAP 9',
-    u'\U000fe837': u'KEYCAP 0',
+    u'\U000fe835': u'keycap_digit_eight',
+    u'\U000fe836': u'keycap_digit_nine',
+    u'\U000fe837': u'keycap_digit_zero',
     u'\U000fe830': u'KEYCAP 3',
-    u'\U000fe831': u'KEYCAP 4',
+    u'\U000fe831': u'KEYCAP DIGIT FOUR',
     u'\U000fe832': u'KEYCAP 5',
     u'\U000fe833': u'KEYCAP 6',
     u'\U000fe80c': u'DIRECT HIT',
@@ -1752,10 +1752,10 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000feaf9': u'DOWNWARDS BLACK ARROW',
     u'\U000fe4e9': u'REGIONAL INDICATOR SYMBOL LETTERS IT',
     u'\U000fe4e8': u'REGIONAL INDICATOR SYMBOL LETTERS DE',
-    u'\U000fe4eb': u'REGIONAL INDICATOR SYMBOL LETTERS ES',
+    u'\U000fe4eb': u'flag_for_Estonia',
     u'\U000fe4ea': u'REGIONAL INDICATOR SYMBOL LETTERS GB',
     u'\U000fe4ed': u'REGIONAL INDICATOR SYMBOL LETTERS CN',
-    u'\U000fe4ec': u'REGIONAL INDICATOR SYMBOL LETTERS RU',
+    u'\U000fe4ec': u'flag_for_Russia',
     u'\U000fe4ef': u'CAMERA',
     u'\U000fe4ee': u'REGIONAL INDICATOR SYMBOL LETTERS KR',
     u'\U000fe4e1': u'CREDIT CARD',
@@ -1764,8 +1764,8 @@ SRC_CODES_TO_CAP_NAME = {
     u'\U000fe4e2': u'BANKNOTE WITH YEN SIGN',
     u'\U000fe4e5': u'REGIONAL INDICATOR SYMBOL LETTERS JP',
     u'\U000fe4e4': u'MONEY WITH WINGS',
-    u'\U000fe4e7': u'REGIONAL INDICATOR SYMBOL LETTERS FR',
-    u'\U000fe4e6': u'REGIONAL INDICATOR SYMBOL LETTERS US',
+    u'\U000fe4e7': u'flag_for_France',
+    u'\U000fe4e6': u'flag_for_United_States',
     u'\U000fe4f9': u'VIDEO CAMERA',
     u'\U000fe4f8': u'SIX POINTED STAR WITH MIDDLE DOT',
     u'\U000fe4fb': u'ELECTRIC TORCH',
@@ -2045,6 +2045,8 @@ NAMES_TO_CODES = {val: key for key, val in SRC_CODES_TO_CAP_NAME.items()}
 # SRC_CODES_TO_CAP_NAME
 # NAMES_TO_CODES
 
+def underscores_to_caps(string):
+    return string.upper().replace('_', ' ')
 
 def caps_to_underscores(string):
     """Converts a string to lowercase and replaces spaces with underscores"""
@@ -2066,9 +2068,11 @@ def src_to_emoiji(code, safe=True):
     as default
     """
     try:
-        name = caps_to_underscores(SRC_CODES_TO_CAP_NAME.get(code))
+        name = SRC_CODES_TO_CAP_NAME.get(code)
+        if '_' not in name:
+            name = caps_to_underscores(name)
         return EMOJI_UNICODE[':' + name + ':']
-    except (AttributeError, KeyError) as e:
+    except (AttributeError, KeyError, TypeError) as e:
         if safe:
             return code
         else:
