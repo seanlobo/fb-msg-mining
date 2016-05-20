@@ -12,6 +12,14 @@ class CustomDate():
     days_of_week = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 
     def __init__(self, date_str):
+        """Constructor for CustomDate object. has following fields:
+        String full_date   : the full date of this object, e.g. Wednesday, April 13, 2016 at 11:54pm PDT
+        String week_day    : the day of the week e.g. Monday
+        String time        : the time e.g. 11:54pm
+        String time_zone   : the time zone e.g. PDT
+        datetime.date date : a date object representation of the year, month and day
+            e.g. datetime.date(2016, 4, 13)
+        """
         if type(date_str) is type(self):
             date_str = date_str.full_date
         self.full_date = date_str
@@ -86,3 +94,43 @@ class CustomDate():
 
     def __repr__(self):
         return "CustomDate({0})".format(repr(self.full_date))
+
+    def __lt__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        if self.date < other.date:
+            return True
+        elif self.date == other.date:
+            if self.minutes() < other.minutes():
+                return True
+        return False
+
+    def __le__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        if self.date < other.date:
+            return True
+        elif self.date == other.date:
+            if self.minutes() <= other.minutes():
+                return True
+        return False
+
+    def __gt__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        if self.date > other.date:
+            return True
+        elif self.date == other.date:
+            if self.minutes() > other.minutes():
+                return True
+        return False
+
+    def __ge__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        if self.date > other.date:
+            return True
+        elif self.date == other.date:
+            if self.minutes() >= other.minutes():
+                return True
+        return False
