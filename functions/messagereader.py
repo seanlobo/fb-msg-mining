@@ -1,5 +1,6 @@
 
 from functions.convoreader import ConvoReader
+from functions.customdate import CustomDate
 
 
 # noinspection PyPep8,PyPep8,PyPep8
@@ -10,33 +11,37 @@ class MessageReader:
             self.data = eval(f.readline())
             self.download = f.readline()
         self.names = self._get_convo_names_freq()
-        self.names_alpha = self._get_convo_names_alpha()
 
-    def get_convo_names(self, alpha=False):
+    def get_convo_names(self, by_recent=False):
         """Returns a list of lists, where each inner list is
         the members of a conversation. By default is arranged
         with most active chat first in decreasing order, but
         can pass alpha=True to order by alphabetical
         Parameters:
-            alpha (optional): False by default, in which case conversation names are
+            by_recent (optional): False by default, in which case conversation names are
                 returned in order of most frequent first, and then alphabetical. If True
-                conversations names are ranked in order of alphabetical first
+                conversations names are ranked in order of most recent chat first
         """
-        if alpha:
+        if not by_recent:
             return self.names
         else:
-            return self.names_alpha
+            return sorted(self.names, key=lambda name: CustomDate(self.data[name][-1][2]), reverse=True)
 
-    def print_names(self, limit=None):
-        """Prints to screen conversation names in order of most
-        active to least active"""
+    def print_names(self, limit=None, by_recent=False):
+        """Prints to screen conversation names
+        Parameters:
+            by_recent (optional): False by default, in which case conversation names are
+                printed in order of frequency, with highest frequencies first. If True then
+                conversations are printed in order of most recently contacted first
+            limit (optional): The number of conversations to print to the screen, if left
+                as default then all are printed
+            """
         i = 1
-        for name in self.names:
+        for name in self.get_convo_names(by_recent):
             print(str(i) + ": " + name)
             i += 1
             if limit is not None and i > limit:
                 break
-
 
     def get_convo(self, people):
         """Returns a ConvoReader object representing the conversation
@@ -71,9 +76,6 @@ class MessageReader:
             sorted([(key, len(val)) for key, val in self.data.items()],
                     key=lambda x: (-x[1], x[0]))]
 
-    def _get_convo_names_alpha(self):
-        names = [name.split(', ') for name in self.data.keys()]
-        return sorted([sorted(ele) for ele in names])
 
     def _contents_equal(self, lst1, lst2):
         if len(lst1) != len(lst2):
