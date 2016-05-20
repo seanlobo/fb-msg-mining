@@ -130,6 +130,7 @@ class ConvoReader():
                 print()
 
     def characters(self, person=None):
+        """Returns character frequency in conversation in a Counter object"""
         if person is not None:
             assert type(person) is str, "Optional parameter person must be a string"
             person = person.lower()
@@ -142,6 +143,11 @@ class ConvoReader():
         return res
 
     def emojis(self, person=None):
+        """Returns emojis frequency for conversation in a Counter object
+        Parameter:
+            person (optional): the name of the person whose emojis you would like. If left to default
+                None, an aggregate total for the conversation is returned
+        """
         chars = self.characters(person)
         res = Counter()
         for key, val in chars.most_common():
@@ -164,6 +170,9 @@ class ConvoReader():
         return res
 
     def get_emoji(self, text):
+        """Returns the emoji corresponding to the src value passed,
+        or the string passed if appropriate emojis isn't found
+        """
         return emojis.src_to_emoiji(text)
 
     def prettify(self):
@@ -280,6 +289,7 @@ class ConvoReader():
             print("You already created this directory. It is located at {0}".format(self.path))
 
     def save_word_freq_total(self):
+        """Saves to a file the aggregate word frequency of the chat"""
         dir_name = ""
         for person in self.people:
             split = person.split(' ')
