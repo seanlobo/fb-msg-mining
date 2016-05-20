@@ -129,14 +129,20 @@ class ConvoReader():
                 print(string)
                 print()
 
-    def characters(self):
+    def characters(self, person=None):
+        if person is not None:
+            assert type(person) is str, "Optional parameter person must be a string"
+            person = person.lower()
+            assert person in self.people, "The person you said isn't in this conversation; this conversatin is for" \
+                                          " {0}".format(str(self.people))
         res = Counter()
-        for person, msg, date in self.convo:
-            res.update(msg)
+        for pers, msg, date in self.convo:
+            if person is None or pers == person:
+                res.update(msg)
         return res
 
-    def emojis(self):
-        chars = self.characters()
+    def emojis(self, person=None):
+        chars = self.characters(person)
         res = Counter()
         for key, val in chars.most_common():
             if '\\U000' in repr(key) and key is not None:
