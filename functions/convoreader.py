@@ -1,3 +1,4 @@
+from colorama import init
 from collections import Counter
 from math import ceil
 import re
@@ -5,6 +6,9 @@ import re
 from functions.customdate import CustomDate
 from functions.filter_messages import get_words, write_to_files, write_to_file_total
 from functions import emojis
+
+
+init(autoreset=True)
 
 
 class ConvoReader():

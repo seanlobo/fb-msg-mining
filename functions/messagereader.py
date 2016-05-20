@@ -1,9 +1,9 @@
+from collections import Counter
 
 from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
 
 
-# noinspection PyPep8,PyPep8,PyPep8
 class MessageReader:
 
     def __init__(self):
@@ -11,6 +11,7 @@ class MessageReader:
             self.data = eval(f.readline())
             self.download = f.readline()
         self.names = self._get_convo_names_freq()
+        self.person = join(self.download.split(' ')[2:-8], split=" ")
 
     def get_convo_names(self, by_recent=False):
         """Returns a list of lists, where each inner list is
@@ -71,11 +72,22 @@ class MessageReader:
         print("You haven't talked with {0} before".format(people))
         return None
 
+    def total_emojis(self, only_me=True):
+        res = Counter()
+        for i in range(1, len(self) + 1):
+            try:
+                if only_me:
+                    res += self.get_convo(i).emojis(person=self.person)
+                else:
+                    res += self.get_convo(i).emojis()
+            except AssertionError:
+                pass
+        return res
+
     def _get_convo_names_freq(self):
         return [ele for ele, _ in
             sorted([(key, len(val)) for key, val in self.data.items()],
                     key=lambda x: (-x[1], x[0]))]
-
 
     def _contents_equal(self, lst1, lst2):
         if len(lst1) != len(lst2):
@@ -84,6 +96,7 @@ class MessageReader:
             if ele not in lst2:
                 return False
         return True
+
 
     def __len__(self):
         return len(self.names)
@@ -95,3 +108,8 @@ class MessageReader:
         return 'MessageReader()'
 
 
+def join(lst, split=""):
+    res = ""
+    for i in range(len(lst) - 1):
+        res += str(lst[i]) + split
+    return res + lst[-1]
