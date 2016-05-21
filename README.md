@@ -9,6 +9,11 @@ To install dependencies run:
 
 ## Step 1:
 
+Run `git clone https://github.com/seanlobo/fb-msg-mining.git` where you would like to clone the project
+
+
+## Step 2:
+
 Request a copy of your Facebook data:
 
 Go to Facebook and click on Settings -> "Download a copy" link near the middle of the page.
@@ -16,37 +21,18 @@ You'll need to put in your facebook password in order to request the download, a
 recieve an email from facebook immediately, sent to the email you used when signing up.
 
 
-## Step 2:
+## Step 3:
 
 When you get an email with the download link, use the link emailed to you by facebook 
 to download a copy of your data
 
 
-## Step 3:
-
-Extract the zip you get and put `html/messages.htm` in a location you have access to. 
-
-
 ## Step 4:
 
-Run `git clone https://github.com/seanlobo/fb-msg-mining.git` where you would like to clone the project
+Extract the zip you get and move the `html` folder inside the project folder
 
 
 ## Step 5:
-
-Rename `paths.txt.examples` --> `paths.txt`
-
-
-## Step 6:
-
-Add the absolute path to `html/messages.htm` to `paths.txt`
-
-Create a directory where you would like to store all of you facebook data, and create a 
-`data.txt` file inside that directory
-Add the absolute path to `data.txt` to `paths.txt`
-
-
-## Step 7:
 
 Run `python3 main.py`
 
