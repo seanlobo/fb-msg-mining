@@ -2,9 +2,10 @@ from colorama import init
 from collections import Counter
 from math import ceil
 import re
+import os
 
 from functions.customdate import CustomDate
-from functions.filter_messages import get_words, write_to_files, write_to_file_total
+#from functions.filter_messages import get_words, write_to_files, write_to_file_total
 from functions import emojis
 
 
@@ -16,7 +17,7 @@ class ConvoReader():
         self.name = convo_name.lower()
         self.convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
         self.people = sorted(self.name.split(', '))
-        self.individual_words = get_words(self)
+        self.individual_words = self._cleaned_word_freqs()
         self.len = len(self.convo)
         self.path = 'data/'
 
@@ -287,33 +288,28 @@ class ConvoReader():
             name = dir_name[:255]
         else:
             name = dir_name
-        try:
-            write_to_files(self.individual_words, self.path, name)
-        except FileExistsError:
-            print("You already created this directory. It is located at {0}".format(self.path))
 
-    def save_word_freq_total(self):
-        """Saves to a file the aggregate word frequency of the chat"""
-        dir_name = ""
-        for person in self.people:
-            split = person.split(' ')
+        os.makedirs(self.path + name, exist_ok=True)
+        for person, counter in self.individual_words.items():
+            split = person.split()
+            pers = ''
             for i in range(len(split) - 1):
-                dir_name += split[i]
-                dir_name += '-'
-            dir_name += split[-1]
-            dir_name += '_'
-        dir_name = dir_name[:-1]
-        if len(dir_name) > 255:
-            name = dir_name[:255]
-        else:
-            name = dir_name
+                pers += split[i]
+                pers += '-'
+            pers += split[-1]
+            with open(self.path + name + '/' + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
+                lst = []
+                for key, val in counter.items():
+                    lst.append((key, val))
+                for key, val in sorted(lst, key=lambda x: x[1], reverse=True):
+                    f.write("{0}: {1}".format(key, val) + "\n")
         count = Counter()
         for key, val in self.individual_words.items():
             count += val
-        try:
-            write_to_file_total(count, self.path, name)
-        except FileExistsError:
-            print("You already created this directory. It is located at {0}".format(self.path))
+        with open(self.path + name + '/' + 'total.txt', mode='w', encoding='utf-8') as f:
+            for key, val in count.most_common():
+                f.write("{0}: {1}".format(key, val) + "\n")
+
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
@@ -474,6 +470,32 @@ class ConvoReader():
                 msgs = 1
 
         return [day / sum(weekday_freq) for day in weekday_freq]
+
+    def _raw_word_freqs(self):
+        """Returns a dictionary that maps names of people in the conversation
+        to a Counter object of their raw word frequencies
+        """
+        raw_word_freq = dict()
+        for person, msg, date in self.convo:
+            if person not in raw_word_freq:
+                raw_word_freq[person] = Counter()
+            raw_word_freq[person].update(msg.lower().split(' '))
+        return raw_word_freq
+
+    def _cleaned_word_freqs(self):
+        raw_words = self._raw_word_freqs()
+        cleaned_words = dict()
+        for key, val in raw_words.items():
+            cleaned_words[key] = Counter()
+            for word, freq in val.most_common():
+                striped_word = word.strip('.!123456789-+?><}{][()\'\""\\ /*#$%^&#@,')
+                if striped_word < 'z' * 10:
+                    if '.com' not in striped_word and 'www.' not in striped_word:
+                        if striped_word not in cleaned_words[key]:
+                            cleaned_words[key][striped_word] = freq
+                        else:
+                            cleaned_words[key][striped_word] += freq
+        return cleaned_words
 
     def __msgs_per_person(self):
         res = dict()
