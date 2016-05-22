@@ -20,6 +20,7 @@ class ConvoReader():
         self.len = len(self.convo)
         self.path = 'data/'
         self.preferences = {person: dict() for person in self.people}
+        self.preferences_choices = {'personal': ['Fore'], 'global': ['new_convo_time', 'date_Fore_color']}
 
     def print_people(self):
         """Prints to the screen an alphabetically sorted list of people
@@ -182,7 +183,27 @@ class ConvoReader():
 
     def prettify(self):
         """Prints a "pretty" version of the conversation history"""
-        print('\n' + self._raw_prettify())
+        for person, msg, date in self.convo:
+            # the length of the longest name in self.people
+            max_len = len(max(self.people, key=lambda name: len(name)))
+            padding = ' ' * (max_len - len(person))
+            if 'Fore' in self.preferences[person.lower()]:
+                try:
+                    print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + person.title(),
+                          end=": " + padding)
+                except AttributeError:
+                    print(person.title(), end=": " + padding)
+            else:
+                print(person.title(), end=": " + padding)
+            print(msg, end="")
+            if 'date_Fore_color' in self.preferences:
+                try:
+                    print('Fore.{0}'.format(self.preferences['date_Fore_color']) + " | " + str(date))
+                except AttributeError:
+                    print(" | " + str(date))
+            else:
+                print(" | " + str(date))
+
 
     def print_msgs_graph(self, contact=None, start=None, end=None):
         """Prettily prints to the screen the message history of a chat
@@ -406,14 +427,6 @@ class ConvoReader():
             return self.__ave_words_per_person()
         else:
             return self.__ave_words(name)
-
-    def _raw_prettify(self):
-        """Returns a "pretty" version of the conversation history as a string"""
-        string = ""
-        for name, msg, date in self.convo:
-            string += name.title() + ": " + msg + " | " + str(date)
-            string += '\n'
-        return string
 
     def _msgs_graph(self, contact=None):
         """The raw data used by print_msgs_graph to display message graphs
