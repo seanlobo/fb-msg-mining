@@ -1,11 +1,10 @@
-from colorama import init
+from colorama import init, Fore, Back, Style
 from collections import Counter
 from math import ceil
 import re
 import os
 
 from functions.customdate import CustomDate
-#from functions.filter_messages import get_words, write_to_files, write_to_file_total
 from functions import emojis
 
 
@@ -20,6 +19,7 @@ class ConvoReader():
         self.individual_words = self._cleaned_word_freqs()
         self.len = len(self.convo)
         self.path = 'data/'
+        self.preferences = {person: dict() for person in self.people}
 
     def print_people(self):
         """Prints to the screen an alphabetically sorted list of people
@@ -309,6 +309,62 @@ class ConvoReader():
         with open(self.path + name + '/' + 'total.txt', mode='w', encoding='utf-8') as f:
             for key, val in count.most_common():
                 f.write("{0}: {1}".format(key, val) + "\n")
+
+    def set_preferences(self):
+        """Allows users to choice color preferences and stores values to
+        self.preferences dictionary
+        """
+
+        # The following idea is used in this method
+        # >>> black = 'BLACK'
+        # >>> Fore.BLACK
+        # '\x1b[30m'
+        # >>> eval('Fore.{0}'.format(black))
+        # '\x1b[30m'
+        # >>>
+
+        choice = None
+        while choice != -1:
+            while choice not in [str(ele) for ele in range(-1, len(self.people) + 1)]:
+                print('\n-1) Cancel/Finish preferences')
+                print(' 0) View current preferences\n')
+
+                max_len = len(str(len(self.people))) + 1
+                for i, person in enumerate(self.people):
+                    if 'Fore' in self.preferences[person]:
+                        # is the foreground quality in our preferences?
+                        try: # if so we try to use it. Must put in a try statement
+                            # in case we have bad values (as in a user modified the file)
+                            print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + "{0}) {1}"
+                                  .format(' ' * (max_len - len(str(i + 1))) + str(i + 1), person))
+                        except AttributeError:
+                            # if we have a bad value an attribute error should occur from the eval call
+                            print("{0}) {1}".format(' ' * (max_len - len(str(i + 1))) + str(i + 1), person))
+                            # above print is identical to below in else
+                    else:
+                        print("{0}) {1}".format(' ' * (max_len - len(str(i + 1))) + str(i + 1), person))
+
+                choice = input('\nSelect your option\n> ')
+
+            choice = int(choice)
+            if choice == 0:
+                print(self.preferences)
+            elif choice in range(1, len(self.people) + 1):
+                # Colorama choices supported are below (https://pypi.python.org/pypi/colorama)
+                color_choies = ["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"]
+                color = None
+                while color not in [str(i) for i in range(len(color_choies))]:
+                    print("The following are color choices for the ForeGround for {0}:"
+                          .format(self.people[choice - 1]))
+                    print()
+                    for i in range(len(color_choies)):
+                        print(eval('Fore.{0}'.format(color_choies[i])) + '{0}) {1}'
+                              .format(i, color_choies[i]))
+                    color = input('\nSelect your option\n> ')
+                color = int(color)
+                self.preferences[self.people[choice - 1]]['Fore'] = color_choies[color]
+
+
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
