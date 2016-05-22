@@ -310,7 +310,6 @@ class ConvoReader():
             for key, val in count.most_common():
                 f.write("{0}: {1}".format(key, val) + "\n")
 
-
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
         Parameters:
@@ -490,7 +489,9 @@ class ConvoReader():
             for word, freq in val.most_common():
                 striped_word = word.strip('.!123456789-+?><}{][()\'\""\\ /*#$%^&#@,')
                 if striped_word < 'z' * 10:
-                    if '.com' not in striped_word and 'www.' not in striped_word:
+                    if '.com' not in striped_word and 'www.' not in striped_word\
+                    and 'http' not in striped_word and '.io' not in striped_word\
+                    and '.edu' not in striped_word:
                         if striped_word not in cleaned_words[key]:
                             cleaned_words[key][striped_word] = freq
                         else:
