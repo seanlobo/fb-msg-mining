@@ -4,7 +4,7 @@ from math import ceil
 import re
 import os
 
-from functions.customdate import CustomDate
+from functions.customdate import CustomDate, bsearch_index
 from functions import emojis
 
 
@@ -181,9 +181,28 @@ class ConvoReader():
         """
         return emojis.src_to_emoiji(text)
 
-    def prettify(self):
+    def prettify(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
-        for person, msg, date in self.convo:
+        self.__assert_dates(start, end)
+        if start is not None:
+            start = CustomDate.from_date_string(start)
+            assert start.date >= self.convo[0][2].date, \
+                "Your conversations only begin after {0}".format(self.convo[0][2].full_date)
+            start = bsearch_index(self.convo, start, key=lambda x: x[2])
+        else:
+            start = 0
+        if end is not None:
+            end = CustomDate.from_date_string(end)
+            assert end.date <= self.convo[-1][2].date,\
+                "Your conversations ends on {0}".format(self.convo[-1][2].full_date)
+            end = bsearch_index(self.convo, end, key=lambda x: x[2])
+        else:
+            end = len(self.convo)
+
+
+        #for person, msg, date in self.convo:
+        for i in range(start, end):
+            person, msg, date = self.convo[i]
             # the length of the longest name in self.people
             max_len = len(max(self.people, key=lambda name: len(name)))
             padding = ' ' * (max_len - len(person))
@@ -628,14 +647,14 @@ class ConvoReader():
         assert type(end) in [type(None), str], "End needs to be a date string"
         if type(start) is str:
             r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-            assert r.fullmatch(start) is not None, ("{0} is not a valid date, it must be in the format ".format(start) + \
+            assert r.fullmatch(start) is not None, ("\"{0}\" is not a valid date, it must be in the format ".format(start) + \
                                                     "{month}/{day}/{year}")
             r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
             assert r.fullmatch(
                 start) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
         if type(end) is str:
             r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-            assert r.fullmatch(end) is not None, ("{0} is not a valid date, it must be in the format ".format(end) + \
+            assert r.fullmatch(end) is not None, ("\"{0}\" is not a valid date, it must be in the format ".format(end) + \
                                                   "{month}/{day}/{year}")
             r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
             assert r.fullmatch(end) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
