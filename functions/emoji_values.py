@@ -1,4 +1,5 @@
 # the following list data was grabbed from: https://github.com/carpedm20/emoji.git
+# modifications to the original have been made as necessary
 EMOJI_UNICODE = {
     u':admission_tickets:': u'\U0001F39F',
     u':aerial_tramway:': u'\U0001F6A1',
@@ -1289,6 +1290,7 @@ UNICODE_EMOJI = {v: k for k, v in EMOJI_UNICODE.items()}
 
 
 # the following information was grabbed from: https://github.com/suzukitakafumi/emojicodecs.git
+# Again, modifications have been made from the original
 SRC_CODES_TO_CAP_NAME = {
     u'\U000fe1aa': u'CONSTRUCTION WORKER',
     u'\U000fe1ab': u'PRINCESS',
