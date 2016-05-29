@@ -32,12 +32,25 @@ class CustomDate():
 
     @classmethod
     def from_date(cls, date_obj):
-        date_string = "{0}, {1} {2}, {3} at [unknown-time] [unkown-timezone]".format(
+        year = None
+        if len(str(date_obj.year)) == 2:
+            if date_obj.year <= 17:
+                year = date_obj.year + 2000
+            else:
+                year = date_obj.year + 1900
+        else:
+            year = date_obj.year
+        date_string = "{0}, {1} {2}, {3} at 12:00am PDT".format(
             CustomDate.days_of_week[date_obj.weekday()],
             CustomDate.months_reversed[date_obj.month],
             date_obj.day,
-            date_obj.year)
+            year)
         return cls(date_string)
+
+    @classmethod
+    def from_date_string(cls, date_string):
+        date_lst = [int(ele) for ele in date_string.split('/')]
+        return CustomDate.from_date(date(date_lst[2], date_lst[0], date_lst[1]))
 
     def to_string(self):
         return "{0}/{1}/{2}".format(self.date.month, self.date.day, self.date.year)
@@ -79,6 +92,11 @@ class CustomDate():
             mins = '0' + mins
         return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes >= 12 * 60 else 'am')
 
+    def distance_from(self, other):
+        assert isinstance(other, CustomDate), "You must pass a valid CustomDate object"
+
+
+
     def __add__(self, other):
         if type(other) is not int:
             return NotImplemented
@@ -94,6 +112,14 @@ class CustomDate():
 
     def __repr__(self):
         return "CustomDate({0})".format(repr(self.full_date))
+
+    def __eq__(self, other):
+        if isinstance(other, CustomDate):
+            return False
+        return self.date == other.date and self.minutes() == other.minutes()
+
+    def __hash__(self):
+        return hash(self.full_date)
 
     def __lt__(self, other):
         if type(other) is not type(self):
@@ -134,3 +160,18 @@ class CustomDate():
             if self.minutes() >= other.minutes():
                 return True
         return False
+
+
+def bsearch_index(lst, date, low=0, high=None, key=lambda x:x):
+    if high is None:
+        high = len(lst) - 1
+    mid = (low + high) // 2
+    while key(lst[mid]) != date and mid > low and mid < high:
+        if key(lst[mid]) > date:
+            high = mid - 1
+            mid = (low + high) // 2
+        else:
+            low = mid + 1
+            mid = (low + high) // 2
+
+    return mid

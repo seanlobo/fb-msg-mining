@@ -1,11 +1,11 @@
-from colorama import init
+from colorama import init, Fore, Back, Style
 from collections import Counter
 from math import ceil
 import re
+import os
 
-from functions.customdate import CustomDate
-from functions.filter_messages import get_words, write_to_files, write_to_file_total
-from functions import emojis
+from functions.customdate import CustomDate, bsearch_index
+import functions.emojis as emojis
 
 
 init(autoreset=True)
@@ -16,9 +16,11 @@ class ConvoReader():
         self.name = convo_name.lower()
         self.convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
         self.people = sorted(self.name.split(', '))
-        self.individual_words = get_words(self)
+        self.individual_words = self._cleaned_word_freqs()
         self.len = len(self.convo)
         self.path = 'data/'
+        self.preferences = {person: dict() for person in self.people}
+        self.preferences_choices = {'personal': ['Fore'], 'global': ['new_convo_time', 'date_Fore_color']}
 
     def print_people(self):
         """Prints to the screen an alphabetically sorted list of people
@@ -179,9 +181,48 @@ class ConvoReader():
         """
         return emojis.src_to_emoiji(text)
 
-    def prettify(self):
+    def prettify(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
-        print('\n' + self._raw_prettify())
+        self.__assert_dates(start, end)
+        if start is not None:
+            start = CustomDate.from_date_string(start)
+            assert start.date >= self.convo[0][2].date, \
+                "Your conversations only begin after {0}".format(self.convo[0][2].full_date)
+            start = bsearch_index(self.convo, start, key=lambda x: x[2])
+        else:
+            start = 0
+        if end is not None:
+            end = CustomDate.from_date_string(end)
+            assert end.date <= self.convo[-1][2].date,\
+                "Your conversations ends on {0}".format(self.convo[-1][2].full_date)
+            end = bsearch_index(self.convo, end, key=lambda x: x[2])
+        else:
+            end = len(self.convo)
+
+
+        #for person, msg, date in self.convo:
+        for i in range(start, end):
+            person, msg, date = self.convo[i]
+            # the length of the longest name in self.people
+            max_len = len(max(self.people, key=lambda name: len(name)))
+            padding = ' ' * (max_len - len(person))
+            if 'Fore' in self.preferences[person.lower()]:
+                try:
+                    print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + person.title(),
+                          end=": " + padding)
+                except AttributeError:
+                    print(person.title(), end=": " + padding)
+            else:
+                print(person.title(), end=": " + padding)
+            print(msg, end="")
+            if 'date_Fore_color' in self.preferences:
+                try:
+                    print('Fore.{0}'.format(self.preferences['date_Fore_color']) + " | " + str(date))
+                except AttributeError:
+                    print(" | " + str(date))
+            else:
+                print(" | " + str(date))
+
 
     def print_msgs_graph(self, contact=None, start=None, end=None):
         """Prettily prints to the screen the message history of a chat
@@ -287,33 +328,83 @@ class ConvoReader():
             name = dir_name[:255]
         else:
             name = dir_name
-        try:
-            write_to_files(self.individual_words, self.path, name)
-        except FileExistsError:
-            print("You already created this directory. It is located at {0}".format(self.path))
 
-    def save_word_freq_total(self):
-        """Saves to a file the aggregate word frequency of the chat"""
-        dir_name = ""
-        for person in self.people:
-            split = person.split(' ')
+        os.makedirs(self.path + name, exist_ok=True)
+        for person, counter in self.individual_words.items():
+            split = person.split()
+            pers = ''
             for i in range(len(split) - 1):
-                dir_name += split[i]
-                dir_name += '-'
-            dir_name += split[-1]
-            dir_name += '_'
-        dir_name = dir_name[:-1]
-        if len(dir_name) > 255:
-            name = dir_name[:255]
-        else:
-            name = dir_name
+                pers += split[i]
+                pers += '-'
+            pers += split[-1]
+            with open(self.path + name + '/' + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
+                lst = []
+                for key, val in counter.items():
+                    lst.append((key, val))
+                for key, val in sorted(lst, key=lambda x: x[1], reverse=True):
+                    f.write("{0}: {1}".format(key, val) + "\n")
         count = Counter()
         for key, val in self.individual_words.items():
             count += val
-        try:
-            write_to_file_total(count, self.path, name)
-        except FileExistsError:
-            print("You already created this directory. It is located at {0}".format(self.path))
+        with open(self.path + name + '/' + 'total.txt', mode='w', encoding='utf-8') as f:
+            for key, val in count.most_common():
+                f.write("{0}: {1}".format(key, val) + "\n")
+
+    def set_preferences(self):
+        """Allows users to choice color preferences and stores values to
+        self.preferences dictionary
+        """
+
+        # The following idea is used in this method
+        # >>> black = 'BLACK'
+        # >>> Fore.BLACK
+        # '\x1b[30m'
+        # >>> eval('Fore.{0}'.format(black))
+        # '\x1b[30m'
+        # >>>
+
+        choice = None
+        while choice != -1:
+            while choice not in [str(ele) for ele in range(-1, len(self.people) + 1)]:
+                print('\n-1) Cancel/Finish preferences')
+                print(' 0) View current preferences\n')
+
+                max_len = len(str(len(self.people))) + 1
+                for i, person in enumerate(self.people):
+                    if 'Fore' in self.preferences[person]:
+                        # is the foreground quality in our preferences?
+                        try: # if so we try to use it. Must put in a try statement
+                            # in case we have bad values (as in a user modified the file)
+                            print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + "{0}) {1}"
+                                  .format(' ' * (max_len - len(str(i + 1))) + str(i + 1), person))
+                        except AttributeError:
+                            # if we have a bad value an attribute error should occur from the eval call
+                            print("{0}) {1}".format(' ' * (max_len - len(str(i + 1))) + str(i + 1), person))
+                            # above print is identical to below in else
+                    else:
+                        print("{0}) {1}".format(' ' * (max_len - len(str(i + 1))) + str(i + 1), person))
+
+                choice = input('\nSelect your option\n> ')
+
+            choice = int(choice)
+            if choice == 0:
+                print(self.preferences)
+            elif choice in range(1, len(self.people) + 1):
+                # Colorama choices supported are below (https://pypi.python.org/pypi/colorama)
+                color_choies = ["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"]
+                color = None
+                while color not in [str(i) for i in range(len(color_choies))]:
+                    print("The following are color choices for the ForeGround for {0}:"
+                          .format(self.people[choice - 1]))
+                    print()
+                    for i in range(len(color_choies)):
+                        print(eval('Fore.{0}'.format(color_choies[i])) + '{0}) {1}'
+                              .format(i, color_choies[i]))
+                    color = input('\nSelect your option\n> ')
+                color = int(color)
+                self.preferences[self.people[choice - 1]]['Fore'] = color_choies[color]
+
+
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
@@ -355,14 +446,6 @@ class ConvoReader():
             return self.__ave_words_per_person()
         else:
             return self.__ave_words(name)
-
-    def _raw_prettify(self):
-        """Returns a "pretty" version of the conversation history as a string"""
-        string = ""
-        for name, msg, date in self.convo:
-            string += name.title() + ": " + msg + " | " + str(date)
-            string += '\n'
-        return string
 
     def _msgs_graph(self, contact=None):
         """The raw data used by print_msgs_graph to display message graphs
@@ -475,6 +558,34 @@ class ConvoReader():
 
         return [day / sum(weekday_freq) for day in weekday_freq]
 
+    def _raw_word_freqs(self):
+        """Returns a dictionary that maps names of people in the conversation
+        to a Counter object of their raw word frequencies
+        """
+        raw_word_freq = dict()
+        for person, msg, date in self.convo:
+            if person not in raw_word_freq:
+                raw_word_freq[person] = Counter()
+            raw_word_freq[person].update(msg.lower().split(' '))
+        return raw_word_freq
+
+    def _cleaned_word_freqs(self):
+        raw_words = self._raw_word_freqs()
+        cleaned_words = dict()
+        for key, val in raw_words.items():
+            cleaned_words[key] = Counter()
+            for word, freq in val.most_common():
+                striped_word = word.strip('.!123456789-+?><}{][()\'\""\\ /*#$%^&#@,')
+                if striped_word < 'z' * 10:
+                    if '.com' not in striped_word and 'www.' not in striped_word\
+                    and 'http' not in striped_word and '.io' not in striped_word\
+                    and '.edu' not in striped_word:
+                        if striped_word not in cleaned_words[key]:
+                            cleaned_words[key][striped_word] = freq
+                        else:
+                            cleaned_words[key][striped_word] += freq
+        return cleaned_words
+
     def __msgs_per_person(self):
         res = dict()
         for person, msg, date in self.convo:
@@ -536,14 +647,14 @@ class ConvoReader():
         assert type(end) in [type(None), str], "End needs to be a date string"
         if type(start) is str:
             r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-            assert r.fullmatch(start) is not None, ("{0} is not a valid date, it must be in the format ".format(start) + \
+            assert r.fullmatch(start) is not None, ("\"{0}\" is not a valid date, it must be in the format ".format(start) + \
                                                     "{month}/{day}/{year}")
             r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
             assert r.fullmatch(
                 start) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
         if type(end) is str:
             r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-            assert r.fullmatch(end) is not None, ("{0} is not a valid date, it must be in the format ".format(end) + \
+            assert r.fullmatch(end) is not None, ("\"{0}\" is not a valid date, it must be in the format ".format(end) + \
                                                   "{month}/{day}/{year}")
             r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
             assert r.fullmatch(end) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"

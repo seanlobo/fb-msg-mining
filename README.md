@@ -34,7 +34,7 @@ Extract the zip you get and move the `html` folder inside the project folder
 
 ## Step 5:
 
-Run `python3 main.py`
+Run `python3 setup.py`
 
 If you have errors at this step and can't figure out why, email me at `seanlobo2010@gmail.com`
 
