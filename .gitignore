@@ -120,3 +120,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+# ignore virtualenv
+venv

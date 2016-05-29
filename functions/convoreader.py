@@ -5,7 +5,7 @@ import re
 import os
 
 from functions.customdate import CustomDate, bsearch_index
-import functions.emojis
+import functions.emojis as emojis
 
 
 init(autoreset=True)
@@ -14,7 +14,7 @@ init(autoreset=True)
 class ConvoReader():
     def __init__(self, convo_name, convo_list):
         self.name = convo_name.lower()
-        self.convo = [[name.lower(), functions.emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
+        self.convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
         self.people = sorted(self.name.split(', '))
         self.individual_words = self._cleaned_word_freqs()
         self.len = len(self.convo)
