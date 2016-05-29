@@ -224,15 +224,17 @@ class ConvoReader():
                 print(" | " + str(date))
 
 
-    def print_msgs_graph(self, contact=None, start=None, end=None):
+    def msgs_graph(self, contact=None, start=None, end=None):
         """Prettily prints to the screen the message history of a chat
         Parameter:
             contact (optional): the name (as a string) of the person you are interested in.
                 (default: all contacts)
+            start (optional): the date to start the graph from. Defaults to the date of the first message
+            end (optional): the date to end the graph with. Defaults to the last message sent
         """
         try:
             msgs_freq = self._msgs_graph(contact)
-            passed = self.__assert_dates(start, end)
+            self.__assert_dates(start, end)
         except AssertionError as e:
             print(e)
             return
@@ -240,26 +242,51 @@ class ConvoReader():
         if contact is not None:
             print('Graph for {0}'.format(str(contact.title())))
 
+        if start is not None:
+            start = CustomDate.from_date_string(start)
+        else:
+            start = msgs_freq[0][0]
+        if end is not None:
+            end = CustomDate.from_date_string(end)
+        else:
+            end = msgs_freq[-1][0]
+
+        if not start <= end:
+            print("The start date of the conversation must be before the end date")
+            return
+
+
+        start_index, end_index = 0, len(msgs_freq)
+        for i in range(end_index):
+            if msgs_freq[i][0].date == start.date:
+                start_index = i
+            if msgs_freq[i][0].date == end.date:
+                end_index = i + 1
+
         max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
         value = max_msgs / 50
         print("\nEach \"#\" referes to ~{0} messages".format(value))
         print()
 
-        start = msgs_freq[0][0]
-        date_len = 12
-        num_len = len(str(max(msgs_freq, key=lambda x: x[1])[1]))
-        for i in range(0, len(msgs_freq)):
+
+        MAX_DATE_LEN = 12
+        # The Maximum length of the string containing the longest date (with padding) i.e. '12/12/2012  '
+
+        MAX_NUM_LENGTH = len(str(max(msgs_freq, key=lambda x: x[1])[1]))
+        # The maximum length of the string containing the largest number of messages in a day i.e. "420"
+
+        for i in range(start_index, end_index):
             day = msgs_freq[i][0].to_string()
-            day += ' ' * (date_len - len(day))
+            day += ' ' * (MAX_DATE_LEN - len(day))
 
             msg_num = str(msgs_freq[i][1])
-            msg_num += " " * (num_len - len(msg_num))
+            msg_num += " " * (MAX_NUM_LENGTH - len(msg_num))
 
             string = day + msg_num
             if i % 2 == 0:
                 print(string + " |", end="")
             else:
-                print(date_len * " " + msg_num + " |", end="")
+                print(MAX_DATE_LEN * " " + msg_num + " |", end="")
 
             if msgs_freq[i][1] == 0:
                 print("(none)")
@@ -275,7 +302,7 @@ class ConvoReader():
             print("{0}: {1}%".format(CustomDate.days_of_week[day], str(freq * 100)[:5]))
         print()
 
-    def print_msgs_by_day(self, window=60, contact=None, threshold=None):
+    def msgs_by_day(self, window=60, contact=None, threshold=None):
         """Prints to the screen a graphical result of msgs_by_day
         Parameters:
             window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)

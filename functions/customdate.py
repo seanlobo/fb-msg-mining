@@ -32,6 +32,9 @@ class CustomDate():
 
     @classmethod
     def from_date(cls, date_obj):
+        """Alternative constructor using a datetime.date object
+        Creates a CustomDate object with a default time of 12:00am PDT
+        """
         year = None
         if len(str(date_obj.year)) == 2:
             if date_obj.year <= 17:
@@ -49,6 +52,7 @@ class CustomDate():
 
     @classmethod
     def from_date_string(cls, date_string):
+        """Alternative constructor using a date string in the form '{month}/{day}/{year}'"""
         date_lst = [int(ele) for ele in date_string.split('/')]
         return CustomDate.from_date(date(date_lst[2], date_lst[0], date_lst[1]))
 
