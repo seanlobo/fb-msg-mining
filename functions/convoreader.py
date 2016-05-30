@@ -11,15 +11,15 @@ import functions.emojis as emojis
 init(autoreset=True)
 
 
-class ConvoReader():
+class ConvoReader:
     def __init__(self, convo_name, convo_list):
         self.name = convo_name.lower()
         self.convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
         self.people = sorted(self.name.split(', '))
         self.individual_words = self._cleaned_word_freqs()
         self.len = len(self.convo)
-        self.path = 'data/'
-        self.preferences = {person: dict() for person in self.people}
+        self.path = 'data/' + self.__set_path()
+        self.preferences = self._load_preferences()
         self.preferences_choices = {'personal': ['Fore'], 'global': ['new_convo_time', 'date_Fore_color']}
 
     def print_people(self):
@@ -175,7 +175,8 @@ class ConvoReader():
                             res[key] = val
         return res
 
-    def get_emoji(self, text):
+    @staticmethod
+    def get_emoji(text):
         """Returns the emoji corresponding to the src value passed,
         or the string passed if appropriate emojis isn't found
         """
@@ -199,11 +200,9 @@ class ConvoReader():
         else:
             end = len(self.convo)
 
-
-        #for person, msg, date in self.convo:
+        # for person, msg, date in self.convo:
         for i in range(start, end):
             self._print_message(i)
-
 
     def msgs_graph(self, contact=None, start=None, end=None):
         """Prettily prints to the screen the message history of a chat
@@ -278,8 +277,8 @@ class ConvoReader():
     def msgs_by_weekday(self):
         """Prints out chat frequency by day of week
         """
-        by_weeday = self._raw_msgs_by_weekday()
-        for day, freq in enumerate(by_weeday):
+        by_weekday = self._raw_msgs_by_weekday()
+        for day, freq in enumerate(by_weekday):
             print("{0}: {1}%".format(CustomDate.days_of_week[day], str(freq * 100)[:5]))
         print()
 
@@ -300,7 +299,7 @@ class ConvoReader():
             threshold = window / 120
         else:
             try:
-                assert threshold > 0, "Threshold must be a possitive number"
+                assert threshold > 0, "Threshold must be a positive number"
             except AssertionError as e:
                 print(e)
                 return
@@ -323,21 +322,8 @@ class ConvoReader():
 
     def save_word_freq(self):
         """Saves to a file the ordered rankings of word frequencies by person in the chat"""
-        dir_name = ""
-        for person in self.people:
-            split = person.split(' ')
-            for i in range(len(split) - 1):
-                dir_name += split[i]
-                dir_name += '-'
-            dir_name += split[-1]
-            dir_name += '_'
-        dir_name = dir_name[:-1]
-        if len(dir_name) > 255:
-            name = dir_name[:255]
-        else:
-            name = dir_name
 
-        os.makedirs(self.path + name, exist_ok=True)
+        os.makedirs(self.path[0:-1], exist_ok=True)
         for person, counter in self.individual_words.items():
             split = person.split()
             pers = ''
@@ -345,7 +331,7 @@ class ConvoReader():
                 pers += split[i]
                 pers += '-'
             pers += split[-1]
-            with open(self.path + name + '/' + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
+            with open(self.path + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
                 lst = []
                 for key, val in counter.items():
                     lst.append((key, val))
@@ -354,7 +340,7 @@ class ConvoReader():
         count = Counter()
         for key, val in self.individual_words.items():
             count += val
-        with open(self.path + name + '/' + 'total.txt', mode='w', encoding='utf-8') as f:
+        with open(self.path + 'total.txt', mode='w', encoding='utf-8') as f:
             for key, val in count.most_common():
                 f.write("{0}: {1}".format(key, val) + "\n")
 
@@ -412,6 +398,25 @@ class ConvoReader():
                 color = int(color)
                 self.preferences[self.people[choice - 1]]['Fore'] = color_choies[color]
 
+        print('Would you like to save your preferences? [Y/n]: ', end="")
+        should_save = input()
+        while should_save.lower() != 'y' and should_save.lower() != 'yes' \
+                and should_save.lower() != 'n' and should_save.lower() != 'no':
+            should_save = input('[Y/n]: ')
+        if should_save.lower() in ['yes', 'y']:
+            self.save_preferences()
+
+    def save_preferences(self):
+        os.makedirs(self.path[0:-1], exist_ok=True)
+        with open(self.path + 'preferences.txt', mode='w', encoding='utf-8') as f:
+            f.write(repr(self.preferences))
+
+    def _load_preferences(self):
+        try:
+            with open(self.path + 'preferences.txt', mode='r', encoding='utf-8') as f:
+                return eval(f.read())
+        except FileNotFoundError:
+            return {person: dict() for person in self.people}
 
     def _print_message(self, number):
         try:
@@ -441,12 +446,10 @@ class ConvoReader():
         else:
             print(" | " + str(date))
 
-
-
     def find(self, query, ignore_case=False, regex=False):
         """Prints to the console the results of searching for the query string
             Parameters:
-                case_sensitive (optional): Whether the query string is case sensitive
+                ignore_case (optional): Whether the query string is case sensitive
                 regex (optional): Whether the query is a regular expression
         """
         # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
@@ -465,15 +468,13 @@ class ConvoReader():
             print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
 
-
-
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
         Return:
             A number if name is not passed, otherwise a Counter object storing the number
-            of mesages as values paired with names of people as keys.
+            of messages as values paired with names of people as keys.
         """
         if name is None:
             return self.__msgs_per_person()
@@ -675,8 +676,6 @@ class ConvoReader():
         except re.error:
             raise re.error("\"{0}\" is not a valid regex string".format(query))
 
-
-
     def __msgs_per_person(self):
         res = dict()
         for person, msg, date in self.convo:
@@ -733,6 +732,23 @@ class ConvoReader():
             return -1
         return self.__words_spoken(name) / self.__msgs_spoken(name)
 
+    def __set_path(self):
+        dir_name = ""
+        for person in self.people:
+            split = person.split(' ')
+            for i in range(len(split) - 1):
+                dir_name += split[i]
+                dir_name += '-'
+            dir_name += split[-1]
+            dir_name += '_'
+        dir_name = dir_name[:-1]
+        if len(dir_name) > 255:
+            name = dir_name[:255]
+        else:
+            name = dir_name
+
+        return name + '/'
+
     def __assert_dates(self, start, end):
         # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
 
@@ -740,15 +756,15 @@ class ConvoReader():
         assert type(end) in [type(None), str], "End needs to be a date string"
         if type(start) is str:
             r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-            assert r.fullmatch(start) is not None, ("\"{0}\" is not a valid date, it must be in the format ".format(start) + \
-                                                    "{month}/{day}/{year}")
+            assert r.fullmatch(start) is not None, ("\"{0}\" is not a valid date, it must be in the format "
+                                                    .format(start) + "{month}/{day}/{year}")
             r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
             assert r.fullmatch(
                 start) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
         if type(end) is str:
             r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-            assert r.fullmatch(end) is not None, ("\"{0}\" is not a valid date, it must be in the format ".format(end) + \
-                                                  "{month}/{day}/{year}")
+            assert r.fullmatch(end) is not None, ("\"{0}\" is not a valid date, it must be in the format "
+                                                  .format(end) + "{month}/{day}/{year}")
             r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
             assert r.fullmatch(end) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
 
