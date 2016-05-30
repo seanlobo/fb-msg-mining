@@ -192,7 +192,7 @@ class ConvoReader():
         else:
             start = 0
         if end is not None:
-            end = CustomDate.from_date_string(end)
+            end = CustomDate.from_date(CustomDate.from_date_string(end) + 1)
             assert end.date <= self.convo[-1][2].date,\
                 "Your conversations ends on {0}".format(self.convo[-1][2].full_date)
             end = bsearch_index(self.convo, end, key=lambda x: x[2])
@@ -202,26 +202,7 @@ class ConvoReader():
 
         #for person, msg, date in self.convo:
         for i in range(start, end):
-            person, msg, date = self.convo[i]
-            # the length of the longest name in self.people
-            max_len = len(max(self.people, key=lambda name: len(name)))
-            padding = ' ' * (max_len - len(person))
-            if 'Fore' in self.preferences[person.lower()]:
-                try:
-                    print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + person.title(),
-                          end=": " + padding)
-                except AttributeError:
-                    print(person.title(), end=": " + padding)
-            else:
-                print(person.title(), end=": " + padding)
-            print(msg, end="")
-            if 'date_Fore_color' in self.preferences:
-                try:
-                    print('Fore.{0}'.format(self.preferences['date_Fore_color']) + " | " + str(date))
-                except AttributeError:
-                    print(" | " + str(date))
-            else:
-                print(" | " + str(date))
+            self._print_message(i)
 
 
     def msgs_graph(self, contact=None, start=None, end=None):
@@ -432,6 +413,59 @@ class ConvoReader():
                 self.preferences[self.people[choice - 1]]['Fore'] = color_choies[color]
 
 
+    def _print_message(self, number):
+        try:
+            assert type(number) is int, "number must be an integer"
+            assert number in range(len(self.convo)), "number must be in range({0})".format(len(self.convo))
+        except AssertionError as e:
+            raise e
+
+        person, msg, date = self.convo[number]
+        # the length of the longest name in self.people
+        max_len = len(max(self.people, key=lambda name: len(name)))
+        padding = ' ' * (max_len - len(person))
+        if 'Fore' in self.preferences[person.lower()]:
+            try:
+                print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + person.title(),
+                      end=": " + padding)
+            except AttributeError:
+                print(person.title(), end=": " + padding)
+        else:
+            print(person.title(), end=": " + padding)
+        print(msg, end="")
+        if 'date_Fore_color' in self.preferences:
+            try:
+                print('Fore.{0}'.format(self.preferences['date_Fore_color']) + " | " + str(date))
+            except AttributeError:
+                print(" | " + str(date))
+        else:
+            print(" | " + str(date))
+
+
+
+    def find(self, query, ignore_case=False, regex=False):
+        """Prints to the console the results of searching for the query string
+            Parameters:
+                case_sensitive (optional): Whether the query string is case sensitive
+                regex (optional): Whether the query is a regular expression
+        """
+        # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
+
+        try:
+            indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
+                else self._find_indexes(query, ignore_case=ignore_case)
+        except re.error as e:
+            print(e)
+            return
+        if len(indexes) == 0:
+            print()
+            return
+        MAX_LEN_INDEX = len(max(map(str, indexes), key=len)) + 2
+        for i in indexes:
+            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
+            self._print_message(i)
+
+
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
@@ -613,6 +647,36 @@ class ConvoReader():
                             cleaned_words[key][striped_word] += freq
         return cleaned_words
 
+    def _find_indexes(self, query, ignore_case=False):
+        """Returns a list with the indexes of each message that contain the passed message
+        Parameters:
+            case_sensitive (optional): Whether to search by case sensitive
+        """
+        key = lambda x: x
+        if ignore_case:
+            key = lambda x: x.lower()
+        indexes = []
+        for i in range(len(self.convo)):
+            if query in key(self.convo[i][1]):
+                indexes.append(i)
+        return indexes
+
+    def _match_indexes(self, query, ignore_case=False):
+        """Returns a list with the indexes of each message that match the passed message"""
+        # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
+
+        indexes = []
+        try:
+            r = re.compile(query, re.IGNORECASE) if ignore_case else re.compile(query)
+            for i in range(len(self.convo)):
+                if r.fullmatch(self.convo[i][1]) is not None:
+                    indexes.append(i)
+            return indexes
+        except re.error:
+            raise re.error("\"{0}\" is not a valid regex string".format(query))
+
+
+
     def __msgs_per_person(self):
         res = dict()
         for person, msg, date in self.convo:
@@ -670,6 +734,8 @@ class ConvoReader():
         return self.__words_spoken(name) / self.__msgs_spoken(name)
 
     def __assert_dates(self, start, end):
+        # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
+
         assert type(start) in [type(None), str], "Start needs to be a date string"
         assert type(end) in [type(None), str], "End needs to be a date string"
         if type(start) is str:
