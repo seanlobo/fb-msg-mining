@@ -429,7 +429,7 @@ class ConvoReader:
         # the length of the longest name in self.people
         max_len = len(max(self.people, key=lambda name: len(name)))
         padding = ' ' * (max_len - len(person))
-        if 'Fore' in self.preferences[person.lower()]:
+        if person.lower() in self.preferences and 'Fore' in self.preferences[person.lower()]:
             try:
                 print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + person.title(),
                       end=": " + padding)
@@ -609,16 +609,10 @@ class ConvoReader:
         of week, ordered by index, with 0 being Monday and 6 Sunday
         """
         weekday_freq = [0 for i in range(7)]
-        check = self.convo[0][2]
-        msgs = 0
         for person, msg, date in self.convo:
-            if check - date == 0:
-                msgs += 1
-            else:
-                weekday_freq[date.weekday()] += msgs
-                msgs = 1
-
-        return [day / sum(weekday_freq) for day in weekday_freq]
+            weekday_freq[date.weekday()] += 1
+        total = sum(weekday_freq)
+        return [day / total for day in weekday_freq]
 
     def _raw_word_freqs(self):
         """Returns a dictionary that maps names of people in the conversation
