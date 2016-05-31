@@ -1,4 +1,5 @@
 from collections import Counter
+import random
 
 from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
@@ -54,8 +55,8 @@ class MessageReader:
             or a list of names (e.g. ['jason perrin', 'sean lobo'])
         """
         assert type(people) in [str, list, int], (""
-            "Invalid argument: must pass"
-            "a list of names (as strings), string, or int")
+                                                  "Invalid argument: must pass"
+                                                  "a list of names (as strings), string, or int")
 
         if type(people) is int:
             if people > 0:
@@ -67,10 +68,28 @@ class MessageReader:
         else:
             people = [name.title() for name in people]
         for name in self.data.keys():
-            if self._contents_equal(name.split(', '), people):
+            if contents_equal(name.split(', '), people):
                 return ConvoReader(name, self.data[name])
         print("You haven't talked with {0} before".format(people))
         return None
+
+    def random(self):
+        """Returns a random conversation"""
+        return self.get_convo(int(random.random() * len(self) + 1))
+
+    def rank(self, convo_name):
+        """Returns the rank of the particular conversation, or None if not found"""
+        assert type(convo_name) in [str, list], "You must pass a string or list of strings"
+        if type(convo_name) == list:
+            for i, name in enumerate(convo_name):
+                assert type(name) == str, "Your list must contain strings corresponding to names of people"
+                convo_name[i] = name.lower()
+        else:
+            convo_name = convo_name.lower().split(', ')
+        for i, name in enumerate(self.data.keys()):
+            if contents_equal(convo_name, name.lower().split(', ')):
+                return i + 1
+        return
 
     def total_emojis(self, only_me=True):
         res = Counter()
@@ -89,15 +108,6 @@ class MessageReader:
             sorted([(key, len(val)) for key, val in self.data.items()],
                     key=lambda x: (-x[1], x[0]))]
 
-    def _contents_equal(self, lst1, lst2):
-        if len(lst1) != len(lst2):
-            return False
-        for ele in lst1:
-            if ele not in lst2:
-                return False
-        return True
-
-
     def __len__(self):
         return len(self.names)
 
@@ -113,3 +123,12 @@ def join(lst, split=""):
     for i in range(len(lst) - 1):
         res += str(lst[i]) + split
     return res + lst[-1]
+
+
+def contents_equal(lst1, lst2):
+    if len(lst1) != len(lst2):
+        return False
+    for ele in lst1:
+        if ele not in lst2:
+            return False
+    return True
