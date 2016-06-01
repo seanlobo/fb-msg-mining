@@ -97,9 +97,10 @@ class CustomDate():
         return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes >= 12 * 60 else 'am')
 
     def distance_from(self, other):
+        """Returns the number of minutes ahead of other self is.
+        If self is an earlier time result will be negative"""
         assert isinstance(other, CustomDate), "You must pass a valid CustomDate object"
-
-
+        return (self.minutes() - other.minutes()) + (self - other) * 24 * 60
 
     def __add__(self, other):
         if type(other) is not int:
