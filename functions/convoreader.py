@@ -450,7 +450,7 @@ class ConvoReader:
         """Prints to the console the results of searching for the query string
             Parameters:
                 ignore_case (optional): Whether the query string is case sensitive
-                regex (optional): Whether the query is a regular expression
+                regex (optional): Whether the query is a regular expression to be fully matched
         """
         # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
 
@@ -467,6 +467,17 @@ class ConvoReader:
         for i in indexes:
             print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
+
+    def times(self, query, ignore_case=False, regex=False):
+        """Returns the number of times a message matching the query string occurs in the conversation
+            Parameters:
+                ignore_case (optional): Whether the query string is case sensitive
+                regex (optional): Whether the query is a regular expression to be fully matched
+        """
+
+        indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
+            else self._find_indexes(query, ignore_case=ignore_case)
+        return len(indexes)
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
