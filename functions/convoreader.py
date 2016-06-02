@@ -13,11 +13,20 @@ init(autoreset=True)
 
 class ConvoReader:
     def __init__(self, convo_name, convo_list):
+        """Constructor for ConvoReader, important instance variables summarized below:
+        name  String - this conversation's name, all people in the conversation concatenated together
+                        separated by commas and a space. E.g. "swetha raman, sean lobo"
+        convo List<Tuple> - a list holding the entire conversation. Each tuple contains the informatino for
+                            one message, organized in the form ---> (person_speaking, msg_content, date-time_sent_at)
+                            Example) accessing the 5th message would be self.convo[4], accessing the actual content
+                            would be self.convo[4][1]
+        people List<String> - A list of all people in the conversation. E.g. ["swetha raman", "sean lobo"]
+        """
         self.name = convo_name.lower()
         self.convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
         self.people = sorted(self.name.split(', '))
-        self.individual_words = self._cleaned_word_freqs()
-        self.len = len(self.convo)
+        self.individual_words = self._cleaned_word_freqs() # A counter object of unique words in this convo
+        self.len = len(self.convo) # the length of this conversation
         self.path = 'data/' + self.__set_path()
         self.preferences = self._load_preferences()
         self.preferences_choices = {'personal': ['Fore'], 'global': ['new_convo_time', 'date_Fore_color']}
