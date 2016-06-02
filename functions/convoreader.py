@@ -282,8 +282,8 @@ class ConvoReader:
             print("{0}: {1}%".format(CustomDate.days_of_week[day], str(freq * 100)[:5]))
         print()
 
-    def msgs_by_day(self, window=60, contact=None, threshold=None):
-        """Prints to the screen a graphical result of msgs_by_day
+    def msgs_by_time(self, window=60, contact=None, threshold=None):
+        """Prints to the screen a graphical result of msgs_by_time
         Parameters:
             window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
             contact (optional): The contact you are interested in. (default, all contacts)
