@@ -16,7 +16,7 @@ class ConvoReader:
         """Constructor for ConvoReader, important instance variables summarized below:
         name  String - this conversation's name, all people in the conversation concatenated together
                         separated by commas and a space. E.g. "swetha raman, sean lobo"
-        convo List<Tuple> - a list holding the entire conversation. Each tuple contains the informatino for
+        convo List<Tuple> - a list holding the entire conversation. Each tuple contains the information for
                             one message, organized in the form ---> (person_speaking, msg_content, date-time_sent_at)
                             Example) accessing the 5th message would be self.convo[4], accessing the actual content
                             would be self.convo[4][1]
@@ -30,6 +30,22 @@ class ConvoReader:
         self.path = 'data/' + self.__set_path()
         self.preferences = self._load_preferences()
         self.preferences_choices = {'personal': ['Fore'], 'global': ['new_convo_time', 'date_Fore_color']}
+
+    def _raw_convo_starter(self):
+        """Percent of time each person starts the conversation according to a threshold number of minutes passed"""
+        threshold = 4 * 60 # 4 hours worth of minutes
+        convo_start_freq = Counter()
+        for person in self.people:
+            convo_start_freq[person] = 0
+        for i in range(self.len):
+            curr_date = self.convo[i][2]
+            prev_date = self.convo[i-1][2]
+            if curr_date.distance_from(prev_date) > threshold:
+                convo_start_freq[self.convo[i][0]] += 1
+        return convo_start_freq
+
+
+
 
     def print_people(self):
         """Prints to the screen an alphabetically sorted list of people
