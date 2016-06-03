@@ -63,7 +63,6 @@ class BaseConvoReader():
                 people.append(person)
         return people
 
-
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
         Parameters:
@@ -333,3 +332,7 @@ class BaseConvoReader():
             contact = [contact]
 
         return contact
+
+    def __iter__(self):
+        return (message for message in self.convo)
+
