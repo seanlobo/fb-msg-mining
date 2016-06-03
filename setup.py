@@ -4,6 +4,15 @@ import time
 from functions import setup_functions
 
 
+if os.path.isfile('data/data.txt'):
+    print("Are you sure you want to override the data currently saved?\n"
+          "This might require resetting preferences. [Y/n]")
+    choice = input("> ")
+    while choice.lower() not in ['y', 'yes', 'no', 'n']:
+        choice = input("> ")
+    if choice.lower() in ['n', 'no']:
+        exit()
+
 start = time.time()
 
 print('\nSetting up the data, this could take a few minutes depending on how much data you have\n'

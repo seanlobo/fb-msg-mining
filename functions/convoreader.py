@@ -1,6 +1,7 @@
 from colorama import init, Fore, Back, Style
 from collections import Counter
 import os
+import re
 
 from functions.baseconvoreader import BaseConvoReader
 from functions.customdate import CustomDate
@@ -12,6 +13,15 @@ init(autoreset=True)
 
 class ConvoReader(BaseConvoReader):
     def __init__(self, convo_name, convo_list):
+        """Constructor for ConvoReader, important instance variables summarized below:
+        name  String - this conversation's name, all people in the conversation concatenated together
+                        separated by commas and a space. E.g. "swetha raman, sean lobo"
+        convo List<Tuple> - a list holding the entire conversation. Each tuple contains the informatino for
+                            one message, organized in the form ---> (person_speaking, msg_content, date-time_sent_at)
+                            Example) accessing the 5th message would be self.convo[4], accessing the actual content
+                            would be self.convo[4][1]
+        people List<String> - A list of all people in the conversation. E.g. ["swetha raman", "sean lobo"]
+        """
         BaseConvoReader.__init__(self, convo_name, convo_list)
 
         self.path = 'data/'
@@ -149,15 +159,14 @@ class ConvoReader(BaseConvoReader):
         else:
             start = 0
         if end is not None:
-            end = CustomDate.from_date_string(end)
+            end = CustomDate.from_date(CustomDate.from_date_string(end) + 1)
             assert end.date <= self.convo[-1][2].date,\
                 "Your conversations ends on {0}".format(self.convo[-1][2].full_date)
             end = CustomDate.bsearch_index(self.convo, end, key=lambda x: x[2])
         else:
             end = len(self.convo)
 
-
-        #for person, msg, date in self.convo:
+        # for person, msg, date in self.convo:
         for i in range(start, end):
             person, msg, date = self.convo[i]
             # the length of the longest name in self.people
@@ -180,15 +189,19 @@ class ConvoReader(BaseConvoReader):
             else:
                 print(" | " + str(date))
 
-    def print_msgs_graph(self, contact=None, start=None, end=None):
+    def msgs_graph(self, contact=None, start=None, end=None):
         """Prettily prints to the screen the message history of a chat
         Parameter:
             contact (optional): the name (as a string) of the person you are interested in.
                 (default: all contacts)
+            start (optional): the date to start the graph from. Defaults to the date of the first message
+            end (optional): the date to end the graph with. Defaults to the last message sent
         """
         try:
             msgs_freq = self._raw_msgs_graph(contact)
             BaseConvoReader._assert_dates(start, end)
+            msgs_freq = self._msgs_graph(contact)
+            self.__assert_dates(start, end)
         except AssertionError as e:
             print(e)
             return
@@ -196,26 +209,51 @@ class ConvoReader(BaseConvoReader):
         if contact is not None:
             print('Graph for {0}'.format(str(contact.title())))
 
+        if start is not None:
+            start = CustomDate.from_date_string(start)
+        else:
+            start = msgs_freq[0][0]
+        if end is not None:
+            end = CustomDate.from_date_string(end)
+        else:
+            end = msgs_freq[-1][0]
+
+        if not start <= end:
+            print("The start date of the conversation must be before the end date")
+            return
+
+
+        start_index, end_index = 0, len(msgs_freq)
+        for i in range(end_index):
+            if msgs_freq[i][0].date == start.date:
+                start_index = i
+            if msgs_freq[i][0].date == end.date:
+                end_index = i + 1
+
         max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
         value = max_msgs / 50
         print("\nEach \"#\" referes to ~{0} messages".format(value))
         print()
 
-        start = msgs_freq[0][0]
-        date_len = 12
-        num_len = len(str(max(msgs_freq, key=lambda x: x[1])[1]))
-        for i in range(0, len(msgs_freq)):
+
+        MAX_DATE_LEN = 12
+        # The Maximum length of the string containing the longest date (with padding) i.e. '12/12/2012  '
+
+        MAX_NUM_LENGTH = len(str(max(msgs_freq, key=lambda x: x[1])[1]))
+        # The maximum length of the string containing the largest number of messages in a day i.e. "420"
+
+        for i in range(start_index, end_index):
             day = msgs_freq[i][0].to_string()
-            day += ' ' * (date_len - len(day))
+            day += ' ' * (MAX_DATE_LEN - len(day))
 
             msg_num = str(msgs_freq[i][1])
-            msg_num += " " * (num_len - len(msg_num))
+            msg_num += " " * (MAX_NUM_LENGTH - len(msg_num))
 
             string = day + msg_num
             if i % 2 == 0:
                 print(string + " |", end="")
             else:
-                print(date_len * " " + msg_num + " |", end="")
+                print(MAX_DATE_LEN * " " + msg_num + " |", end="")
 
             if msgs_freq[i][1] == 0:
                 print("(none)")
@@ -226,13 +264,13 @@ class ConvoReader(BaseConvoReader):
     def msgs_by_weekday(self):
         """Prints out chat frequency by day of week
         """
-        by_weeday = self._raw_msgs_by_weekday()
-        for day, freq in enumerate(by_weeday):
+        by_weekday = self._raw_msgs_by_weekday()
+        for day, freq in enumerate(by_weekday):
             print("{0}: {1}%".format(CustomDate.days_of_week[day], str(freq * 100)[:5]))
         print()
 
-    def print_msgs_by_day(self, window=60, contact=None, threshold=None):
-        """Prints to the screen a graphical result of msgs_by_day
+    def msgs_by_time(self, window=60, contact=None, threshold=None):
+        """Prints to the screen a graphical result of msgs_by_time
         Parameters:
             window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
             contact (optional): The contact you are interested in. (default, all contacts)
@@ -248,7 +286,7 @@ class ConvoReader(BaseConvoReader):
             threshold = window / 120
         else:
             try:
-                assert threshold > 0, "Threshold must be a possitive number"
+                assert threshold > 0, "Threshold must be a positive number"
             except AssertionError as e:
                 print(e)
                 return
@@ -271,21 +309,8 @@ class ConvoReader(BaseConvoReader):
 
     def save_word_freq(self):
         """Saves to a file the ordered rankings of word frequencies by person in the chat"""
-        dir_name = ""
-        for person in self.people:
-            split = person.split(' ')
-            for i in range(len(split) - 1):
-                dir_name += split[i]
-                dir_name += '-'
-            dir_name += split[-1]
-            dir_name += '_'
-        dir_name = dir_name[:-1]
-        if len(dir_name) > 255:
-            name = dir_name[:255]
-        else:
-            name = dir_name
 
-        os.makedirs(self.path + name, exist_ok=True)
+        os.makedirs(self.path[0:-1], exist_ok=True)
         for person, counter in self.individual_words.items():
             split = person.split()
             pers = ''
@@ -293,7 +318,7 @@ class ConvoReader(BaseConvoReader):
                 pers += split[i]
                 pers += '-'
             pers += split[-1]
-            with open(self.path + name + '/' + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
+            with open(self.path + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
                 lst = []
                 for key, val in counter.items():
                     lst.append((key, val))
@@ -302,7 +327,7 @@ class ConvoReader(BaseConvoReader):
         count = Counter()
         for key, val in self.individual_words.items():
             count += val
-        with open(self.path + name + '/' + 'total.txt', mode='w', encoding='utf-8') as f:
+        with open(self.path + 'total.txt', mode='w', encoding='utf-8') as f:
             for key, val in count.most_common():
                 f.write("{0}: {1}".format(key, val) + "\n")
 
@@ -359,6 +384,87 @@ class ConvoReader(BaseConvoReader):
                     color = input('\nSelect your option\n> ')
                 color = int(color)
                 self.preferences[self.people[choice - 1]]['Fore'] = color_choies[color]
+
+        print('Would you like to save your preferences? [Y/n]: ', end="")
+        should_save = input()
+        while should_save.lower() != 'y' and should_save.lower() != 'yes' \
+                and should_save.lower() != 'n' and should_save.lower() != 'no':
+            should_save = input('[Y/n]: ')
+        if should_save.lower() in ['yes', 'y']:
+            self.save_preferences()
+
+    def save_preferences(self):
+        os.makedirs(self.path[0:-1], exist_ok=True)
+        with open(self.path + 'preferences.txt', mode='w', encoding='utf-8') as f:
+            f.write(repr(self.preferences))
+
+    def _load_preferences(self):
+        try:
+            with open(self.path + 'preferences.txt', mode='r', encoding='utf-8') as f:
+                return eval(f.read())
+        except FileNotFoundError:
+            return {person: dict() for person in self.people}
+
+    def _print_message(self, number):
+        try:
+            assert type(number) is int, "number must be an integer"
+            assert number in range(len(self.convo)), "number must be in range({0})".format(len(self.convo))
+        except AssertionError as e:
+            raise e
+
+        person, msg, date = self.convo[number]
+        # the length of the longest name in self.people
+        max_len = len(max(self.people, key=lambda name: len(name)))
+        padding = ' ' * (max_len - len(person))
+        if person.lower() in self.preferences and 'Fore' in self.preferences[person.lower()]:
+            try:
+                print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + person.title(),
+                      end=": " + padding)
+            except AttributeError:
+                print(person.title(), end=": " + padding)
+        else:
+            print(person.title(), end=": " + padding)
+        print(msg, end="")
+        if 'date_Fore_color' in self.preferences:
+            try:
+                print('Fore.{0}'.format(self.preferences['date_Fore_color']) + " | " + str(date))
+            except AttributeError:
+                print(" | " + str(date))
+        else:
+            print(" | " + str(date))
+
+    def find(self, query, ignore_case=False, regex=False):
+        """Prints to the console the results of searching for the query string
+            Parameters:
+                ignore_case (optional): Whether the query string is case sensitive
+                regex (optional): Whether the query is a regular expression to be fully matched
+        """
+        # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
+
+        try:
+            indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
+                else self._find_indexes(query, ignore_case=ignore_case)
+        except re.error as e:
+            print(e)
+            return
+        if len(indexes) == 0:
+            print()
+            return
+        MAX_LEN_INDEX = len(max(map(str, indexes), key=len)) + 2
+        for i in indexes:
+            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
+            self._print_message(i)
+
+    def times(self, query, ignore_case=False, regex=False):
+        """Returns the number of times a message matching the query string occurs in the conversation
+            Parameters:
+                ignore_case (optional): Whether the query string is case sensitive
+                regex (optional): Whether the query is a regular expression to be fully matched
+        """
+
+        indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
+            else self._find_indexes(query, ignore_case=ignore_case)
+        return len(indexes)
 
     def __getitem__(self, index):
         """Returns the tuple (person, message, datetime) for the corresponding index"""

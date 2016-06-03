@@ -32,6 +32,9 @@ class CustomDate():
 
     @classmethod
     def from_date(cls, date_obj):
+        """Alternative constructor using a datetime.date object
+        Creates a CustomDate object with a default time of 12:00am PDT
+        """
         year = None
         if len(str(date_obj.year)) == 2:
             if date_obj.year <= 17:
@@ -49,6 +52,7 @@ class CustomDate():
 
     @classmethod
     def from_date_string(cls, date_string):
+        """Alternative constructor using a date string in the form '{month}/{day}/{year}'"""
         date_lst = [int(ele) for ele in date_string.split('/')]
         return CustomDate.from_date(date(date_lst[2], date_lst[0], date_lst[1]))
 
@@ -93,7 +97,10 @@ class CustomDate():
         return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes >= 12 * 60 else 'am')
 
     def distance_from(self, other):
+        """Returns the number of minutes ahead of other self is.
+        If self is an earlier time result will be negative"""
         assert isinstance(other, CustomDate), "You must pass a valid CustomDate object"
+        return (self.minutes() - other.minutes()) + (self - other) * 24 * 60
 
     @staticmethod
     def bsearch_index(lst, date, low=0, high=None, key=lambda x: x):
