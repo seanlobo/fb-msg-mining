@@ -243,6 +243,34 @@ class BaseConvoReader():
                             cleaned_words[key][striped_word] += freq
         return cleaned_words
 
+    def _find_indexes(self, query, ignore_case=False):
+        """Returns a list with the indexes of each message that contain the passed message
+        Parameters:
+            ignore_case (optional): Whether to search by case sensitive
+        """
+        key = lambda x: x
+        if ignore_case:
+            key = lambda x: x.lower()
+        indexes = []
+        for i in range(len(self.convo)):
+            if query in key(self.convo[i][1]):
+                indexes.append(i)
+        return indexes
+
+    def _match_indexes(self, query, ignore_case=False):
+        """Returns a list with the indexes of each message that match the passed message"""
+        # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
+
+        indexes = []
+        try:
+            r = re.compile(query, re.IGNORECASE) if ignore_case else re.compile(query)
+            for i in range(len(self.convo)):
+                if r.fullmatch(self.convo[i][1]) is not None:
+                    indexes.append(i)
+            return indexes
+        except re.error:
+            raise re.error("\"{0}\" is not a valid regex string".format(query))
+
     def __msgs_per_person(self):
         res = dict()
         for person, msg, date in self.convo:
