@@ -102,6 +102,24 @@ class CustomDate():
         assert isinstance(other, CustomDate), "You must pass a valid CustomDate object"
         return (self.minutes() - other.minutes()) + (self - other) * 24 * 60
 
+    @staticmethod
+    def bsearch_index(lst, date, low=0, high=None, key=lambda x: x):
+        if high is None:
+            high = len(lst) - 1
+        mid = (low + high) // 2
+        while key(lst[mid]) != date and mid > low and mid < high:
+            if key(lst[mid]) > date:
+                high = mid - 1
+                mid = (low + high) // 2
+            else:
+                low = mid + 1
+                mid = (low + high) // 2
+        while abs(lst[mid - 1].distance_from(date)) <= abs(lst[mid].distance_from(date)):
+            mid -= 1
+        while abs(lst[mid + 1].distance_from(date)) < abs(lst[mid].distance_from(date)):
+            mid += 1
+        return mid
+
     def __add__(self, other):
         if type(other) is not int:
             return NotImplemented
@@ -165,18 +183,3 @@ class CustomDate():
             if self.minutes() >= other.minutes():
                 return True
         return False
-
-
-def bsearch_index(lst, date, low=0, high=None, key=lambda x:x):
-    if high is None:
-        high = len(lst) - 1
-    mid = (low + high) // 2
-    while key(lst[mid]) != date and mid > low and mid < high:
-        if key(lst[mid]) > date:
-            high = mid - 1
-            mid = (low + high) // 2
-        else:
-            low = mid + 1
-            mid = (low + high) // 2
-
-    return mid

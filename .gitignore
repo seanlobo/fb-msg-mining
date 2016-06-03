@@ -59,21 +59,6 @@ docs/_build/
 target/
 
 
-# my extra files that I don't want
-misc.
-*.txt
-!requirements.txt
-*.htm
-*html
-*.css
-.DS_Store
-test.py
-facebook*
-<<<<<<< HEAD
-*data*
-temp.py
-testing
-
 
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
@@ -123,3 +108,19 @@ fabric.properties
 
 # ignore virtualenv
 venv
+activate
+
+# my extra files that I don't want
+misc.
+*.txt
+!requirements.txt
+*.htm
+*html
+*.css
+.DS_Store
+test.py
+facebook*
+*data*
+temp.py
+testing
+!msgs_over_time.html
