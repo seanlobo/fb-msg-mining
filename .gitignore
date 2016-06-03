@@ -108,7 +108,7 @@ fabric.properties
 
 # ignore virtualenv
 venv
-
+activate
 
 # my extra files that I don't want
 misc.
