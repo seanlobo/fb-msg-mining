@@ -10,7 +10,6 @@ import functions.emojis as emojis
 
 init(autoreset=True)
 
-
 class ConvoReader(BaseConvoReader):
     def __init__(self, convo_name, convo_list):
         """Constructor for ConvoReader, important instance variables summarized below:
@@ -26,7 +25,11 @@ class ConvoReader(BaseConvoReader):
 
         self.path = 'data/' + self.__set_path()
         self.preferences = self._load_preferences()
-        self.preferences_choices = {'personal': ['Fore'], 'global': ['new_convo_time', 'date_Fore_color']}
+        # preferences_choices = {'personal': {"Name": val, "Message": val, "Date" : val},
+        #                        'global': {'new_convo_time': val} }
+        self.COLOR_CHOICES = ["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE",
+                              "LIGHTBLACK_EX", "LIGHTBLUE_EX", "LIGHTCYAN_EX", "LIGHTGREEN_EX",
+                              "LIGHTMAGENTA_EX", "LIGHTRED_EX", "LIGHTWHITE_EX", "LIGHTYELLOW_EX"]
 
     def _raw_convo_starter(self):
         """Percent of time each person starts the conversation according to a threshold number of minutes passed"""
@@ -184,26 +187,7 @@ class ConvoReader(BaseConvoReader):
 
         # for person, msg, date in self.convo:
         for i in range(start, end):
-            person, msg, date = self.convo[i]
-            # the length of the longest name in self.people
-            max_len = len(max(self.people, key=lambda name: len(name)))
-            padding = ' ' * (max_len - len(person))
-            if 'Fore' in self.preferences[person.lower()]:
-                try:
-                    print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + person.title(),
-                          end=": " + padding)
-                except AttributeError:
-                    print(person.title(), end=": " + padding)
-            else:
-                print(person.title(), end=": " + padding)
-            print(msg, end="")
-            if 'date_Fore_color' in self.preferences:
-                try:
-                    print('Fore.{0}'.format(self.preferences['date_Fore_color']) + " | " + str(date))
-                except AttributeError:
-                    print(" | " + str(date))
-            else:
-                print(" | " + str(date))
+            self._print_message(i)
 
     def msgs_graph(self, contact=None, start=None, end=None):
         """Prettily prints to the screen the message history of a chat
@@ -368,11 +352,11 @@ class ConvoReader(BaseConvoReader):
 
                 max_len = len(str(len(self.people))) + 1
                 for i, person in enumerate(self.people):
-                    if 'Fore' in self.preferences[person]:
-                        # is the foreground quality in our preferences?
+                    if 'Name' in self.preferences[person]:
+                        # is the name quality in our preferences?
                         try: # if so we try to use it. Must put in a try statement
                             # in case we have bad values (as in a user modified the file)
-                            print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + "{0}) {1}"
+                            print(eval('Fore.{0}'.format(self.preferences[person]['Name'])) + "{0}) {1}"
                                   .format(' ' * (max_len - len(str(i + 1))) + str(i + 1), person))
                         except AttributeError:
                             # if we have a bad value an attribute error should occur from the eval call
@@ -387,19 +371,20 @@ class ConvoReader(BaseConvoReader):
             if choice == 0:
                 print(self.preferences)
             elif choice in range(1, len(self.people) + 1):
-                # Colorama choices supported are below (https://pypi.python.org/pypi/colorama)
-                color_choies = ["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"]
-                color = None
-                while color not in [str(i) for i in range(len(color_choies))]:
-                    print("The following are color choices for the ForeGround for {0}:"
-                          .format(self.people[choice - 1]))
-                    print()
-                    for i in range(len(color_choies)):
-                        print(eval('Fore.{0}'.format(color_choies[i])) + '{0}) {1}'
-                              .format(i, color_choies[i]))
-                    color = input('\nSelect your option\n> ')
-                color = int(color)
-                self.preferences[self.people[choice - 1]]['Fore'] = color_choies[color]
+                # Colorama choices supported are (https://pypi.python.org/pypi/colorama)
+                # see self.color_choices
+                options = ["Name", "Message", "Date"]
+                print()
+                for i, option in enumerate(options):
+                    print("{0}) {1}".format(str(i + 1), option))
+                value_conditional = True
+                print('\nSelect your attribute')
+                while value_conditional:
+                    value_choice = input("> ")
+                    value_conditional = value_choice not in [str(i) for i in range(1, 4)]
+
+                color = self._pick_color(choice)
+                self.preferences[self.people[choice - 1]][options[int(value_choice) - 1]] = self.COLOR_CHOICES[color]
 
         print('Would you like to save your preferences? [Y/n]: ', end="")
         should_save = input()
@@ -408,6 +393,18 @@ class ConvoReader(BaseConvoReader):
             should_save = input('[Y/n]: ')
         if should_save.lower() in ['yes', 'y']:
             self.save_preferences()
+
+    def _pick_color(self, choice):
+        color = None
+        while color not in [str(i) for i in range(len(self.COLOR_CHOICES))]:
+            print("The following are color choices for the ForeGround for {0}:"
+                  .format(self.people[choice - 1]))
+            print()
+            for i in range(len(self.COLOR_CHOICES)):
+                print(eval('Fore.{0}'.format(self.COLOR_CHOICES[i])) + '{0}) {1}'
+                      .format(i, self.COLOR_CHOICES[i]))
+            color = input('\nSelect your option\n> ')
+        return int(color)
 
     def save_preferences(self):
         os.makedirs(self.path[0:-1], exist_ok=True)
@@ -432,18 +429,27 @@ class ConvoReader(BaseConvoReader):
         # the length of the longest name in self.people
         max_len = len(max(self.people, key=lambda name: len(name)))
         padding = ' ' * (max_len - len(person))
-        if person.lower() in self.preferences and 'Fore' in self.preferences[person.lower()]:
+        if person not in self.preferences:
+            print(person.title() + ":" + padding + msg + " | " + str(date))
+            return
+        if 'Name' in self.preferences[person]:
             try:
-                print(eval('Fore.{0}'.format(self.preferences[person]['Fore'])) + person.title(),
+                print(eval('Fore.{0}'.format(self.preferences[person]['Name'])) + person.title(),
                       end=": " + padding)
             except AttributeError:
                 print(person.title(), end=": " + padding)
         else:
             print(person.title(), end=": " + padding)
-        print(msg, end="")
-        if 'date_Fore_color' in self.preferences:
+        if 'Message' in self.preferences[person]:
             try:
-                print('Fore.{0}'.format(self.preferences['date_Fore_color']) + " | " + str(date))
+                print(eval('Fore.{0}'.format(self.preferences[person]['Message'])) + msg, end="")
+            except AttributeError:
+                print(msg, end="")
+        else:
+            print(msg, end="")
+        if 'Date' in self.preferences[person]:
+            try:
+                print( " | " + eval('Fore.{0}'.format(self.preferences[person]['Date'])) + str(date))
             except AttributeError:
                 print(" | " + str(date))
         else:
