@@ -10,6 +10,7 @@ import functions.emojis as emojis
 
 init(autoreset=True)
 
+
 class ConvoReader(BaseConvoReader):
     def __init__(self, convo_name, convo_list):
         """Constructor for ConvoReader, important instance variables summarized below:
@@ -23,29 +24,13 @@ class ConvoReader(BaseConvoReader):
         """
         BaseConvoReader.__init__(self, convo_name, convo_list)
 
-        self.path = 'data/' + self.__set_path()
+        self.path = 'data/' + self._set_path()
         self.preferences = self._load_preferences()
         # preferences_choices = {'personal': {"Name": val, "Message": val, "Date" : val},
         #                        'global': {'new_convo_time': val} }
         self.COLOR_CHOICES = ["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE",
                               "LIGHTBLACK_EX", "LIGHTBLUE_EX", "LIGHTCYAN_EX", "LIGHTGREEN_EX",
                               "LIGHTMAGENTA_EX", "LIGHTRED_EX", "LIGHTWHITE_EX", "LIGHTYELLOW_EX"]
-
-    def _raw_convo_starter(self):
-        """Percent of time each person starts the conversation according to a threshold number of minutes passed"""
-        threshold = 4 * 60 # 4 hours worth of minutes
-        convo_start_freq = Counter()
-        for person in self.people:
-            convo_start_freq[person] = 0
-        for i in range(self.len):
-            curr_date = self.convo[i][2]
-            prev_date = self.convo[i-1][2]
-            if curr_date.distance_from(prev_date) > threshold:
-                convo_start_freq[self.convo[i][0]] += 1
-        return convo_start_freq
-
-
-
 
     def print_people(self):
         """Prints to the screen an alphabetically sorted list of people
@@ -159,13 +144,6 @@ class ConvoReader(BaseConvoReader):
                     i += 1
                 print(string)
                 print()
-
-    @staticmethod
-    def get_emoji(text):
-        """Returns the emoji corresponding to the src value passed,
-        or the string passed if appropriate emojis isn't found
-        """
-        return emojis.src_to_emoiji(text)
 
     def prettify(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
@@ -394,6 +372,64 @@ class ConvoReader(BaseConvoReader):
         if should_save.lower() in ['yes', 'y']:
             self.save_preferences()
 
+    def save_preferences(self):
+        os.makedirs(self.path[0:-1], exist_ok=True)
+        with open(self.path + 'preferences.txt', mode='w', encoding='utf-8') as f:
+            f.write(repr(self.preferences))
+
+    def find(self, query, ignore_case=False, regex=False):
+        """Prints to the console the results of searching for the query string
+            Parameters:
+                ignore_case (optional): Whether the query string is case sensitive
+                regex (optional): Whether the query is a regular expression to be fully matched
+        """
+        # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
+
+        try:
+            indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
+                else self._find_indexes(query, ignore_case=ignore_case)
+        except re.error as e:
+            print(e)
+            return
+        if len(indexes) == 0:
+            print()
+            return
+        MAX_LEN_INDEX = len(max(map(str, indexes), key=len)) + 2
+        for i in indexes:
+            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
+            self._print_message(i)
+
+    def times(self, query, ignore_case=False, regex=False):
+        """Returns the number of times a message matching the query string occurs in the conversation
+            Parameters:
+                ignore_case (optional): Whether the query string is case sensitive
+                regex (optional): Whether the query is a regular expression to be fully matched
+        """
+
+        indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
+            else self._find_indexes(query, ignore_case=ignore_case)
+        return len(indexes)
+
+    @staticmethod
+    def get_emoji(text):
+        """Returns the emoji corresponding to the src value passed,
+        or the string passed if appropriate emojis isn't found
+        """
+        return emojis.src_to_emoiji(text)
+
+    def _raw_convo_starter(self):
+        """Percent of time each person starts the conversation according to a threshold number of minutes passed"""
+        threshold = 4 * 60  # 4 hours worth of minutes
+        convo_start_freq = Counter()
+        for person in self.people:
+            convo_start_freq[person] = 0
+        for i in range(self.len):
+            curr_date = self.convo[i][2]
+            prev_date = self.convo[i - 1][2]
+            if curr_date.distance_from(prev_date) > threshold:
+                convo_start_freq[self.convo[i][0]] += 1
+        return convo_start_freq
+
     def _pick_color(self, choice):
         color = None
         while color not in [str(i) for i in range(len(self.COLOR_CHOICES))]:
@@ -405,11 +441,6 @@ class ConvoReader(BaseConvoReader):
                       .format(i, self.COLOR_CHOICES[i]))
             color = input('\nSelect your option\n> ')
         return int(color)
-
-    def save_preferences(self):
-        os.makedirs(self.path[0:-1], exist_ok=True)
-        with open(self.path + 'preferences.txt', mode='w', encoding='utf-8') as f:
-            f.write(repr(self.preferences))
 
     def _load_preferences(self):
         try:
@@ -455,40 +486,7 @@ class ConvoReader(BaseConvoReader):
         else:
             print(" | " + str(date))
 
-    def find(self, query, ignore_case=False, regex=False):
-        """Prints to the console the results of searching for the query string
-            Parameters:
-                ignore_case (optional): Whether the query string is case sensitive
-                regex (optional): Whether the query is a regular expression to be fully matched
-        """
-        # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
-
-        try:
-            indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
-                else self._find_indexes(query, ignore_case=ignore_case)
-        except re.error as e:
-            print(e)
-            return
-        if len(indexes) == 0:
-            print()
-            return
-        MAX_LEN_INDEX = len(max(map(str, indexes), key=len)) + 2
-        for i in indexes:
-            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
-            self._print_message(i)
-
-    def times(self, query, ignore_case=False, regex=False):
-        """Returns the number of times a message matching the query string occurs in the conversation
-            Parameters:
-                ignore_case (optional): Whether the query string is case sensitive
-                regex (optional): Whether the query is a regular expression to be fully matched
-        """
-
-        indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
-            else self._find_indexes(query, ignore_case=ignore_case)
-        return len(indexes)
-
-    def __set_path(self):
+    def _set_path(self):
         dir_name = ""
         for person in self.people:
             split = person.split(' ')
