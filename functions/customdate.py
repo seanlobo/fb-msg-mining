@@ -114,9 +114,9 @@ class CustomDate():
             else:
                 low = mid + 1
                 mid = (low + high) // 2
-        while abs(lst[mid - 1].distance_from(date)) <= abs(lst[mid].distance_from(date)):
+        while abs(key(lst[mid - 1]).distance_from(date)) <= abs(key(lst[mid]).distance_from(date)):
             mid -= 1
-        while abs(lst[mid + 1].distance_from(date)) < abs(lst[mid].distance_from(date)):
+        while abs(key(lst[mid + 1]).distance_from(date)) < abs(key(lst[mid]).distance_from(date)):
             mid += 1
         return mid
 
