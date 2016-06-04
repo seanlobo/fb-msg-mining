@@ -24,8 +24,8 @@ class ConvoReader(BaseConvoReader):
         """
         BaseConvoReader.__init__(self, convo_name, convo_list)
 
-        self.path = 'data/'
-        self.preferences = {person: dict() for person in self.people}
+        self.path = 'data/' + self.__set_path()
+        self.preferences = self._load_preferences()
         self.preferences_choices = {'personal': ['Fore'], 'global': ['new_convo_time', 'date_Fore_color']}
 
     def _raw_convo_starter(self):
@@ -481,6 +481,23 @@ class ConvoReader(BaseConvoReader):
         indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
             else self._find_indexes(query, ignore_case=ignore_case)
         return len(indexes)
+
+    def __set_path(self):
+        dir_name = ""
+        for person in self.people:
+            split = person.split(' ')
+            for i in range(len(split) - 1):
+                dir_name += split[i]
+                dir_name += '-'
+            dir_name += split[-1]
+            dir_name += '_'
+        dir_name = dir_name[:-1]
+        if len(dir_name) > 255:
+            name = dir_name[:255]
+        else:
+            name = dir_name
+
+        return name + '/'
 
     def __getitem__(self, index):
         """Returns the tuple (person, message, datetime) for the corresponding index"""
