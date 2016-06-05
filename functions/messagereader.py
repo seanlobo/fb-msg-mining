@@ -107,6 +107,41 @@ class MessageReader:
                 pass
         return res
 
+    @staticmethod
+    def help():
+        condition = True
+        while condition:
+            print('Please select which feature you would like help with:\n')
+
+            print('1) Viewing a list of conversations')
+            print('2) Analyzing a specific conversation')
+            print('3) Exit helper\n')
+
+            choice_condition = True
+            while choice_condition:
+                choice = input('> ')
+                choice_condition = choice not in [str(i) for i in range(1, 4)]
+            print()
+
+            if choice == '1':
+                print('* To view a list of conversations, exit this helper and execute the command \"m.print_names()\"')
+                print('* To get more information about printing conversations, exit the helper and execute'
+                      ' \"help(m.print_names)\"')
+                print('\n')
+            elif choice == '2':
+                print('* To analyze a specific conversation, you must retrieve it in one of 3 main ways:')
+                print('a) Print to the screen the ordered list of conversations (see choice 1) and find the rank of'
+                      ' the conversation you would like. Then save that conversation to variable by executing the '
+                      'command \"variable_name = m.get_convo(rank_of_desired_convo)\"')
+                print('b) Get the conversation you would like by searching for it\'s name, e.g. executeing the command '
+                      '\"variable_name = m.get_convo(\'bob smith, sally brown\')\"')
+                print('c) Get the conversation you would like by searching for it\'s name as a list, e.g.'
+                      ' executing the command \"variable_name = m.get_convo([\'both smith\', [\'sally smith\'])\"')
+                print()
+                print('Once you have your desired conversation, to get additional help analyzing it execute '
+                      '\"help(variable_name_from_above)\"')
+
+            condition = choice != '3'
 
     def _raw_rank(self, convo_name):
         """Returns the rank of the particular conversation, or None if not found"""
