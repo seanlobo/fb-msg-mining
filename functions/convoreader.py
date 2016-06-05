@@ -1,5 +1,6 @@
 from colorama import init, Fore, Back, Style
 from collections import Counter
+import inspect
 import os
 import re
 
@@ -409,6 +410,43 @@ class ConvoReader(BaseConvoReader):
         indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
             else self._find_indexes(query, ignore_case=ignore_case)
         return len(indexes)
+
+    def help(self):
+        print('Below is a list of all data-analyzing functions you can perform on conversations.')
+        print('Select one of the following to view more details')
+
+        all_methods = [method for method in dir(self) if '__' not in method and method[0] != '_']
+        while True:
+            print('\n0) Exit\n')
+
+            for i, method in enumerate(all_methods):
+                print('{0}) {1}'.format(str(i + 1), method))
+
+            print('\nSelect your choice')
+            while True:
+                choice = input('> ')
+                if choice in [str(i) for i in range(len(all_methods) + 1)]:
+                    break
+
+            choice = int(choice) - 1
+            if choice == -1:
+                return
+
+            print('\n' * 2)
+            print("Docs for {0}".format(all_methods[choice]))
+            print(inspect.getdoc(eval('self.{0}'.format(all_methods[choice]))))
+
+            print()
+
+            print("View help again? [Y/n] ")
+            again = ""
+            while again.lower() not in ['y', 'yes', 'n', 'no']:
+                again = input('> ')
+
+            if again.lower() in ['no', 'n']:
+                return
+            
+            print('\n' * 4)
 
     @staticmethod
     def get_emoji(text):
