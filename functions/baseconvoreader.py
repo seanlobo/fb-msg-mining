@@ -9,21 +9,21 @@ import functions.emojis as emojis
 
 class BaseConvoReader():
     def __init__(self, convo_name, convo_list):
-        self.name = convo_name.lower()
-        self.convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
-        self.people = self.get_people()
-        self.individual_words = self._cleaned_word_freqs()
-        self.len = len(self.convo)
+        self._name = convo_name.lower()
+        self._convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
+        self._people = self.get_people()
+        self._individual_words = self._cleaned_word_freqs()
+        self._len = len(self._convo)
 
     def characters(self, person=None):
         """Returns character frequency in conversation in a Counter object"""
         if person is not None:
             assert type(person) is str, "Optional parameter person must be a string"
             person = person.lower()
-            assert person in self.people, "The person you said isn't in this conversation; this conversatin is for" \
-                                          " {0}".format(str(self.people))
+            assert person in self._people, "The person you said isn't in this conversation; this conversatin is for" \
+                                           " {0}".format(str(self._people))
         res = Counter()
-        for pers, msg, date in self.convo:
+        for pers, msg, date in self._convo:
             if person is None or pers == person:
                 res.update(msg)
         return res
@@ -58,7 +58,7 @@ class BaseConvoReader():
     def get_people(self):
         duplicate = re.compile("duplicate #\d+", re.IGNORECASE)
         people = []
-        for person in sorted(self.name.split(', ')):
+        for person in sorted(self._name.split(', ')):
             if duplicate.fullmatch(person) is None:
                 people.append(person)
         return people
@@ -120,12 +120,12 @@ class BaseConvoReader():
         else:
             filt = lambda x: True
 
-        start = self.convo[0][2]
-        end = self.convo[-1][2]
+        start = self._convo[0][2]
+        end = self._convo[-1][2]
         days = end - start
 
         msg_freq = [[None, 0] for i in range(days + 1)]
-        for person, msg, date in self.convo:
+        for person, msg, date in self._convo:
             if filt(person.lower()):
                 msg_freq[date - start][1] += 1
 
@@ -155,7 +155,7 @@ class BaseConvoReader():
         total_msgs = 0
         msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(ceil(60 * 24 / window))]
 
-        for person, msg, date in self.convo:
+        for person, msg, date in self._convo:
             if filt(person.lower()):
                 index = (date.minutes() // window) % (len(msg_bucket))
                 msg_bucket[index][1] += 1
@@ -182,31 +182,31 @@ class BaseConvoReader():
         """
         if person is not None:
             person = person.lower()
-            assert person in self.name, "\"{0}\" is not in this conversation".format(person.title())
+            assert person in self._name, "\"{0}\" is not in this conversation".format(person.title())
         if word is not None:
             word = word.lower()
         if person is not None:
             if word is not None:
-                return self.individual_words[person][word]
+                return self._individual_words[person][word]
             else:
-                return self.individual_words[person]
+                return self._individual_words[person]
         else:
             if word is not None:
                 res = 0
-                for key, val in self.individual_words.items():
-                    res += self.individual_words[key][word]
+                for key, val in self._individual_words.items():
+                    res += self._individual_words[key][word]
                 return res
             else:
-                return self.individual_words
+                return self._individual_words
 
     def _raw_msgs_by_weekday(self):
         """Returns a list containing frequency of chatting by days
         of week, ordered by index, with 0 being Monday and 6 Sunday
         """
         weekday_freq = [0 for i in range(7)]
-        check = self.convo[0][2]
+        check = self._convo[0][2]
         msgs = 0
-        for person, msg, date in self.convo:
+        for person, msg, date in self._convo:
             if check - date == 0:
                 msgs += 1
             else:
@@ -220,7 +220,7 @@ class BaseConvoReader():
         to a Counter object of their raw word frequencies
         """
         raw_word_freq = dict()
-        for person, msg, date in self.convo:
+        for person, msg, date in self._convo:
             if person not in raw_word_freq:
                 raw_word_freq[person] = Counter()
             raw_word_freq[person].update(msg.lower().split(' '))
@@ -252,8 +252,8 @@ class BaseConvoReader():
         if ignore_case:
             key = lambda x: x.lower()
         indexes = []
-        for i in range(len(self.convo)):
-            if query in key(self.convo[i][1]):
+        for i in range(len(self._convo)):
+            if query in key(self._convo[i][1]):
                 indexes.append(i)
         return indexes
 
@@ -264,8 +264,8 @@ class BaseConvoReader():
         indexes = []
         try:
             r = re.compile(query, re.IGNORECASE) if ignore_case else re.compile(query)
-            for i in range(len(self.convo)):
-                if r.fullmatch(self.convo[i][1]) is not None:
+            for i in range(len(self._convo)):
+                if r.fullmatch(self._convo[i][1]) is not None:
                     indexes.append(i)
             return indexes
         except re.error:
@@ -273,7 +273,7 @@ class BaseConvoReader():
 
     def __msgs_per_person(self):
         res = dict()
-        for person, msg, date in self.convo:
+        for person, msg, date in self._convo:
             if person not in res:
                 res[person] = 1
             else:
@@ -282,17 +282,17 @@ class BaseConvoReader():
 
     def __msgs_spoken(self, name):
         name = name.lower()
-        if name not in self.people:
+        if name not in self._people:
             raise Exception("Invalid name passed")
         num = 0
-        for person, msg, date in self.convo:
+        for person, msg, date in self._convo:
             if person == name:
                 num += 1
         return num
 
     def __words_per_person(self):
         res = dict()
-        for person, msg, date in self.convo:
+        for person, msg, date in self._convo:
             if person not in res:
                 res[person] = len(msg.split())
             else:
@@ -301,17 +301,17 @@ class BaseConvoReader():
 
     def __words_spoken(self, name):
         name = name.lower()
-        if name not in self.people:
+        if name not in self._people:
             raise Exception("Invalid name passed")
         num = 0
-        for person, msg, date in self.convo:
+        for person, msg, date in self._convo:
             if person == name:
                 num += len(msg.split())
         return num
 
     def __ave_words_per_person(self):
         words = []
-        for name in self.people:
+        for name in self._people:
             msgs = float(self.__msgs_spoken(name))
             tot_words = float(self.__words_spoken(name))
             if msgs > 0:
@@ -323,7 +323,7 @@ class BaseConvoReader():
 
     def __ave_words(self, name):
         name = name.lower()
-        if name not in self.people:
+        if name not in self._people:
             return -1
         return self.__words_spoken(name) / self.__msgs_spoken(name)
 
@@ -352,15 +352,15 @@ class BaseConvoReader():
                 assert type(ele) is str, "Each element in contact must be a string"
                 contact[i] = ele.lower()
             for ele in contact:
-                assert ele in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-                    ele, str(self.people))
+                assert ele in self._people, "{0} is not in the list of people for this conversation:\n{1}".format(
+                    ele, str(self._people))
         elif type(contact) is str:
-            assert contact in self.people, "{0} is not in the list of people for this conversation:\n{1}".format(
-                contact, str(self.people))
+            assert contact in self._people, "{0} is not in the list of people for this conversation:\n{1}".format(
+                contact, str(self._people))
             contact = [contact]
 
         return contact
 
     def __iter__(self):
-        return (message for message in self.convo)
+        return (message for message in self._convo)
 

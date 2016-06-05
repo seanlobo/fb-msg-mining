@@ -24,11 +24,11 @@ class ConvoReader(BaseConvoReader):
         """
         BaseConvoReader.__init__(self, convo_name, convo_list)
 
-        self.path = 'data/' + self._set_path()
-        self.preferences = self._load_preferences()
+        self._path = 'data/' + self._set_path()
+        self._preferences = self._load_preferences()
         # preferences_choices = {'personal': {"Name": val, "Message": val, "Date" : val},
         #                        'global': {'new_convo_time': val} }
-        self.COLOR_CHOICES = ["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE",
+        self._COLOR_CHOICES = ["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE",
                               "LIGHTBLACK_EX", "LIGHTBLUE_EX", "LIGHTCYAN_EX", "LIGHTGREEN_EX",
                               "LIGHTMAGENTA_EX", "LIGHTRED_EX", "LIGHTWHITE_EX", "LIGHTYELLOW_EX"]
 
@@ -37,7 +37,7 @@ class ConvoReader(BaseConvoReader):
         in the conversation
         """
         res = ""
-        for i, pers in enumerate(self.people):
+        for i, pers in enumerate(self._people):
             res += "{0}) {1}\n".format(i + 1, pers.title())
         print(res)
 
@@ -150,18 +150,18 @@ class ConvoReader(BaseConvoReader):
         BaseConvoReader._assert_dates(start, end)
         if start is not None:
             start = CustomDate.from_date_string(start)
-            assert start.date >= self.convo[0][2].date, \
-                "Your conversations only begin after {0}".format(self.convo[0][2].full_date)
-            start = CustomDate.bsearch_index(self.convo, start, key=lambda x: x[2])
+            assert start.date >= self._convo[0][2].date, \
+                "Your conversations only begin after {0}".format(self._convo[0][2].full_date)
+            start = CustomDate.bsearch_index(self._convo, start, key=lambda x: x[2])
         else:
             start = 0
         if end is not None:
             end = CustomDate.from_date(CustomDate.from_date_string(end) + 1)
-            assert end.date <= self.convo[-1][2].date,\
-                "Your conversations ends on {0}".format(self.convo[-1][2].full_date)
-            end = CustomDate.bsearch_index(self.convo, end, key=lambda x: x[2])
+            assert end.date <= self._convo[-1][2].date,\
+                "Your conversations ends on {0}".format(self._convo[-1][2].full_date)
+            end = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2])
         else:
-            end = len(self.convo)
+            end = len(self._convo)
 
         # for person, msg, date in self.convo:
         for i in range(start, end):
@@ -288,24 +288,24 @@ class ConvoReader(BaseConvoReader):
     def save_word_freq(self):
         """Saves to a file the ordered rankings of word frequencies by person in the chat"""
 
-        os.makedirs(self.path[0:-1], exist_ok=True)
-        for person, counter in self.individual_words.items():
+        os.makedirs(self._path[0:-1], exist_ok=True)
+        for person, counter in self._individual_words.items():
             split = person.split()
             pers = ''
             for i in range(len(split) - 1):
                 pers += split[i]
                 pers += '-'
             pers += split[-1]
-            with open(self.path + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
+            with open(self._path + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
                 lst = []
                 for key, val in counter.items():
                     lst.append((key, val))
                 for key, val in sorted(lst, key=lambda x: x[1], reverse=True):
                     f.write("{0}: {1}".format(key, val) + "\n")
         count = Counter()
-        for key, val in self.individual_words.items():
+        for key, val in self._individual_words.items():
             count += val
-        with open(self.path + 'total.txt', mode='w', encoding='utf-8') as f:
+        with open(self._path + 'total.txt', mode='w', encoding='utf-8') as f:
             for key, val in count.most_common():
                 f.write("{0}: {1}".format(key, val) + "\n")
 
@@ -324,17 +324,17 @@ class ConvoReader(BaseConvoReader):
 
         choice = None
         while choice != -1:
-            while choice not in [str(ele) for ele in range(-1, len(self.people) + 1)]:
+            while choice not in [str(ele) for ele in range(-1, len(self._people) + 1)]:
                 print('\n-1) Cancel/Finish preferences')
                 print(' 0) View current preferences\n')
 
-                max_len = len(str(len(self.people))) + 1
-                for i, person in enumerate(self.people):
-                    if 'Name' in self.preferences[person]:
+                max_len = len(str(len(self._people))) + 1
+                for i, person in enumerate(self._people):
+                    if 'Name' in self._preferences[person]:
                         # is the name quality in our preferences?
                         try: # if so we try to use it. Must put in a try statement
                             # in case we have bad values (as in a user modified the file)
-                            print(eval('Fore.{0}'.format(self.preferences[person]['Name'])) + "{0}) {1}"
+                            print(eval('Fore.{0}'.format(self._preferences[person]['Name'])) + "{0}) {1}"
                                   .format(' ' * (max_len - len(str(i + 1))) + str(i + 1), person))
                         except AttributeError:
                             # if we have a bad value an attribute error should occur from the eval call
@@ -347,8 +347,8 @@ class ConvoReader(BaseConvoReader):
 
             choice = int(choice)
             if choice == 0:
-                print(self.preferences)
-            elif choice in range(1, len(self.people) + 1):
+                print(self._preferences)
+            elif choice in range(1, len(self._people) + 1):
                 # Colorama choices supported are (https://pypi.python.org/pypi/colorama)
                 # see self.color_choices
                 options = ["Name", "Message", "Date"]
@@ -362,7 +362,7 @@ class ConvoReader(BaseConvoReader):
                     value_conditional = value_choice not in [str(i) for i in range(1, 4)]
 
                 color = self._pick_color(choice)
-                self.preferences[self.people[choice - 1]][options[int(value_choice) - 1]] = self.COLOR_CHOICES[color]
+                self._preferences[self._people[choice - 1]][options[int(value_choice) - 1]] = self._COLOR_CHOICES[color]
 
         print('Would you like to save your preferences? [Y/n]: ', end="")
         should_save = input()
@@ -373,9 +373,9 @@ class ConvoReader(BaseConvoReader):
             self.save_preferences()
 
     def save_preferences(self):
-        os.makedirs(self.path[0:-1], exist_ok=True)
-        with open(self.path + 'preferences.txt', mode='w', encoding='utf-8') as f:
-            f.write(repr(self.preferences))
+        os.makedirs(self._path[0:-1], exist_ok=True)
+        with open(self._path + 'preferences.txt', mode='w', encoding='utf-8') as f:
+            f.write(repr(self._preferences))
 
     def find(self, query, ignore_case=False, regex=False):
         """Prints to the console the results of searching for the query string
@@ -421,66 +421,66 @@ class ConvoReader(BaseConvoReader):
         """Percent of time each person starts the conversation according to a threshold number of minutes passed"""
         threshold = 4 * 60  # 4 hours worth of minutes
         convo_start_freq = Counter()
-        for person in self.people:
+        for person in self._people:
             convo_start_freq[person] = 0
-        for i in range(self.len):
-            curr_date = self.convo[i][2]
-            prev_date = self.convo[i - 1][2]
+        for i in range(self._len):
+            curr_date = self._convo[i][2]
+            prev_date = self._convo[i - 1][2]
             if curr_date.distance_from(prev_date) > threshold:
-                convo_start_freq[self.convo[i][0]] += 1
+                convo_start_freq[self._convo[i][0]] += 1
         return convo_start_freq
 
     def _pick_color(self, choice):
         color = None
-        while color not in [str(i) for i in range(len(self.COLOR_CHOICES))]:
+        while color not in [str(i) for i in range(len(self._COLOR_CHOICES))]:
             print("The following are color choices for the ForeGround for {0}:"
-                  .format(self.people[choice - 1]))
+                  .format(self._people[choice - 1]))
             print()
-            for i in range(len(self.COLOR_CHOICES)):
-                print(eval('Fore.{0}'.format(self.COLOR_CHOICES[i])) + '{0}) {1}'
-                      .format(i, self.COLOR_CHOICES[i]))
+            for i in range(len(self._COLOR_CHOICES)):
+                print(eval('Fore.{0}'.format(self._COLOR_CHOICES[i])) + '{0}) {1}'
+                      .format(i, self._COLOR_CHOICES[i]))
             color = input('\nSelect your option\n> ')
         return int(color)
 
     def _load_preferences(self):
         try:
-            with open(self.path + 'preferences.txt', mode='r', encoding='utf-8') as f:
+            with open(self._path + 'preferences.txt', mode='r', encoding='utf-8') as f:
                 return eval(f.read())
         except FileNotFoundError:
-            return {person: dict() for person in self.people}
+            return {person: dict() for person in self._people}
 
     def _print_message(self, number):
         try:
             assert type(number) is int, "number must be an integer"
-            assert number in range(len(self.convo)), "number must be in range({0})".format(len(self.convo))
+            assert number in range(len(self._convo)), "number must be in range({0})".format(len(self._convo))
         except AssertionError as e:
             raise e
 
-        person, msg, date = self.convo[number]
+        person, msg, date = self._convo[number]
         # the length of the longest name in self.people
-        max_len = len(max(self.people, key=lambda name: len(name)))
+        max_len = len(max(self._people, key=lambda name: len(name)))
         padding = ' ' * (max_len - len(person))
-        if person not in self.preferences:
+        if person not in self._preferences:
             print(person.title() + ":" + padding + msg + " | " + str(date))
             return
-        if 'Name' in self.preferences[person]:
+        if 'Name' in self._preferences[person]:
             try:
-                print(eval('Fore.{0}'.format(self.preferences[person]['Name'])) + person.title(),
+                print(eval('Fore.{0}'.format(self._preferences[person]['Name'])) + person.title(),
                       end=": " + padding)
             except AttributeError:
                 print(person.title(), end=": " + padding)
         else:
             print(person.title(), end=": " + padding)
-        if 'Message' in self.preferences[person]:
+        if 'Message' in self._preferences[person]:
             try:
-                print(eval('Fore.{0}'.format(self.preferences[person]['Message'])) + msg, end="")
+                print(eval('Fore.{0}'.format(self._preferences[person]['Message'])) + msg, end="")
             except AttributeError:
                 print(msg, end="")
         else:
             print(msg, end="")
-        if 'Date' in self.preferences[person]:
+        if 'Date' in self._preferences[person]:
             try:
-                print( " | " + eval('Fore.{0}'.format(self.preferences[person]['Date'])) + str(date))
+                print( " | " + eval('Fore.{0}'.format(self._preferences[person]['Date'])) + str(date))
             except AttributeError:
                 print(" | " + str(date))
         else:
@@ -488,7 +488,7 @@ class ConvoReader(BaseConvoReader):
 
     def _set_path(self):
         dir_name = ""
-        for person in self.people:
+        for person in self._people:
             split = person.split(' ')
             for i in range(len(split) - 1):
                 dir_name += split[i]
@@ -510,18 +510,18 @@ class ConvoReader(BaseConvoReader):
         elif index >= len(self) or index < -len(self):
             raise IndexError
         else:
-            return self.convo[index] if index >= 0 else self.convo[len(self) + index]
+            return self._convo[index] if index >= 0 else self._convo[len(self) + index]
 
     def __len__(self):
         """Returns the number of messages in self"""
-        return self.len
+        return self._len
 
     def __str__(self):
         """Returns a string with the alphabetically sorted names of people
         in this conversation
         """
-        return "Converation for " + self.name.title()
+        return "Converation for " + self._name.title()
 
     def __repr__(self):
         """Returns a valid constructor for this object"""
-        return "ConvoReader({0}, {1})".format(repr(self.name), repr(self.convo))
+        return "ConvoReader({0}, {1})".format(repr(self._name), repr(self._convo))
