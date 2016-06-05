@@ -78,20 +78,24 @@ class MessageReader:
         return self.get_convo(int(random.random() * len(self) + 1))
 
     def rank(self, convo_name):
-        """Returns the rank of the particular conversation, or None if not found"""
-        assert type(convo_name) in [str, list], "You must pass a string or list of strings"
-        if type(convo_name) == list:
-            for i, name in enumerate(convo_name):
-                assert type(name) == str, "Your list must contain strings corresponding to names of people"
-                convo_name[i] = name.lower()
-        else:
-            convo_name = convo_name.lower().split(', ')
-        for i, name in enumerate(self.data.keys()):
-            if contents_equal(convo_name, name.lower().split(', ')):
-                return i + 1
-        return
+        """Prints to the console the rank of the conversation passed"""
+        try:
+            res = self._raw_rank(convo_name)
+            if res is not None:
+                print(res)
+            else:
+                print("A conversation for {0} was not found"
+                      .format(convo_name.get_people if isinstance(convo_name, ConvoReader) else str(convo_name)))
+        except AssertionError as e:
+            print(e)
 
     def total_emojis(self, only_me=True):
+        """Returns the total emojis in an aggragate sum of all your conversations
+            Parameters:
+                only_me (optional): Considers only your sent messages if True, otherwise both your sent and received
+            Return:
+                Counter object storing your emoji frequencies
+        """
         res = Counter()
         for i in range(1, len(self) + 1):
             try:
@@ -103,7 +107,25 @@ class MessageReader:
                 pass
         return res
 
+
+    def _raw_rank(self, convo_name):
+        """Returns the rank of the particular conversation, or None if not found"""
+        assert type(convo_name) in [str, list, ConvoReader], "You must pass a Conversation name or ConvoReader object"
+        if type(convo_name) is ConvoReader:
+            return self._raw_rank(convo_name.get_people())
+        if type(convo_name) == list:
+            for i, name in enumerate(convo_name):
+                assert type(name) == str, "Your list must contain strings corresponding to names of people"
+                convo_name[i] = name.title()
+        elif type(convo_name) == str:
+            convo_name = convo_name.title().split(', ')
+        for i, name in enumerate(self.names):
+            if contents_equal(convo_name, name.title().split(', ')):
+                return i + 1
+
     def _get_convo_names_freq(self):
+        """Returns the list of title case names of conversations you have,
+        sorted first in order of most chatted to least and second alphabetically"""
         return [ele for ele, _ in
             sorted([(key, len(val)) for key, val in self.data.items()],
                     key=lambda x: (-x[1], x[0]))]
