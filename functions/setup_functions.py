@@ -133,6 +133,56 @@ def get_messages_readable(thread, previous=None):
 
 def get_all_msgs_dict(msg_html_path='./messages.htm'):
     """Returns the dictionary uesd by MessageReader"""
+    def add_to_duplicate():
+        """Helper method to add a message group to a DUPLICATE conversation"""
+        nonlocal msgs, cur_thread, convo_name, next_time
+        duplicate_num = 1  # the number of duplicate message groups (have the same people, aka name)
+        # but in reality belong to different conversations
+
+        added = False # used so that we don't accidentally add something twice
+
+        # while there exists another duplicate conversation in our list keep checking if the current
+        # message group belongs to it. If we exit the while loop a new conversation is created with
+        # "DUPLICATE #X appended to distinguish it, with X being the xth new duplicate conversation
+        while (convo_name + ', DUPLICATE #{0}'.format(duplicate_num)) in msgs and not added:
+            new_name = convo_name + ', DUPLICATE #{0}'.format(duplicate_num)
+
+            # The time of the last message in the conversation for new_name
+            prev_time = CustomDate(msgs[new_name][-1][2])
+
+            if prev_time.distance_from(next_time) <= 0:
+                # if our current conversation was during or after the last message in the new_name convo
+
+                print('# previous convo end for {0}'.format(convo_name))
+                for i in range(- min(5, len(msgs[new_name]), 0)):
+                    print(msgs[new_name][i])
+                print("\n# next convo start")
+                for i in range(0, min(6, len(cur_thread))):
+                    print(cur_thread[i])
+                # prints last and first 5 messages of previous and current message groups, respectively
+
+                are_same = input(Fore.MAGENTA + Back.BLACK + "\nAre these two chunks from "
+                                                             "the same conversation? [Y/n]\n You might "
+                                                             "have to look this up on facebook.com\n> ")
+                while are_same.lower() not in ['y', 'yes', 'n', 'no']:
+                    are_same = input(Style.RESET_ALL + "[Y/n] > ")
+                # User input for whether the two message groups are in the same conversation
+
+                if are_same.lower() in ['no', 'n']:
+                    duplicate_num += 1  # if they aren't the same, increment duplicate_num and try again
+                elif not added:
+                    # check to make sure the current message group hasn't already been added, otherwise add it
+                    msgs[new_name].extend(cur_thread)
+                    added = True
+            else:
+                # this conversation existed but was after our current one, so increment the number and try again
+                duplicate_num += 1
+
+        if not added:
+            # if the current message group hasn't been added, add with a new duplicate #
+            msgs[convo_name + ', DUPLICATE #{0}'.format(duplicate_num)] = cur_thread
+        return
+
     all_thread_containers = get_all_thread_containers(msg_html_path)
     unordered_threads, footer = get_all_threads_unordered(all_thread_containers)
 
@@ -149,9 +199,12 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
             # message group's last message and this message group's first message. This time helps
             # determine whether both message groups belong to the same conversation
 
-            if prev_time.distance_from(next_time) > 0 or prev_time.distance_from(next_time) <= -3:
-                # if the previous message group is within 3 minutes of the new message group it
-                # most likely was from the same conversation, and is treated as such, skipping this block
+            if -3 <= prev_time.distance_from(next_time) <= 0:
+                # the previous conversation chunk is before the new one and within 3 minutes
+                msgs[convo_name].extend(cur_thread)
+            elif prev_time.distance_from(next_time) < -3:
+                # if the new message group is after the new message group it but not within 3 minutes
+                # we need user input to see if the two belong to the same chat
 
                 print(Fore.RED + Back.BLACK + '# previous convo end for {0}'.format(convo_name))
                 for i in range(- min(5, len(msgs[convo_name])), 0):
@@ -172,47 +225,20 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
 
                 if are_same.lower() in ['y', 'yes']: # if part of same convo append the new to the old
                     msgs[convo_name].extend(cur_thread)
+
                 else:
-                    duplicate_num = 1 # the number of duplicate message groups (have the same people, aka name)
-                                      # but in reality belong to different conversations
-                    added = False
-
-                    # while there exists another duplicate conversation in our list keep checking if the current
-                    # message group belongs to it. If we exit the while loop a new conversation is created with
-                    # "DUPLICATE #X appended to distinguish it, with X being the xth new duplicate conversation
-                    while (convo_name + ', DUPLICATE #{0}'.format(duplicate_num)) in msgs:
-                        new_name = convo_name + ', DUPLICATE #{0}'.format(duplicate_num)
-                        print('# previous convo end for {0}'.format(convo_name))
-                        for i in range(- min(5, len(msgs[new_name]), 0)):
-                            print(msgs[new_name][i])
-                        print("\n# next convo start")
-                        for i in range(0, min(6, len(cur_thread))):
-                            print(cur_thread[i])
-                        # Again prints last and first 5 messages of previous and current message groups, respectively
-
-                        are_same = input( Fore.MAGENTA + Back.BLACK + "\nAre these two chunks from "
-                                                                      "the same conversation? [Y/n]\n You might "
-                                                                      "have to look this up on facebook.com\n> ")
-                        while are_same.lower() not in ['y', 'yes', 'n', 'no']:
-                            are_same = input(Style.RESET_ALL + "[Y/n] > ")
-                        # User input for whether the two message groups are in the same conversation
-
-                        if are_same.lower() in ['no', 'n']:
-                            duplicate_num += 1 # if they aren't the same, increment duplicate_num and try again
-                        elif not added:
-                            # check to make sure the current message group hasn't already been added, otherwise add it
-                            msgs[new_name].extend(cur_thread)
-                            added = True
-                            break
-                    if not added:
-                        # if the current message group hasn't been added, add with a new duplicate #
-                        msgs[convo_name + ', DUPLICATE #{0}'.format(duplicate_num)] = cur_thread
+                    # the two conversations are NOT the same (because of user input)
+                    #  so we need to add the new one to an appropriate duplicate
+                    add_to_duplicate()
             else:
-                # easy case, a message group with the name of the current one already exists, but because the two
-                # are within 3 minutes of each other they are assumed to be in the same conversation and added
-                msgs[convo_name].extend(cur_thread)
-        else: # A conversation with the name of current message group does not exist, so it is added with no issues :D
+                # The two conversations are not the same (since the previous is after the new one)
+                # so we need t add the new one to an appropriate duplicate
+                add_to_duplicate()
+
+        else:
+            # A conversation with the name of current message group does not exist, so it is added with no issues :D
             msgs[convo_name] = cur_thread
+            
     print('\a', '')
     return (msgs, str(footer))
 

@@ -179,8 +179,6 @@ class ConvoReader(BaseConvoReader):
         try:
             msgs_freq = self._raw_msgs_graph(contact)
             BaseConvoReader._assert_dates(start, end)
-            msgs_freq = self._msgs_graph(contact)
-            self.__assert_dates(start, end)
         except AssertionError as e:
             print(e)
             return
