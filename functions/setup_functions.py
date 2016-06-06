@@ -38,18 +38,10 @@ def get_all_thread_containers(msg_html_path):
 
     # soup object that holds all of the html
     soup = BeautifulSoup(text, 'html.parser')
+
     # finds the outer div tag that holds all relevant information
-    divs = []
-    for div in soup.find_all('div', class_='contents'):
-        divs.append(div)
-    div_tag = divs[0]
-
-    footer = []
-    for foot in soup('div', class_='footer'):
-        footer.append(foot)
-
-    divs = None
-    soup = None
+    div_tag = soup.find('div', class_='contents')
+    footer = soup.find('div', class_='footer')
 
     # creates a list containing elements whose div
     # tags hold the chat data
@@ -57,10 +49,10 @@ def get_all_thread_containers(msg_html_path):
     for div in div_tag("div", recursive=False):
         all_divs.append(div)
 
-    return (all_divs, footer[0].contents[0])
+    return (all_divs, footer)
 
 
-def get_all_threads_unordered(all_divs, convo_name=None):
+def get_all_threads_unordered(all_divs):
     """Returns a list of message_divs (threads) whose contents
     match the passed convo_name, or all message_divs by default
 
@@ -75,25 +67,10 @@ def get_all_threads_unordered(all_divs, convo_name=None):
     ]
     """
     all_divs, footer = all_divs
-
-    def contents_equal(lst1, lst2):
-        if len(lst1) != len(lst2):
-            return False
-        for ele in lst1:
-            if ele not in lst2:
-                return False
-        return True
-
-    if convo_name is not None:
-        assert type(convo_name) is list, "You must pass in a list \
-                                          of names"
-
     thread_bucket = []
     for msg_container in all_divs:
         for msg_div in msg_container('div', class_="thread", recursive=False):
-            person = msg_div.contents[0].split(', ')
-            if convo_name is None or contents_equal(person, convo_name):
-                thread_bucket.append(msg_div)
+            thread_bucket.append(msg_div)
 
     return (thread_bucket, footer)
 
@@ -238,7 +215,7 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
         else:
             # A conversation with the name of current message group does not exist, so it is added with no issues :D
             msgs[convo_name] = cur_thread
-            
+
     print('\a', '')
     return (msgs, str(footer))
 
