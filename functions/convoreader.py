@@ -80,7 +80,7 @@ class ConvoReader(BaseConvoReader):
             number of words as values paired with names of people as keys.
         """
         value = self._raw_ave_words(name)
-        if type(value) is float:
+        if isinstance(value, int) or isinstance(value, float):
             print(value)
         else:
             for person, msgs in value.most_common():

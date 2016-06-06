@@ -186,10 +186,13 @@ class BaseConvoReader():
         if word is not None:
             word = word.lower()
         if person is not None:
-            if word is not None:
-                return self._individual_words[person][word]
-            else:
-                return self._individual_words[person]
+            try:
+                if word is not None:
+                    return self._individual_words[person][word]
+                else:
+                    return self._individual_words[person]
+            except KeyError:
+                return Counter() if word is None else 0
         else:
             if word is not None:
                 res = 0
@@ -325,6 +328,8 @@ class BaseConvoReader():
         name = name.lower()
         if name not in self._people:
             return -1
+        if self.__msgs_spoken(name) == 0:
+            return 0
         return self.__words_spoken(name) / self.__msgs_spoken(name)
 
     @staticmethod
