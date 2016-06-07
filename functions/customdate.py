@@ -109,7 +109,6 @@ class CustomDate():
             high = len(lst) - 1
         mid = (low + high) // 2
         if isinstance(date, str):
-
             date = CustomDate.from_date_string(date)
         while key(lst[mid]) != date and mid > low and mid < high:
             if key(lst[mid]) > date:
@@ -137,8 +136,11 @@ class CustomDate():
         date_list = [int(i) for i in date_string.split('/')]
         try:
             date(date_list[2], date_list[0], date_list[1])
+            return
         except ValueError as e:
-            raise AssertionError(str(e))
+            s = str(e)
+        finally:
+            raise AssertionError(s)
 
     @staticmethod
     def assert_dates(*args):
