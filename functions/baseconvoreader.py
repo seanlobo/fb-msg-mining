@@ -12,6 +12,7 @@ class BaseConvoReader():
         self._name = convo_name.lower()
         self._convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
         self._people = self.get_people()
+        self._kicked_or_left = [person for person in self._people if person not in self._name.split(', ')]
         self._individual_words = self._cleaned_word_freqs()
         self._len = len(self._convo)
 
@@ -61,7 +62,10 @@ class BaseConvoReader():
         for person in sorted(self._name.split(', ')):
             if duplicate.fullmatch(person) is None:
                 people.append(person)
-        return people
+        for person, msg, date in self._convo:
+            if person.lower() not in people:
+                people.append(person.lower())
+        return sorted(people)
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat

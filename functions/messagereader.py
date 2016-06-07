@@ -1,5 +1,9 @@
+from colorama import Fore, init
 from collections import Counter
 import random
+
+
+init(autoreset=True)
 
 from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
@@ -72,6 +76,82 @@ class MessageReader:
                 return ConvoReader(name, self.data[name])
         print("You haven't talked with {0} before".format(people))
         return None
+
+    def edit_convo_participants(self, convo_num, old_name, new_name):
+        """Updates the specified conversation number by replacing all instances of old_name in the person
+        attribute with new_name
+        Parameter:
+            convo_num: an integer representing the conversation we would like to edit
+            old_name: the old name to be replaced
+            new_name: the new name to replace old_name with
+        """
+        # Assertions to make sure data is good 
+        assert isinstance(convo_num, int), "convo_num must be an integer"
+        assert 1 <= convo_num <= len(self) or -len(self) <= convo_num <= -1, \
+            "convo_num must be a valid index (between 1 and the number of conversations)"
+        if convo_num < 1:
+            convo_num = convo_num + len(self) + 1
+        assert isinstance(old_name, str), "old_name must be a string"
+        old_name = old_name.lower()
+        convo = self.get_convo(convo_num)
+        assert old_name in convo.get_people(), "old_name must be someone currently in the conversation"
+        assert isinstance(new_name, str), "new_name must be a string"
+        new_name = new_name.lower()
+        # Assertions to make sure data is good
+
+        if new_name in convo.get_people():
+            # if the user is trying to replace a name with an already existing name, 
+            # it could be impossible to undo this, since we can't tell which names 
+            # were originally the new name and which were changed. This block warns them 
+            print("{0} is already in the conversation. Swapping {1} for {2} will potentially make it "
+                  "impossible to revert settings for this conversation alone. If you proceed and save these changes,"
+                  "you will have to run setup again and revert all conversation edits. "
+                  .format(new_name, old_name, new_name), end="")
+            print(Fore.RED + "Are you sure you would like to proceed? [Y/n]")
+            while True:
+                choice = input('> ').lower()
+                if choice in ['y', 'yes', 'n', 'no']:
+                    break
+            print()
+            if choice in ['no', 'n']:
+                return
+
+        occurrences = 0  # number of occurances that are being swapped. Just so the user knows
+        for person, msg, date in convo:
+            if person == old_name:
+                occurrences += 1
+        print("Swapping {0} for {1} will result in {2} changes. Would you like to proceed? [Y/n]"
+              .format(old_name, new_name, occurrences))
+
+        # Does the user really want to continue after getting information
+        while True:
+            choice = input("> ").lower()
+            if choice in ['y', 'yes', 'n', 'no']:
+                break
+        if choice in ['n', 'no']:
+            return
+
+        # The name and data associated with the desired converation before any actions have been performed
+        previous_name = self.names[convo_num - 1].lower()
+        previous_data = self.data[previous_name.title()]
+
+        # if else block below deal with getting an updated name for the self.data dictionary key
+        if new_name not in previous_name:  # if new_name is not already present, swap the old_name for it
+            updated_name = previous_name.replace(old_name, new_name)
+        else:
+            # Take the previous_name and cut out old_name, instead of
+            # replacing with new_name since new name is already in the name
+            updated_name = join([name for name in previous_name.split(', ') if name != old_name], ", ")
+
+        # The block below updates the List<tuple> for the self.data value of the dictionary
+        for i in range(len(previous_data)):
+            person, msg, date = previous_data[i]
+            if person.lower() == old_name:
+                previous_data[i] = tuple([new_name.title(), msg, date])
+
+        del self.data[previous_name.title()]  # deletes the old data from self.data
+        self.data[updated_name.title()] = previous_data  # updates self.data with the new data
+        self.names = self._get_convo_names_freq()  # update self.names with new keyset
 
     def random(self):
         """Returns a random conversation"""
