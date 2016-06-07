@@ -259,7 +259,7 @@ class ConvoReader(BaseConvoReader):
         """
         by_weekday = self._raw_msgs_by_weekday()
         for day, freq in enumerate(by_weekday):
-            print("{0}: {1}%".format(CustomDate.days_of_week[day], str(freq * 100)[:5]))
+            print("{0}: {1}%".format(CustomDate.WEEK_INDEXES_TO_DAY_OF_WEEK[day], str(freq * 100)[:5]))
         print()
 
     def msgs_by_time(self, window=60, contact=None, threshold=None):

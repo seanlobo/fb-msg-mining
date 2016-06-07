@@ -3,13 +3,14 @@ from datetime import date, timedelta
 import re
 
 class CustomDate():
-    months = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7,
+    MONTHS_TO_INDEXES = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7,
               'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12,}
 
-    months_reversed = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June',
-                       7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
+    MONTH_INDEXES_TO_MONTHS = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June',
+                               7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
 
-    days_of_week = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
+    WEEK_INDEXES_TO_DAY_OF_WEEK = {0: "Monday", 1: "Tuesday", 2: "Wednesday",
+                                   3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 
     def __init__(self, date_str):
         """Constructor for CustomDate object. has following fields:
@@ -28,7 +29,7 @@ class CustomDate():
         month, day_of_month = temp[1].split()
         year, _, self.time, self.time_zone = date_str.split(',')[2].split()
 
-        self.date = date(int(year), int(CustomDate.months[month]), int(day_of_month))
+        self.date = date(int(year), int(CustomDate.MONTHS_TO_INDEXES[month]), int(day_of_month))
 
     @classmethod
     def from_date(cls, date_obj):
@@ -44,8 +45,8 @@ class CustomDate():
         else:
             year = date_obj.year
         date_string = "{0}, {1} {2}, {3} at 12:00am PDT".format(
-            CustomDate.days_of_week[date_obj.weekday()],
-            CustomDate.months_reversed[date_obj.month],
+            CustomDate.WEEK_INDEXES_TO_DAY_OF_WEEK[date_obj.weekday()],
+            CustomDate.MONTH_INDEXES_TO_MONTHS[date_obj.month],
             date_obj.day,
             year)
         return cls(date_string)
@@ -124,15 +125,20 @@ class CustomDate():
         return mid
 
     @staticmethod
-    def assert_date_string(date):
-        assert isinstance(date, str), "The date-string needs to be a string"
+    def assert_date_string(date_string):
+        assert isinstance(date_string, str), "The date-string needs to be a string"
 
         r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-        assert r.fullmatch(date) is not None, ("\"{0}\" is not a valid date, it must be in the format "
-                                                .format(date) + "{month}/{day}/{year}")
+        assert r.fullmatch(date_string) is not None, ("\"{0}\" is not a valid date, it must be in the format "
+                                                      .format(date_string) + "{month}/{day}/{year}")
         r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
         assert r.fullmatch(
-            date) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
+            date_string) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
+        date_list = [int(i) for i in date_string.split('/')]
+        try:
+            date(date_list[2], date_list[0], date_list[1])
+        except ValueError as e:
+            raise AssertionError(str(e))
 
     @staticmethod
     def assert_dates(*args):
