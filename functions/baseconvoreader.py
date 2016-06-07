@@ -202,6 +202,26 @@ class BaseConvoReader():
             else:
                 return self._individual_words
 
+    def _raw_convo_starter(self, threshold=240, start=None, end=None):
+        """Returns a Cou"""
+        CustomDate.assert_dates(start, end)
+
+        # Sets the start and end dates, finds the appropriate
+        #  message number if start/ end are not None, else index 1 for start and len(convo) for end
+        start_date = CustomDate.bsearch_index(self._convo, start, key=lambda x: x[2]) if start is not None else 1
+        end_date = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2]) if start is not None else self._len
+
+        convo_start_freq = dict()
+        for person in self._people:
+            convo_start_freq[person] = []
+        convo_start_freq[self._convo[start_date - 1][0]].append(start_date - 1)
+        for i in range(start_date, end_date):
+            curr_date = self._convo[i][2]
+            prev_date = self._convo[i - 1][2]
+            if curr_date.distance_from(prev_date) > threshold:
+                convo_start_freq[self._convo[i][0]].append(i)
+        return convo_start_freq
+
     def _raw_msgs_by_weekday(self):
         """Returns a list containing frequency of chatting by days
         of week, ordered by index, with 0 being Monday and 6 Sunday
@@ -216,7 +236,10 @@ class BaseConvoReader():
                 weekday_freq[date.weekday()] += msgs
                 msgs = 1
 
-        return [day / sum(weekday_freq) for day in weekday_freq]
+        weekday_total = sum(weekday_freq)
+        if weekday_total == 0:  # If this conversation has no messages
+            return [0 for day in weekday_freq]
+        return [day / weekday_total for day in weekday_freq]
 
     def _raw_word_freqs(self):
         """Returns a dictionary that maps names of people in the conversation

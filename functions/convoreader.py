@@ -146,6 +146,22 @@ class ConvoReader(BaseConvoReader):
                 print(string)
                 print()
 
+    def convo_starter_freqs(self, threshold=240):
+        """Returns the frequency that each participant begins conversations, as percents, stored in a Counter object
+        Parameter:
+            threshold (optional): the number of minutes lag that counts as
+                the threshold for starting a new conversation. Defaults to 240
+                 minutes, or 4 hours
+        """
+        raw_freqs = self._raw_convo_starter(threshold=threshold)
+        total = sum(len(freq) for _, freq in raw_freqs.items())
+        if total == 0:
+            return raw_freqs
+        res = Counter()
+        for key, freq in raw_freqs.items():
+            res[key] = len(freq) / total
+        return res
+
     def prettify(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
         CustomDate.assert_dates(start, end)
@@ -452,19 +468,6 @@ class ConvoReader(BaseConvoReader):
         or the string passed if appropriate emojis isn't found
         """
         return emojis.src_to_emoiji(text)
-
-    def _raw_convo_starter(self):
-        """Percent of time each person starts the conversation according to a threshold number of minutes passed"""
-        threshold = 4 * 60  # 4 hours worth of minutes
-        convo_start_freq = Counter()
-        for person in self._people:
-            convo_start_freq[person] = 0
-        for i in range(self._len):
-            curr_date = self._convo[i][2]
-            prev_date = self._convo[i - 1][2]
-            if curr_date.distance_from(prev_date) > threshold:
-                convo_start_freq[self._convo[i][0]] += 1
-        return convo_start_freq
 
     def _pick_color(self, choice):
         color = None
