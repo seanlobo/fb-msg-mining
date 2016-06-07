@@ -332,24 +332,6 @@ class BaseConvoReader():
             return 0
         return self.__words_spoken(name) / self.__msgs_spoken(name)
 
-    @staticmethod
-    def _assert_dates(start, end):
-        assert type(start) in [type(None), str], "Start needs to be a date string"
-        assert type(end) in [type(None), str], "End needs to be a date string"
-        if type(start) is str:
-            r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-            assert r.fullmatch(start) is not None, ("\"{0}\" is not a valid date, it must be in the format "
-                                                    .format(start) + "{month}/{day}/{year}")
-            r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
-            assert r.fullmatch(
-                start) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
-        if type(end) is str:
-            r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
-            assert r.fullmatch(end) is not None, ("\"{0}\" is not a valid date, it must be in the format "
-                                                  .format(end) + "{month}/{day}/{year}")
-            r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
-            assert r.fullmatch(end) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
-
     def _assert_contact(self, contact):
         assert type(contact) in [type(None), str, list], "Contact must be of type string or a list of strings"
         if type(contact) is list:

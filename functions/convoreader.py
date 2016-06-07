@@ -148,7 +148,7 @@ class ConvoReader(BaseConvoReader):
 
     def prettify(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
-        BaseConvoReader._assert_dates(start, end)
+        CustomDate.assert_dates(start, end)
         if start is not None:
             start = CustomDate.from_date_string(start)
             assert start.date >= self._convo[0][2].date, \
@@ -178,7 +178,7 @@ class ConvoReader(BaseConvoReader):
         """
         try:
             msgs_freq = self._raw_msgs_graph(contact)
-            BaseConvoReader._assert_dates(start, end)
+            CustomDate.assert_dates(start, end)
         except AssertionError as e:
             print(e)
             return

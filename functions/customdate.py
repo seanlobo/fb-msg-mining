@@ -1,6 +1,6 @@
 from math import ceil
 from datetime import date, timedelta
-
+import re
 
 class CustomDate():
     months = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7,
@@ -107,6 +107,9 @@ class CustomDate():
         if high is None:
             high = len(lst) - 1
         mid = (low + high) // 2
+        if isinstance(date, str):
+
+            date = CustomDate.from_date_string(date)
         while key(lst[mid]) != date and mid > low and mid < high:
             if key(lst[mid]) > date:
                 high = mid - 1
@@ -119,6 +122,23 @@ class CustomDate():
         while abs(key(lst[mid + 1]).distance_from(date)) < abs(key(lst[mid]).distance_from(date)):
             mid += 1
         return mid
+
+    @staticmethod
+    def assert_date_string(date):
+        assert isinstance(date, str), "The date-string needs to be a string"
+
+        r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')
+        assert r.fullmatch(date) is not None, ("\"{0}\" is not a valid date, it must be in the format "
+                                                .format(date) + "{month}/{day}/{year}")
+        r = re.compile('\d{1,2}/\d{1,2}/\d{3}')
+        assert r.fullmatch(
+            date) is None, "the {year} part of a date must be either 2 or 4 numbers (e.g. 2016 or 16)"
+
+    @staticmethod
+    def assert_dates(*args):
+        for date in args:
+            if date is not None:
+                CustomDate.assert_date_string(date)
 
     def __add__(self, other):
         if type(other) is not int:
