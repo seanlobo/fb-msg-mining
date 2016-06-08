@@ -161,6 +161,49 @@ class ConvoReader(BaseConvoReader):
             res[key] = len(freq) / total
         return res
 
+    def print_messages(self, start, end):
+        """Prints to the screen the messages between start and end
+        Parameters:
+            start: The start index
+            end: The end index
+        """
+        try:
+            assert isinstance(start, int), "Start needs to be an integer"
+            assert isinstance(end, int), "End needs to be an integer"
+            assert 0 <= start < len(self), "Start needs to be between 0 and {0}".format(len(self))
+            assert 0 <= end < len(self), "End needs to be between 0 and {0}".format(len(self))
+            assert start <= end, "End should be greater than or equal to start"
+        except AssertionError as e:
+            print(str(e))
+            return
+        # Making sure user input is good
+
+        for i in range(start, end):
+            self._print_message(i)
+
+    def print_all(self, *args, padding=5):
+        """Prints to the screen all message numbers in args padded by padding amount
+        Parameters:
+            *args: An arbitrary number of integers representing conversation #s to view
+            padding (optional): The number of messages to pad each query by
+        """
+        def get_range(center, padding):
+            """Returns a range object with a padded center, and with a minimum of 0 and maximum of len(self)"""
+            assert isinstance(center, int), "Center needs to be an integer"
+            assert isinstance(padding, int), "Padding neesd to be an integer"
+            assert 0 <= center < len(self), "Passed value must be between 0 and {0}".format(len(self))
+            assert padding >= 0, "Padding needs to be greater than or equal to 0"
+            return range(max(0, center - padding), min(len(self), center + padding + 1))
+
+        start_end_ranges = [get_range(num, padding) for num in args]
+        MAX_LEN_INDEX = len(str(max(start_end_ranges, key=lambda x: len(str(x.stop))).stop)) + 1
+
+        for start_end in start_end_ranges:
+            for i in start_end:
+                print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="- ")
+                self._print_message(i)
+            print('\n')
+
     def prettify(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
         CustomDate.assert_dates(start, end)
