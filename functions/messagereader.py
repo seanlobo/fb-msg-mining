@@ -1,7 +1,8 @@
-from colorama import Fore, init
 from collections import Counter
+import shutil
+import os
 import random
-
+from colorama import Fore, init
 
 init(autoreset=True)
 
@@ -19,6 +20,7 @@ class MessageReader:
         self.person = join(self.download.split(' ')[2:-8], split=" ")
 
         self._edits = dict()
+        self._spacer = ' ---> '
 
     def get_convo_names(self, by_recent=False):
         """Returns a list of lists, where each inner list is
@@ -154,7 +156,7 @@ class MessageReader:
         del self.data[previous_name]  # deletes the old data from self.data
         self.data[updated_name.title()] = previous_data  # updates self.data with the new data
         self.names = self._get_convo_names_freq()  # update self.names with new keyset
-        edit_string = "\'{0}\' to \'{1}\'".format(old_name, new_name)
+        edit_string = "{0}{1}{2}".format(previous_name, self._spacer, updated_name)
         if convo_num not in self._edits:
             self._edits[convo_num] = [edit_string]
         else:
@@ -162,7 +164,32 @@ class MessageReader:
 
     def save_convo_edits(self):
         """Saves changes made to conversation names with edit_convo_participants"""
+        print("Are you sure you would like to save the changes made? "
+              "You might have to redo setup in order to revert. Your conversation preferences will  be lost. [Y/n]")
+        while True:
+            choice = input('> ').lower()
+            if choice in ['n', 'no']:
+                return
+            if choice in ['yes', 'y']:
+                break
+        # user input: should we continue?
 
+        for key in self._edits:
+            for change in self._edits[key]:
+                old, new = change.split(self._spacer)
+
+                old_path = 'data/' + ConvoReader.list_to_combined_string(sorted(old.split(', ')))
+                new_path = 'data/' + ConvoReader.list_to_combined_string(sorted(old.split(', ')))
+
+                if os.path.isdir(old_path):
+                    shutil.rmtree(old_path)
+
+                # for future use in moving things consider the following post
+                # http://stackoverflow.com/questions/225735/batch-renaming-of-files-in-a-directory
+
+        with open('data/data.txt', mode='w', encoding='utf-8') as f:
+            f.write(repr(self.data) + '\n')
+            f.write(repr(self.download))
 
     def random(self):
         """Returns a random conversation"""
