@@ -4,10 +4,11 @@ import os
 import random
 from colorama import Fore, init
 
-init(autoreset=True)
 
 from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
+
+init(autoreset=True)
 
 
 class MessageReader:
@@ -161,6 +162,10 @@ class MessageReader:
             self._edits[convo_num] = [edit_string]
         else:
             self._edits[convo_num].append(edit_string)
+        print("The specified changes have been made. Please note that these changes will only last the "
+              "duration of this python session. If you would like to make the changes permanent, call ", end="")
+        print(Fore.LIGHTGREEN_EX + "m.save_convo_edits()")
+
 
     def save_convo_edits(self):
         """Saves changes made to conversation names with edit_convo_participants"""

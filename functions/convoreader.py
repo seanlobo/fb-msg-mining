@@ -58,9 +58,6 @@ class ConvoReader(BaseConvoReader):
         """Number of words for people in the chat
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
-        Return:
-            A number if name is not passed, otherwise a Counter object storing the number
-            of words as values paired with names of people as keys.
         """
         value = self._raw_words(name)
         if type(value) is int:
@@ -74,9 +71,6 @@ class ConvoReader(BaseConvoReader):
         """Average number of words for people in the chat
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
-        Return:
-            A number if name is not passed, otherwise a Counter object storing the average
-            number of words as values paired with names of people as keys.
         """
         value = self._raw_ave_words(name)
         if isinstance(value, int) or isinstance(value, float):
@@ -241,7 +235,6 @@ class ConvoReader(BaseConvoReader):
             print("The start date of the conversation must be before the end date")
             return
 
-
         start_index, end_index = 0, len(msgs_freq)
         for i in range(end_index):
             if msgs_freq[i][0].date == start.date:
@@ -253,7 +246,6 @@ class ConvoReader(BaseConvoReader):
         value = max_msgs / 50
         print("\nEach \"#\" referes to ~{0} messages".format(value))
         print()
-
 
         MAX_DATE_LEN = 12
         # The Maximum length of the string containing the longest date (with padding) i.e. '12/12/2012  '
@@ -281,8 +273,7 @@ class ConvoReader(BaseConvoReader):
         print()
 
     def msgs_by_weekday(self):
-        """Prints out chat frequency by day of week
-        """
+        """Prints out chat frequency by day of week"""
         by_weekday = self._raw_msgs_by_weekday()
         for day, freq in enumerate(by_weekday):
             print("{0}: {1}%".format(CustomDate.WEEK_INDEXES_TO_DAY_OF_WEEK[day], str(freq * 100)[:5]))
@@ -390,6 +381,17 @@ class ConvoReader(BaseConvoReader):
             self.save_preferences()
 
     def save_preferences(self):
+        """Saves user preferences by writing them to the file "preferences.txt" in user's data folder"""
+        if os.path.isfile(self._path + 'preferences.txt'):
+            print(Fore.LIGHTBLACK_EX + open(self._path + 'preferences.txt').read())
+            print("Previous preferences have been found (printed above), "
+                  "are you sure you would like to override them? [Y/n]")
+            while True:
+                choice = input("> ").lower()
+                if choice in ['no', 'n']:
+                    return
+                if choice in ['y', 'yes']:
+                    break
         os.makedirs(self._path[0:-1], exist_ok=True)
         with open(self._path + 'preferences.txt', mode='w', encoding='utf-8') as f:
             f.write(repr(self._preferences))
@@ -428,6 +430,7 @@ class ConvoReader(BaseConvoReader):
         return len(indexes)
 
     def help(self):
+        """Method to give users help/ tips on how to use ConvoReaders"""
         print('Below is a list of all data-analyzing functions you can perform on conversations.')
         print('Select one of the following to view more details')
 
@@ -486,11 +489,16 @@ class ConvoReader(BaseConvoReader):
         """
         return emojis.src_to_emoiji(text)
 
-    def _pick_color(self, choice):
+    def _pick_color(self, person):
+        """Helper method to get user input for picking a color of text
+        Parameters:
+            person: the index + 1 of self._people corresponding to the user
+            specified person whose settings are being modified
+        """
         color = None
         while color not in [str(i) for i in range(len(self._COLOR_CHOICES))]:
             print("The following are color choices for the ForeGround for {0}:"
-                  .format(self._people[choice - 1]))
+                  .format(self._people[person - 1]))
             print()
             for i in range(len(self._COLOR_CHOICES)):
                 print(eval('Fore.{0}'.format(self._COLOR_CHOICES[i])) + '{0}) {1}'
@@ -499,6 +507,7 @@ class ConvoReader(BaseConvoReader):
         return int(color)
 
     def _load_preferences(self):
+        """Searches for preferences.txt in the data folder and loads data if file exists"""
         try:
             with open(self._path + 'preferences.txt', mode='r', encoding='utf-8') as f:
                 return eval(f.read())
@@ -506,6 +515,11 @@ class ConvoReader(BaseConvoReader):
             return {person: dict() for person in self._people}
 
     def _print_message(self, number):
+        """Helper method used to prettily print to the screen the person, message and date
+        corresponding to the passed parameter number
+        Parameter:
+            number: The message number to print, must be 0 < num < len(self)
+        """
         try:
             assert type(number) is int, "number must be an integer"
             assert number in range(len(self._convo)), "number must be in range({0})".format(len(self._convo))
