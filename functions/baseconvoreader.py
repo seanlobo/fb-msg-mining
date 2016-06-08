@@ -1,6 +1,7 @@
 from collections import Counter
 from math import ceil
 import re
+import os
 
 
 from functions.customdate import CustomDate
@@ -67,6 +68,30 @@ class BaseConvoReader():
             if person.lower() not in people:
                 people.append(person.lower())
         return sorted(people)
+
+    def save_word_freq(self):
+        """Saves to a file the ordered rankings of word frequencies by person in the chat"""
+
+        os.makedirs(self._path[0:-1], exist_ok=True)
+        for person, counter in self._individual_words.items():
+            split = person.split()
+            pers = ''
+            for i in range(len(split) - 1):
+                pers += split[i]
+                pers += '-'
+            pers += split[-1]
+            with open(self._path + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
+                lst = []
+                for key, val in counter.items():
+                    lst.append((key, val))
+                for key, val in sorted(lst, key=lambda x: x[1], reverse=True):
+                    f.write("{0}: {1}".format(key, val) + "\n")
+        count = Counter()
+        for key, val in self._individual_words.items():
+            count += val
+        with open(self._path + 'total.txt', mode='w', encoding='utf-8') as f:
+            for key, val in count.most_common():
+                f.write("{0}: {1}".format(key, val) + "\n")
 
     @staticmethod
     def list_to_combined_string(list_of_people):
@@ -244,6 +269,22 @@ class BaseConvoReader():
             if curr_date.distance_from(prev_date) > threshold:
                 convo_start_freq[self._convo[i][0]].append(i)
         return convo_start_freq
+
+    def _convo_starter_freqs(self, threshold=240):
+        """Returns the frequency that each participant begins conversations, as percents, stored in a Counter object
+        Parameter:
+            threshold (optional): the number of minutes lag that counts as
+                the threshold for starting a new conversation. Defaults to 240
+                 minutes, or 4 hours
+        """
+        raw_freqs = self._raw_convo_starter(threshold=threshold)
+        total = sum(len(freq) for _, freq in raw_freqs.items())
+        if total == 0:
+            return raw_freqs
+        res = Counter()
+        for key, freq in raw_freqs.items():
+            res[key] = len(freq) / total
+        return res
 
     def _raw_msgs_by_weekday(self):
         """Returns a list containing frequency of chatting by days

@@ -145,22 +145,6 @@ class ConvoReader(BaseConvoReader):
                 print(string)
                 print()
 
-    def convo_starter_freqs(self, threshold=240):
-        """Returns the frequency that each participant begins conversations, as percents, stored in a Counter object
-        Parameter:
-            threshold (optional): the number of minutes lag that counts as
-                the threshold for starting a new conversation. Defaults to 240
-                 minutes, or 4 hours
-        """
-        raw_freqs = self._raw_convo_starter(threshold=threshold)
-        total = sum(len(freq) for _, freq in raw_freqs.items())
-        if total == 0:
-            return raw_freqs
-        res = Counter()
-        for key, freq in raw_freqs.items():
-            res[key] = len(freq) / total
-        return res
-
     def print_messages(self, start, end):
         """Prints to the screen the messages between start and end
         Parameters:
@@ -341,30 +325,6 @@ class ConvoReader(BaseConvoReader):
 
             to_print += '\n'
         print(to_print)
-
-    def save_word_freq(self):
-        """Saves to a file the ordered rankings of word frequencies by person in the chat"""
-
-        os.makedirs(self._path[0:-1], exist_ok=True)
-        for person, counter in self._individual_words.items():
-            split = person.split()
-            pers = ''
-            for i in range(len(split) - 1):
-                pers += split[i]
-                pers += '-'
-            pers += split[-1]
-            with open(self._path + pers + '_word_freq.txt', mode='w', encoding='utf-8') as f:
-                lst = []
-                for key, val in counter.items():
-                    lst.append((key, val))
-                for key, val in sorted(lst, key=lambda x: x[1], reverse=True):
-                    f.write("{0}: {1}".format(key, val) + "\n")
-        count = Counter()
-        for key, val in self._individual_words.items():
-            count += val
-        with open(self._path + 'total.txt', mode='w', encoding='utf-8') as f:
-            for key, val in count.most_common():
-                f.write("{0}: {1}".format(key, val) + "\n")
 
     def set_preferences(self):
         """Allows users to choice color preferences and stores values to
