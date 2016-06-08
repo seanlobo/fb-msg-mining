@@ -1,5 +1,14 @@
 from flask import Flask, redirect, url_for, render_template
+
+from functions.messagereader import MessageReader
+from functions.convoreader import ConvoReader
+from functions.customdate import CustomDate
+from functions import emojis
+
+
 app = Flask(__name__)
+m = MessageReader()
+current_convo = None
 
 
 @app.route('/')

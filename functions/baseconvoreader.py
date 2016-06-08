@@ -503,6 +503,25 @@ class BaseConvoReader:
 
         return contact
 
+    def __getitem__(self, index):
+        """Returns the tuple (person, message, datetime) for the corresponding index"""
+        if type(index) is not int:
+            raise TypeError
+        elif index >= len(self) or index < -len(self):
+            raise IndexError
+        else:
+            return self._convo[index] if index >= 0 else self._convo[len(self) + index]
+
+    def __len__(self):
+        """Returns the number of messages in self"""
+        return self._len
+
+    def __str__(self):
+        """Returns a string with the alphabetically sorted names of people
+        in this conversation
+        """
+        return "Conversation for " + self._name.title()
+
     def __iter__(self):
         return (message for message in self._convo)
 
