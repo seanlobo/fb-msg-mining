@@ -25,7 +25,6 @@ class ConvoReader(BaseConvoReader):
         """
         BaseConvoReader.__init__(self, convo_name, convo_list)
 
-        self._path = 'data/' + self._set_path()
         self._preferences = self._load_preferences()
         # preferences_choices = {'personal': {"Name": val, "Message": val, "Date" : val},
         #                        'global': {'new_convo_time': val} }
@@ -524,23 +523,6 @@ class ConvoReader(BaseConvoReader):
                 print(" | " + str(date))
         else:
             print(" | " + str(date))
-
-    def _set_path(self):
-        dir_name = ""
-        for person in self._people:
-            split = person.split(' ')
-            for i in range(len(split) - 1):
-                dir_name += split[i]
-                dir_name += '-'
-            dir_name += split[-1]
-            dir_name += '_'
-        dir_name = dir_name[:-1]
-        if len(dir_name) > 255:
-            name = dir_name[:255]
-        else:
-            name = dir_name
-
-        return name + '/'
 
     def __getitem__(self, index):
         """Returns the tuple (person, message, datetime) for the corresponding index"""

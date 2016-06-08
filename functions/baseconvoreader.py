@@ -15,6 +15,7 @@ class BaseConvoReader():
         self._kicked_or_left = [person for person in self._people if person not in self._name.split(', ')]
         self._individual_words = self._cleaned_word_freqs()
         self._len = len(self._convo)
+        self._path = 'data/' + self._set_path()
 
     def characters(self, person=None):
         """Returns character frequency in conversation in a Counter object"""
@@ -300,6 +301,23 @@ class BaseConvoReader():
             return indexes
         except re.error:
             raise re.error("\"{0}\" is not a valid regex string".format(query))
+
+    def _set_path(self):
+        dir_name = ""
+        for person in self._people:
+            split = person.split(' ')
+            for i in range(len(split) - 1):
+                dir_name += split[i]
+                dir_name += '-'
+            dir_name += split[-1]
+            dir_name += '_'
+        dir_name = dir_name[:-1]
+        if len(dir_name) > 255:
+            name = dir_name[:255]
+        else:
+            name = dir_name
+
+        return name + '/'
 
     def __msgs_per_person(self):
         res = dict()
