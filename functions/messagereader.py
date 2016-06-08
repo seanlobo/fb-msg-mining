@@ -18,6 +18,8 @@ class MessageReader:
         self.names = self._get_convo_names_freq()
         self.person = join(self.download.split(' ')[2:-8], split=" ")
 
+        self._edits = dict()
+
     def get_convo_names(self, by_recent=False):
         """Returns a list of lists, where each inner list is
         the members of a conversation. By default is arranged
@@ -132,16 +134,16 @@ class MessageReader:
             return
 
         # The name and data associated with the desired converation before any actions have been performed
-        previous_name = self.names[convo_num - 1].lower()
-        previous_data = self.data[previous_name.title()]
+        previous_name = self.names[convo_num - 1]
+        previous_data = self.data[previous_name]
 
         # if else block below deal with getting an updated name for the self.data dictionary key
-        if new_name not in previous_name:  # if new_name is not already present, swap the old_name for it
-            updated_name = previous_name.replace(old_name, new_name)
+        if new_name.title() not in previous_name:  # if new_name is not already present, swap the old_name for it
+            updated_name = previous_name.replace(old_name.title(), new_name.title())
         else:
             # Take the previous_name and cut out old_name, instead of
             # replacing with new_name since new name is already in the name
-            updated_name = join([name for name in previous_name.split(', ') if name != old_name], ", ")
+            updated_name = join([name for name in previous_name.split(', ') if name != old_name.title()], ", ")
 
         # The block below updates the List<tuple> for the self.data value of the dictionary
         for i in range(len(previous_data)):
@@ -149,9 +151,18 @@ class MessageReader:
             if person.lower() == old_name:
                 previous_data[i] = tuple([new_name.title(), msg, date])
 
-        del self.data[previous_name.title()]  # deletes the old data from self.data
+        del self.data[previous_name]  # deletes the old data from self.data
         self.data[updated_name.title()] = previous_data  # updates self.data with the new data
         self.names = self._get_convo_names_freq()  # update self.names with new keyset
+        edit_string = "\'{0}\' to \'{1}\'".format(old_name, new_name)
+        if convo_num not in self._edits:
+            self._edits[convo_num] = [edit_string]
+        else:
+            self._edits[convo_num].append(edit_string)
+
+    def save_convo_edits(self):
+        """Saves changes made to conversation names with edit_convo_participants"""
+
 
     def random(self):
         """Returns a random conversation"""
