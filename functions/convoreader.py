@@ -139,12 +139,61 @@ class ConvoReader(BaseConvoReader):
                 print(string)
                 print()
 
-    def print_messages(self, start, end):
+    def prettify(self, mode=None, **kwargs):
+        """Prettily prints messages to the screen in 3 different modes
+        Parameters:
+            mode: If not one of the below, prints this docstring to the screen
+            1) mode="num"
+                    start (int) - Start index of messages to print
+                    end   (int) - End index of messages to print
+                    if start or end is left out, prints from beginning or to end, respectively
+            2) mode="date"
+                    start (string) - Start date to print from, in form {month}/{day}/{year}
+                    end   (string) - End date to print from, same form
+                    if start or end is left out, prints from beginning or to end, respectively
+            3) mode="clusters"
+                    centers (List<int>) - A list of indexes corresponding to the centers
+                        of message clusters to be printed
+                    padding    (int)    - The amount of padding each center should get
+        Usage:
+            prettify() # To get help
+            prettify(mode="num", start=15000, end=16500) # print messages 15,000 through 16,500
+            prettify(mode="date", start='2/24/16', end='3/16/16') # prints messages between February 24th, 2016
+                                                                  # and March 16th, 2016
+            prettify(mode="clusters", centers=[100, 17690, 100031], padding=300)
+                        # prints messages 0-400, 17,390-17,990 and 99,731-100,331
+        """
+        if mode == "num":
+            start = kwargs['start'] if 'start' in kwargs else None
+            end = kwargs['end'] if 'end' in kwargs else None
+            self._print_messages(start, end)
+            return
+        elif mode == "date":
+            start = kwargs['start'] if 'start' in kwargs else None
+            end = kwargs['end'] if 'end' in kwargs else None
+            self._print_message_dates(start, end)
+            return
+        elif mode == "clusters":
+            assert "centers" in kwargs, "When calling prettify wtih mode=\"clusters\" " \
+                                        "you must pass in a centers argument"
+            centers = kwargs["centers"]
+            padding = kwargs['padding'] if 'padding' in kwargs else None
+            self._print_selected_messages(centers, padding=padding)
+            return
+        else:
+            print(Fore.LIGHTGREEN_EX + "Usage of prettify() is shown below")
+            print(Fore.WHITE + inspect.getdoc(self.prettify))
+            print()
+            return
+
+    def _print_messages(self, start=None, end=None):
         """Prints to the screen the messages between start and end
         Parameters:
             start: The start index
             end: The end index
         """
+        start = 0 if start is None else start
+        end = len(self) - 1 if end is None else end
         try:
             assert isinstance(start, int), "Start needs to be an integer"
             assert isinstance(end, int), "End needs to be an integer"
@@ -159,7 +208,7 @@ class ConvoReader(BaseConvoReader):
         for i in range(start, end):
             self._print_message(i)
 
-    def print_all(self, *args, padding=5):
+    def _print_selected_messages(self, *args, padding=None):
         """Prints to the screen all message numbers in args padded by padding amount
         Parameters:
             *args: An arbitrary number of integers representing conversation #s to view
@@ -173,6 +222,8 @@ class ConvoReader(BaseConvoReader):
             assert padding >= 0, "Padding needs to be greater than or equal to 0"
             return range(max(0, center - padding), min(len(self), center + padding + 1))
 
+        padding = 5 if padding is None else padding
+
         start_end_ranges = [get_range(num, padding) for num in args]
         MAX_LEN_INDEX = len(str(max(start_end_ranges, key=lambda x: len(str(x.stop))).stop)) + 1
 
@@ -182,7 +233,7 @@ class ConvoReader(BaseConvoReader):
                 self._print_message(i)
             print('\n')
 
-    def prettify(self, start=None, end=None):
+    def _print_message_dates(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
         CustomDate.assert_dates(start, end)
         if start is not None:
