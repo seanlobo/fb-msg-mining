@@ -124,6 +124,8 @@ temp.py
 testing
 !msgs_over_time.html
 tmp.py
+
+# Template html files
 !skeleton.css
 !skeleton.html
 conversation_data
@@ -141,3 +143,5 @@ data.txt
 
 # License
 !LICENSE.txt
+!graphs.html
+!graphs.css

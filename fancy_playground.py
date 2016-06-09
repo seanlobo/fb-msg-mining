@@ -1,9 +1,6 @@
 from flask import Flask, redirect, url_for, render_template
 
 from functions.messagereader import MessageReader
-from functions.convoreader import ConvoReader
-from functions.customdate import CustomDate
-from functions import emojis
 
 
 app = Flask(__name__)
@@ -20,6 +17,21 @@ def home_screen():
 @app.route('/convo/')
 def choose_convo():
     return render_template('skeleton.html', text="Choose a conversation to analyze")
+
+
+@app.route('/convo/<int:convo_num>/')
+def graph(convo_num):
+    global current_convo
+    current_convo = m.get_gui_convo(convo_num)
+
+    return render_template('graphs.html', total_data=current_convo.data_for_total_graph(),
+                           convo=current_convo.get_people())
+
+
+@app.route('/convo/<int:convo_num>/test')
+def test(convo_num):
+    return render_template('skeleton.html', text="default")
+    # Works!
 
 
 @app.route('/aggregate/')

@@ -8,6 +8,7 @@ from colorama import Fore, Back, Style, init
 
 from functions.setup_functions import PreferencesSearcher, clear_screen, user_says_yes
 from functions.convoreader import ConvoReader, color_method
+from functions.guiconvoreader import GUIConvoReader
 from functions.customdate import CustomDate
 
 init(autoreset=True)
@@ -97,6 +98,13 @@ class MessageReader:
                 return ConvoReader(name, self.data[name])
         print("You haven't talked with {0} before".format(people))
         return None
+
+    def get_gui_convo(self, index):
+        """Returns the GUIConvoReader object corresponding to index"""
+        assert isinstance(index, int), "index needs to be an integer"
+        assert 0 <= index < len(self), "Index out of bounds, {0} must be between 0 and {1}".format(index, len(self))
+
+        return GUIConvoReader(self.names[index], self.data[self.names[index]])
 
     def edit_convo_participants(self, convo_num, old_name, new_name):
         """Updates the specified conversation number by replacing all instances of old_name in the person

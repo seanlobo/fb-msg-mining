@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='graphs.css') }}">
+    </head>
+    <body>
+        <div id="graph_over_time">Actual Graph Div for {{ convo }}</div>
+
+        <div class="hide" data-graph-type="total"> {{ total_data }} </div>
+    </body>
+</html>
