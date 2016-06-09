@@ -41,7 +41,7 @@ def get_all_thread_containers(msg_html_path):
 
     # finds the outer div tag that holds all relevant information
     div_tag = soup.find('div', class_='contents')
-    footer = soup.find('div', class_='footer')
+    footer = soup.find('div', class_='footer').get_text()
 
     # creates a list containing elements whose div
     # tags hold the chat data

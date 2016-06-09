@@ -2,13 +2,16 @@ from collections import Counter
 from math import ceil
 import re
 import os
+import shutil
 
 
 from functions.customdate import CustomDate
 import functions.emojis as emojis
 
 
-class BaseConvoReader():
+class BaseConvoReader:
+    word_cloud_path = 'data/wordClouds/'
+
     def __init__(self, convo_name, convo_list):
         self._name = convo_name.lower()
         self._convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
@@ -110,6 +113,22 @@ class BaseConvoReader():
             name = name
 
         return name + '/'
+
+    @staticmethod
+    def freq_to_raw(freqs, output):
+        string = ""
+        with open(freqs) as f:
+            for line in iter(f.readline, ''):
+                word = line.split(': ')
+                if len(word) == 2:
+                    if '\n' in word[1]:
+                        word[1] = word[1][:word[1].find('\n')]
+                    if int(word[1]) >= 5:
+                        string += (word[0] + " ") * int(word[1])
+
+        with open(output, mode='x') as f:
+            f.write(string)
+        print('done\a')
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
@@ -332,6 +351,35 @@ class BaseConvoReader():
                         else:
                             cleaned_words[key][striped_word] += freq
         return cleaned_words
+
+    def _setup_word_cloud(self):
+        """Creates the word cloud directory"""
+
+        shutil.rmtree(BaseConvoReader.word_cloud_path) if os.path.exists(BaseConvoReader.word_cloud_path) else None
+        os.makedirs(BaseConvoReader.word_cloud_path, exist_ok=True)
+        with open(BaseConvoReader.word_cloud_path + 'convo_name.txt', mode='w', encoding='utf-8') as f:
+            f.write(self._path)
+        if os.path.isfile(self._path + 'excludedWords.txt'):
+            shutil.copyfile(self._path + 'excludedWords.txt', BaseConvoReader.word_cloud_path + 'excludedWords.txt')
+        if not os.path.isfile(self._path + 'total.txt'):
+            self.save_word_freq()
+        shutil.copyfile(self._path + 'total.txt', BaseConvoReader.word_cloud_path + 'total.txt')
+
+    @staticmethod
+    def _is_hex_color_code(code):
+        r = re.compile('^#(?:[0-9a-fA-F]{3}){1,2}$')
+        return r.match(code) is not None
+
+    def word_clouds(self):
+        self._setup_word_cloud()
+
+    def set_colors(self, *colors):
+        for color in colors:
+            assert BaseConvoReader._is_hex_color_code(color), "{0} is not a valid Hexadecimal color code".format(color)
+        with open(BaseConvoReader.word_cloud_path + 'colors.txt', mode='w', encoding='utf-8') as f:
+            for color in colors:
+                f.write(color + '\n')
+
 
     def _find_indexes(self, query, ignore_case=False):
         """Returns a list with the indexes of each message that contain the passed message
