@@ -19,7 +19,7 @@ class BaseConvoReader:
         self._kicked_or_left = [person for person in self._people if person not in self._name.split(', ')]
         self._individual_words = self._cleaned_word_freqs()
         self._len = len(self._convo)
-        self._path = 'data/' + BaseConvoReader.list_to_combined_string(self._people)
+        self._path = 'data/conversation_data/' + BaseConvoReader.list_to_combined_string(self._people)
 
     def characters(self, person=None):
         """Returns character frequency in conversation in a Counter object"""
@@ -379,7 +379,6 @@ class BaseConvoReader:
         with open(BaseConvoReader.word_cloud_path + 'colors.txt', mode='w', encoding='utf-8') as f:
             for color in colors:
                 f.write(color + '\n')
-
 
     def _find_indexes(self, query, ignore_case=False):
         """Returns a list with the indexes of each message that contain the passed message

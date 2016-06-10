@@ -24,6 +24,7 @@ msgs, footer = setup_functions.get_all_msgs_dict('html/messages.htm')
 with open('data/data.txt', mode='w', encoding='utf-8') as f:
     f.write(str(msgs) + '\n')
     f.write(footer)
+os.makedirs('data/conversation_data', exist_ok=True)
 print('Setup is finished', end=" ")
 
 end = time.time()
