@@ -123,3 +123,7 @@ fabric.properties
 
 # ignore virtualenv
 venv
+
+
+# License
+!LICENSE.txt
