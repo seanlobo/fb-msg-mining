@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, render_template
+from flask import Flask, redirect, url_for, render_template, request
 
 from functions.messagereader import MessageReader
 
@@ -8,9 +8,9 @@ m = MessageReader()
 current_convo = None
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home_screen():
-    return render_template('skeleton.html', text="Home Screen")
+    return render_template('index.html', m=m, convo=current_convo)
 
 
 @app.route('/history/')

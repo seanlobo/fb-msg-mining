@@ -126,7 +126,6 @@ testing
 tmp.py
 
 # Template html files
-!skeleton.css
 !skeleton.html
 conversation_data
 output
@@ -144,4 +143,11 @@ data.txt
 # License
 !LICENSE.txt
 !graphs.html
+!index.html
+
+# static css files
 !graphs.css
+!skeleton.css
+!bootstrap.min.css
+!home-page.css
+
