@@ -1,23 +1,23 @@
 $(function () {
     $.getJSON('https://www.highcharts.com/samples/data/jsonp.php?filename=usdeur.json&callback=?', function (data) {
 
-        $('#container').highcharts({
+        $('#graph').highcharts({
             chart: {
                 zoomType: 'x'
             },
             title: {
-                text: 'USD to EUR exchange rate over time'
+                text: 'Message frequency'
             },
             subtitle: {
-                text: document.ontouchstart === undefined ?
-                        'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+                text: 'The total number of messages sent each day over time'
+                // 'Click and drag the plot area to zoom in'
             },
             xAxis: {
                 type: 'datetime'
             },
             yAxis: {
                 title: {
-                    text: 'Exchange rate'
+                    text: 'Number of messages'
                 }
             },
             legend: {
@@ -25,16 +25,17 @@ $(function () {
             },
             plotOptions: {
                 area: {
+                    color: '#956bb2',
                     fillColor: {
                         linearGradient: {
                             x1: 0,
                             y1: 0,
                             x2: 0,
-                            y2: 1
+                            y2: 1   
                         },
                         stops: [
-                            [0, Highcharts.getOptions().colors[0]],
-                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                            [0, '#A368D7'], // Highcharts.getOptions().colors[0],
+                            [1, '#E4DCEB'] // Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')
                         ]
                     },
                     marker: {
@@ -43,7 +44,7 @@ $(function () {
                     lineWidth: 1,
                     states: {
                         hover: {
-                            lineWidth: 1
+                            lineWidth: 2
                         }
                     },
                     threshold: null
@@ -52,7 +53,7 @@ $(function () {
 
             series: [{
                 type: 'area',
-                name: 'USD to EUR',
+                name: 'Messages sent',
                 data: data
             }]
         });
