@@ -2,10 +2,5 @@
 
 div.hide {
     visibility: hidden;
-}
-
-#graph_over_time {
-    height: 200px;
-    width: 200px;
-    background-color: red;
+    display: none;
 }

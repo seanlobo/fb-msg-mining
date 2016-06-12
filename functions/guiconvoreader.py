@@ -16,10 +16,10 @@ class GUIConvoReader(BaseConvoReader):
     def data_for_total_graph(self):
         data = self._raw_msgs_graph()
 
-        json = '([\n'
+        json = '[\n'
         for day, frequency in data:
             json += '[Date.UTC({0},{1},{2}),{3}],\n'.format(day.year(), day.month() - 1, day.day(), frequency)
         json = json[0:-2]
-        json += '\n]);'
+        json += '\n]'
 
         return json

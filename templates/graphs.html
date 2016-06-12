@@ -7,5 +7,10 @@
         <div id="graph_over_time">Actual Graph Div for {{ convo }}</div>
 
         <div class="hide" data-graph-type="total"> {{ total_data }} </div>
+        <div class="hide" id="name"> {{ convo }} </div>
     </body>
+
+    <script src="{{ url_for('static', filename='jquery.js') }}"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="{{ url_for('static', filename='graphs.js') }}"></script>
 </html>
