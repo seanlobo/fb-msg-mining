@@ -19,19 +19,12 @@ def choose_convo():
     return render_template('skeleton.html', text="Choose a conversation to analyze")
 
 
-@app.route('/convo/<int:convo_num>/')
+@app.route('/convo/<int:convo_num>/graphs/')
 def graph(convo_num):
     global current_convo
     current_convo = m.get_gui_convo(convo_num)
 
-    return render_template('graphs.html', total_data=current_convo.data_for_total_graph(),
-                           convo=current_convo.get_people())
-
-
-@app.route('/convo/<int:convo_num>/test')
-def test(convo_num):
-    return render_template('skeleton.html', text="default")
-    # Works!
+    return render_template('graphs.html', convo=current_convo)
 
 
 @app.route('/aggregate/')

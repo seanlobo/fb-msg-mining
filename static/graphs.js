@@ -1,4 +1,8 @@
 $(function () {
+    var data = eval($("div[data-graph-type='" + "total" + "']").text());
+    var name = $("#name").text();
+
+
     $('#graph_over_time').highcharts({
         chart: {
             zoomType: 'x'
@@ -7,7 +11,7 @@ $(function () {
             text: 'Message frequency'
         },
         subtitle: {
-            text: 'The total number of messages sent each day over time for: ' + $("#name").text()
+            text: 'The total number of messages sent each day over time for:<br>' + name
             // 'Click and drag the plot area to zoom in'
         },
         xAxis: {
@@ -47,15 +51,16 @@ $(function () {
                     }
                 },
                 threshold: null
+            },
+            series: {
+                turboThreshold: 0
             }
         },
 
         series: [{
             type: 'area',
             name: 'Messages sent',
-            data: eval($("div[data-graph-type='" + "total" + "']").text())
+            data: data
         }]
     });
-
-    console.log($("div").find("[data-graph-type='" + "total" + "']").text());
 });

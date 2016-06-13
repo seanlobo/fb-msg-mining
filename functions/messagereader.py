@@ -102,9 +102,9 @@ class MessageReader:
     def get_gui_convo(self, index):
         """Returns the GUIConvoReader object corresponding to index"""
         assert isinstance(index, int), "index needs to be an integer"
-        assert 0 <= index < len(self), "Index out of bounds, {0} must be between 0 and {1}".format(index, len(self))
+        assert 0 < index <= len(self), "Index out of bounds, index must be between 1 and {0}".format(len(self))
 
-        return GUIConvoReader(self.names[index], self.data[self.names[index]])
+        return GUIConvoReader(self.names[index - 1], self.data[self.names[index - 1]])
 
     def edit_convo_participants(self, convo_num, old_name, new_name):
         """Updates the specified conversation number by replacing all instances of old_name in the person

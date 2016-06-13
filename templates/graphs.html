@@ -4,10 +4,12 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='graphs.css') }}">
     </head>
     <body>
-        <div id="graph_over_time">Actual Graph Div for {{ convo }}</div>
+        <div id="graph_over_time"></div>
 
-        <div class="hide" data-graph-type="total"> {{ total_data }} </div>
-        <div class="hide" id="name"> {{ convo }} </div>
+
+        <!-- Data for use in javascript -->
+        <div class="hide" data-graph-type="total"> {{ convo.data_for_total_graph() }} </div>
+        <div class="hide" id="name"> {{ convo._name.title() }} </div>
     </body>
 
     <script src="{{ url_for('static', filename='jquery.js') }}"></script>
