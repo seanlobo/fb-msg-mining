@@ -205,7 +205,9 @@ class ConvoReader(BaseConvoReader):
             return
         # Making sure user input is good
 
+        MAX_LEN_INDEX = len(str(end)) + 2
         for i in range(start, end):
+            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
 
     def _print_selected_messages(self, *args, padding=None):
@@ -251,8 +253,9 @@ class ConvoReader(BaseConvoReader):
         else:
             end = len(self._convo)
 
-        # for person, msg, date in self.convo:
+        MAX_LEN_INDEX = len(str(end)) + 2
         for i in range(start, end):
+            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
 
     def msgs_graph(self, contact=None, start=None, end=None):

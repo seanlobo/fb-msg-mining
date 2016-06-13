@@ -110,16 +110,32 @@ class CustomDate():
         mid = (low + high) // 2
         if isinstance(date, str):
             date = CustomDate.from_date_string(date)
-        while key(lst[mid]) != date and mid > low and mid < high:
+        while key(lst[mid]) != date and low < mid < high:
+
+            print(mid)
+
+
             if key(lst[mid]) > date:
                 high = mid - 1
                 mid = (low + high) // 2
             else:
                 low = mid + 1
                 mid = (low + high) // 2
-        while abs(key(lst[mid - 1]).distance_from(date)) <= abs(key(lst[mid]).distance_from(date)):
+
+        print('\n' * 2)
+
+        distance = lambda x: abs(key(lst[x]).distance_from(date))  # Distance the current mid is from date
+        if key(lst[mid]).distance_from(date) > 0:  # If the midpoint is after the date
+            # While the previous element is closer to the date we want
+            while 0 <= distance(mid - 1) <= distance(mid):
+                print(mid)
+                mid -= 1
             mid -= 1
-        while abs(key(lst[mid + 1]).distance_from(date)) < abs(key(lst[mid]).distance_from(date)):
+        else:  # Midpoint is before the date
+            # while the next element is closer to the date
+            while distance(mid + 1) <= distance(mid) and key(lst[mid + 1]).distance_from(date) <= 0:
+                print(mid)
+                mid += 1
             mid += 1
         return mid
 
@@ -139,7 +155,6 @@ class CustomDate():
             return
         except ValueError as e:
             s = str(e)
-        finally:
             raise AssertionError(s)
 
     @staticmethod
