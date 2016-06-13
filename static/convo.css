@@ -4,3 +4,8 @@ h1 {
     margin: 0 auto;
     color: green;
 }
+
+.hide {
+	visibility: hidden;
+	display: none;
+}
