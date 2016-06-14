@@ -265,16 +265,20 @@ class BaseConvoReader:
         else:
             return self.__ave_words(name)
 
-    def _raw_msgs_graph(self, contact=None):
+    def _raw_msgs_graph(self, contact=None, forward_shift=0):
         """The raw data used by print_msgs_graph to display message graphs
         Parameters:
             contact (optional): the name (as a string) of the person you are interested in
                 (default: all contacts)
+            forward_shift (optional): The number of minutes past 12 midnight that should count as the previous day
         Return:
             A 2D list with inner lists being of length 2 lists and storing a day as element 0
             and the number of total messages sent that day as element 1
         """
         contact = self._assert_contact(contact)
+        assert isinstance(forward_shift, int), "Forward shift must be an integer"
+        assert -60 * 24 < forward_shift < 60 * 24, "Forward shift must be between {0} and {1}, not including them"\
+            .format(-60 * 24, 60 * 24)
 
         if contact is not None:
             filt = lambda x: x in contact
@@ -288,7 +292,10 @@ class BaseConvoReader:
         msg_freq = [[None, 0] for i in range(days + 1)]
         for person, msg, date in self._convo:
             if filt(person.lower()):
-                msg_freq[date - start][1] += 1
+                if date.minutes() < forward_shift: # if we are counting this time as the previous day
+                    msg_freq[max(0, date - start - 1)][1] += 1
+                else:  # this time is ahead of the shift, so it is counted as the right day
+                    msg_freq[date - start][1] += 1
 
         for day in range(len(msg_freq)):
             msg_freq[day][0] = CustomDate.from_date(start + day)

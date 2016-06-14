@@ -258,7 +258,7 @@ class ConvoReader(BaseConvoReader):
             print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
 
-    def msgs_graph(self, contact=None, start=None, end=None):
+    def msgs_graph(self, contact=None, start=None, end=None, forward_shift=0):
         """Prettily prints to the screen the message history of a chat
         Parameter:
             contact (optional): the name (as a string) of the person you are interested in.
@@ -267,7 +267,7 @@ class ConvoReader(BaseConvoReader):
             end (optional): the date to end the graph with. Defaults to the last message sent
         """
         try:
-            msgs_freq = self._raw_msgs_graph(contact)
+            msgs_freq = self._raw_msgs_graph(contact, forward_shift)
             CustomDate.assert_dates(start, end)
         except AssertionError as e:
             print(e)
