@@ -2,7 +2,7 @@ from collections import Counter
 import shutil
 import os
 import random
-from colorama import Fore, init
+from colorama import Fore, Back, Style, init
 
 
 from functions.convoreader import ConvoReader
@@ -234,37 +234,72 @@ class MessageReader:
     def help():
         condition = True
         while condition:
-            print('Please select which feature you would like help with:\n')
+            print(Fore.LIGHTMAGENTA_EX + Back.BLACK + 'Please select which feature you would like help with:')
+            print(Style.RESET_ALL)
 
-            print('1) Viewing a list of conversations')
+            print(Fore.LIGHTCYAN_EX + Back.BLACK + '0) What can I do here??')
+            print(Style.RESET_ALL + '\n1) Viewing a list of conversations to analyze')
             print('2) Analyzing a specific conversation')
             print('3) Exit helper\n')
 
             choice_condition = True
             while choice_condition:
                 choice = input('> ')
-                choice_condition = choice not in [str(i) for i in range(1, 4)]
+                choice_condition = choice not in [str(i) for i in range(4)]
             print()
 
-            if choice == '1':
-                print('* To view a list of conversations, exit this helper and execute the command \"m.print_names()\"')
-                print('* To get more information about printing conversations, exit the helper and execute'
+            if choice == '0':
+                print()
+                print(Fore.LIGHTCYAN_EX + Back.BLACK + '\"What can I do here??\"')
+                print(Style.RESET_ALL + 'Good question. Here you can perform a variety of analysis on your facebook'
+                                        ' conversations, '
+                      'ranging from analyzing the words you use most frequently in your favorite chat, to stats '
+                      'on who starts conversations the most in that spammy group chat, to rankings of total emoji '
+                      'use in all your conversations combined, and much more.\n')
+                print('If you\'re primarily interested in viewing graphs of message history, you might be better off '
+                      'using the GUI version of this program. Exit this helper (choice 3) and type the command '
+                      '\"exit()\". Once you\'re out of this python session, run the command `python3 fancy_playground`')
+                print()
+                print('If you\'re looking to get into the nitty gritty analysis of your facebook converation history, '
+                      'well this is the place for you. To get information on analyzing your data, pick choices 1 or 2 '
+                      'below')
+
+            elif choice == '1':
+                print(Fore.RED + '*', end=' ')
+                print('To view a list of conversations that you can analyze, exit this helper and execute the '
+                      'command \"m.print_names()\"')
+                print(Fore.RED + '*', end=' ')
+                print('To get more options on printing conversations, exit the helper and execute'
                       ' \"help(m.print_names)\"')
-                print('\n')
+
             elif choice == '2':
-                print('* To analyze a specific conversation, you must retrieve it in one of 3 main ways:')
-                print('a) Print to the screen the ordered list of conversations (see choice 1) and find the rank of'
+                print(Fore.RED + '*', end=' ')
+                print('To analyze a specific conversation, you must retrieve it in one of 3 main ways:')
+                print(Fore.GREEN + 'a)', end=' ')
+                print('Print to the screen the ordered list of conversations (see choice 1) and find the rank of'
                       ' the conversation you would like. Then save that conversation to variable by executing the '
                       'command \"variable_name = m.get_convo(rank_of_desired_convo)\"')
-                print('b) Get the conversation you would like by searching for it\'s name, e.g. executeing the command '
+                print(Fore.GREEN + 'b)', end=' ')
+                print('Get the conversation you would like by searching for it\'s name, e.g. executeing the command '
                       '\"variable_name = m.get_convo(\'bob smith, sally brown\')\"')
-                print('c) Get the conversation you would like by searching for it\'s name as a list, e.g.'
-                      ' executing the command \"variable_name = m.get_convo([\'both smith\', [\'sally smith\'])\"')
+                print(Fore.GREEN + 'c)', end=' ')
+                print('Get the conversation you would like by searching for it\'s name as a list, e.g.'
+                      ' executing the command \"variable_name = m.get_convo([\'both smith\', \'sally brown\'])\"')
                 print()
                 print('Once you have your desired conversation, to get additional help analyzing it execute '
                       '\"help(variable_name_from_above)\"')
 
             condition = choice != '3'
+            if condition:  # We're continuing for another round
+                print()
+                print('-' * 50)
+                print('\nContinue? [Y/n]')
+                choice = None
+                while choice not in ['yes', 'y', 'no', 'n']:
+                    choice = input('> ').lower()
+                print()
+                if choice in ['no', 'n']:
+                    return
 
     def _raw_rank(self, convo_name):
         """Returns the rank of the particular conversation, or None if not found"""
