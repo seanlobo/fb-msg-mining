@@ -113,13 +113,10 @@ class MessageReader:
                   "you will have to run setup again and revert all conversation edits. "
                   .format(new_name, old_name, new_name), end="")
             print(Fore.RED + "Are you sure you would like to proceed? [Y/n]")
-            while True:
-                choice = input('> ').lower()
-                if choice in ['y', 'yes', 'n', 'no']:
-                    break
-            print()
-            if choice in ['no', 'n']:
+            if not user_says_yes():
+                print()
                 return
+            print()
 
         occurrences = 0  # number of occurances that are being swapped. Just so the user knows
         for person, msg, date in convo:
@@ -129,11 +126,7 @@ class MessageReader:
               .format(old_name, new_name, occurrences))
 
         # Does the user really want to continue after getting information
-        while True:
-            choice = input("> ").lower()
-            if choice in ['y', 'yes', 'n', 'no']:
-                break
-        if choice in ['n', 'no']:
+        if not user_says_yes():
             return
 
         # The name and data associated with the desired converation before any actions have been performed
@@ -171,13 +164,8 @@ class MessageReader:
         """Saves changes made to conversation names with edit_convo_participants"""
         print("Are you sure you would like to save the changes made? "
               "You might have to redo setup in order to revert. Your conversation preferences will  be lost. [Y/n]")
-        while True:
-            choice = input('> ').lower()
-            if choice in ['n', 'no']:
-                return
-            if choice in ['yes', 'y']:
-                break
-        # user input: should we continue?
+        if user_says_yes():
+            return
 
         for key in self._edits:
             for change in self._edits[key]:
@@ -239,9 +227,10 @@ class MessageReader:
 
             print(Fore.LIGHTCYAN_EX + Back.BLACK + '0) What can I do here??')
             print(Style.RESET_ALL + '\n1) Viewing a list of conversations to analyze')
-            print('2) Analyzing a specific conversation')
+            print('2) Getting started analyzing a specific conversation')
             print('3) Exit helper\n')
 
+            print("Choose a number between 0 and 3")
             choice_condition = True
             while choice_condition:
                 choice = input('> ')
@@ -258,7 +247,8 @@ class MessageReader:
                       'use in all your conversations combined, and much more.\n')
                 print('If you\'re primarily interested in viewing graphs of message history, you might be better off '
                       'using the GUI version of this program. Exit this helper (choice 3) and type the command '
-                      '\"exit()\". Once you\'re out of this python session, run the command `python3 fancy_playground`')
+                      '`{0}`. Once you\'re out of this python session, run the command `{1}`'
+                      .format(color_method('exit()'), color_method("python3 fancy_playground.py")))
                 print()
                 print('If you\'re looking to get into the nitty gritty analysis of your facebook converation history, '
                       'well this is the place for you. To get information on analyzing your data, pick choices 1 or 2 '
@@ -271,6 +261,7 @@ class MessageReader:
                 print(Fore.RED + '*', end=' ')
                 print('To get more options on printing conversations, exit the helper and execute'
                       ' \"help(m.print_names)\"')
+                print('\nAfter picking a conversation to analyze, see option (2) below')
 
             elif choice == '2':
                 print(Fore.RED + '*', end=' ')
@@ -278,27 +269,54 @@ class MessageReader:
                 print(Fore.GREEN + 'a)', end=' ')
                 print('Print to the screen the ordered list of conversations (see choice 1) and find the rank of'
                       ' the conversation you would like. Then save that conversation to variable by executing the '
-                      'command \"variable_name = m.get_convo(rank_of_desired_convo)\"')
+                      'command `{0}{1}`'.format(color_method('variable_name = '),
+                                                color_method('m.get_convo(rank_of_desired_convo)')))
                 print(Fore.GREEN + 'b)', end=' ')
                 print('Get the conversation you would like by searching for it\'s name, e.g. executeing the command '
-                      '\"variable_name = m.get_convo(\'bob smith, sally brown\')\"')
+                      '`{0}{1}`'.format(color_method('variable_name = '),
+                                        color_method('m.get_convo(\'bob smith, sally brown\')')))
                 print(Fore.GREEN + 'c)', end=' ')
                 print('Get the conversation you would like by searching for it\'s name as a list, e.g.'
-                      ' executing the command \"variable_name = m.get_convo([\'both smith\', \'sally brown\'])\"')
+                      ' executing the command `{0}{1}`'
+                      .format(color_method('variable_name = '),
+                              color_method('m.get_convo([\'both smith\', \'sally brown\'])')))
                 print()
                 print('Once you have your desired conversation, to get additional help analyzing it execute '
-                      '\"help(variable_name_from_above)\"')
+                      '`{0}`'.format(color_method('help(variable_name_from_above)')))
+
+                print('\n\n...would you like an example? [Y/n]')
+                if user_says_yes():
+                    print(Fore.LIGHTRED_EX + "\nEXAMPLE)")
+                    print("Let\'s say I want to see my top 3 conversations. I can do this with command "
+                          "`{0}`, where the 3 tells the program to print my top 3 contacts (ordered "
+                          "by total number of messages sent and received; for more options do `{1}`)"
+                          .format(color_method('m.print_names(3)'), color_method('help(m.print_names)')))
+                    print("The above would go something like this:\n")
+
+                    print(Fore.LIGHTBLACK_EX + ">>> m.print_names(3)\n"
+                          "1) Sally Brown, Your Name\n"
+                          "2) Bob Smith, Your Name\n"
+                          "3) Your Name, Edward Newgate\n")
+                    print("Now if I'd like to analyze my chat with Edward, I should first capture our conversation in "
+                          "the following way:\n")
+                    print(Fore.LIGHTBLACK_EX + ">>> edward = m.get_convo(3)\n")
+                    print("Here, we use the `{0}` method to retrieve our conversation. The 3 corresponds to "
+                          "our 3rd most contacted person from the `{1}` method"
+                          .format(color_method("get_convo"), color_method("print_names")))
+                    print("Additionally, the fact that we used the variable name \"edward\" is arbitrary. Any name can "
+                          "be used, I've just fallen into the habit of naming conversation variables after the "
+                          "name of the conversation, so it\'s easy to remember later")
+                    print("\nOnce we\'ve successfully saved the chat we'd like, we can proceed to analyze it by "
+                          "executing the command `{0}` (replace edward with whatever variable name you used"
+                          .format(color_method('edward.help()')))
+
 
             condition = choice != '3'
             if condition:  # We're continuing for another round
                 print()
-                print('-' * 50)
-                print('\nContinue? [Y/n]')
-                choice = None
-                while choice not in ['yes', 'y', 'no', 'n']:
-                    choice = input('> ').lower()
-                print()
-                if choice in ['no', 'n']:
+                print('-' * 75)
+                print('\nContinue getting help? [Y/n]')
+                if not user_says_yes():
                     return
 
     def _raw_rank(self, convo_name):
@@ -347,3 +365,26 @@ def contents_equal(lst1, lst2):
         if ele not in lst2:
             return False
     return True
+
+def user_says_yes():
+    while True:
+        choice = input('> ').lower()
+        if choice in ['y','yes']:
+            return True
+        elif choice in ['no', 'n']:
+            return False
+
+
+def color_method(string):
+    OUTER_CODE_COLOR = Fore.LIGHTGREEN_EX
+    INNER_CODE_COLOR = Fore.LIGHTBLACK_EX
+
+    result = ""
+
+    if '(' in string:
+        result += OUTER_CODE_COLOR + string[:string.find('(') + 1]
+        result += INNER_CODE_COLOR + string[string.find('(') + 1:-1]
+        result += OUTER_CODE_COLOR + ')' + Style.RESET_ALL
+    else:
+        result += INNER_CODE_COLOR + string + Style.RESET_ALL
+    return result
