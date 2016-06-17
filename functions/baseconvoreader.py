@@ -157,10 +157,13 @@ class BaseConvoReader:
                         [fn(2)(data) for data in val]
                 except (AssertionError, ValueError) as e:
                     verification[file_names[i]] = e
-        print(verification)
+        return verification
+
+        # To run java stuff fro here
+        # http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
 
     @staticmethod
-    def set_dimentions(x, y):
+    def set_dimensions(x, y):
         BaseConvoReader._assert_dimensions_for_wc([x, y])
 
         with open(BaseConvoReader.word_cloud_path + 'dimensions.txt', mode='w', encoding='utf-8') as f:
