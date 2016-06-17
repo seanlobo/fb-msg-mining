@@ -186,6 +186,17 @@ class ConvoReader(BaseConvoReader):
             print()
             return
 
+    def set_time_threshold(self, threshold):
+        try:
+            assert isinstance(threshold, int), "threshold should be an integer, not a {0}".format(type(threshold))
+            assert threshold > 0, "threshold should be greater than 0 minutes"
+        except AssertionError as e:
+            print(e)
+            return
+        # Making sure user input is good
+
+        self._preferences['global']['threshold'] = threshold
+
     def _print_messages(self, start=None, end=None):
         """Prints to the screen the messages between start and end
         Parameters:
@@ -207,6 +218,8 @@ class ConvoReader(BaseConvoReader):
 
         MAX_LEN_INDEX = len(str(end)) + 2
         for i in range(start, end):
+            if self._convo[i - 1][2].distance_from(self._convo[i][2]) < -self._preferences['global']['threshold']:
+                print()
             print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
 
@@ -546,12 +559,42 @@ class ConvoReader(BaseConvoReader):
         return int(color)
 
     def _load_preferences(self):
-        """Searches for preferences.txt in the data folder and loads data if file exists"""
+        """Searches for preferences.txt in the data folder and loads data if file exists and is clean"""
         try:
             with open(self._path + 'preferences.txt', mode='r', encoding='utf-8') as f:
-                return eval(f.read())
+                preferences = eval(f.read())
+                good = False  # Are the preferences good
+                try:
+                    assert isinstance(preferences, dict), "Please don\'t modify any files in /data/"
+                    for person in self._people:
+                        assert person in preferences, "{0} is missing from preferences".format(person)
+                    assert 'global' in preferences and 'threshold' in preferences['global'],\
+                        "You are missing global parameters in preferences"
+                    good = True
+                except AssertionError as e:
+                    print(e)
+                # Clean data, making sure loaded preferences are actually in the format we expect
+
+                if good:
+                    return preferences
+                else:
+                    print('To get rid of this warning either execute \"save_preferences()\", or figure out what the '
+                          'issue is in {0} and fix that'.format(self._path + 'preferences.txt'))
+                # returning the preferences read from the file IF it is good
+                # OTHERWISE passes on to return a default version
+
         except FileNotFoundError:
-            return {person: dict() for person in self._people}
+            pass
+        except Exception as e:
+            print("A {0} error was encountered when loading preferences: {1}".format(e, str(e)))
+            print('\nThis most likely means you have modified the preferences.txt file in {0}'.format(self._path))
+            print('To get rid of this warning, execute the command \"save_preferences()\"')
+
+        # Only executes if an exception occured or an assertion was raised
+        print("Using default settings")
+        preferences = {person: dict() for person in self._people}
+        preferences['global'] = dict(threshold=240)
+        return preferences
 
     def _print_message(self, number):
         """Helper method used to prettily print to the screen the person, message and date
