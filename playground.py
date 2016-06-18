@@ -2,6 +2,7 @@
 
 from functions.messagereader import MessageReader, color_method
 from functions.setup_functions import clear_screen
+from functions.wordcloud import WordCloud
 from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
 from functions import emojis

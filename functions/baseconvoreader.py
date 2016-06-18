@@ -19,6 +19,7 @@ class BaseConvoReader:
         self._individual_words = self._cleaned_word_freqs()
         self._len = len(self._convo)
         self._path = 'data/conversation_data/' + BaseConvoReader.list_to_combined_string(self._people)
+        self._word_cloud = None
 
     def characters(self, person=None):
         """Returns character frequency in conversation in a Counter object"""
@@ -97,6 +98,10 @@ class BaseConvoReader:
 
     @staticmethod
     def list_to_combined_string(list_of_people):
+        """Combines a list of people into a single string, converting each perons's name to lowercase, separating
+        first/middle/last name(s) with hyphens (-) and various individual's names with underscores (_). Cuts off a
+        string past 255 characters
+        """
         name = ""
         for person in list_of_people:
             split = person.split(' ')
@@ -113,15 +118,44 @@ class BaseConvoReader:
 
         return name + '/'
 
-    def _new_word_cloud(self):
-        """Creates the word cloud directory"""
+    def _setup_new_word_cloud(self, **preferences):
+        """Takes in variable parameters, combining them and setting up the current Word Cloud
+        Parameters:
+            type        -  A string representing the type of word cloud. Must be from WorldCloud.WORD_CLOUD_TYPES
+            output_name -  A string representing the output name of the wordcloud picture
+            colors      -  A list of rgb colors (each rbg color must be either a list or tuple of length 3)
+            dimensions  -  A list representing the pixel values of the height and width, respectively
+            input       -  A string representing the file containing raw frequencies to be used as data
+        """
+        # Creates wordcloud with directory
+        assert 'type' in preferences, "You must pass a type argument"
+        assert 'output_name' in preferences, 'You must pass an output_name argument'
+        wc_type = preferences['type']
+        self._word_cloud = WordCloud(wc_type, self._path)
+        self._word_cloud.setup_word_cloud_starter_files()
+        self.save_word_freq(path=WordCloud.WORD_CLOUD_PATH)
 
-        shutil.rmtree(WordCloud.word_cloud_path) if os.path.exists(WordCloud.word_cloud_path) else None
-        os.makedirs(WordCloud.word_cloud_path, exist_ok=True)
-        if os.path.isfile(self._path + 'excludedWords.txt'):
-            shutil.copyfile(self._path + 'excludedWords.txt', WordCloud.word_cloud_path + 'excludedWords.txt')
-        if not os.path.isfile(WordCloud.word_cloud_path + 'total.txt'):
-            self.save_word_freq(path=WordCloud.word_cloud_path)
+        # Grabs preferences that should be common to all wordclouds
+        output_name = preferences['output_name']
+
+        if wc_type == 'circular':
+            # Grabs preferences specific to circular wordclouds
+            colors = preferences['colors']
+            dimensions = preferences['dimensions']
+            min_freq = preferences['min_frequency'] if 'min_frequency' in preferences else 1
+
+            # Applies grabbed preferences to wordcloud
+            for color in colors:
+                self._word_cloud.append_color(color)
+            self._word_cloud.set_output_name(output_name)
+            self._word_cloud.set_dimensions(*dimensions)
+            self._word_cloud.freq_to_raw(WordCloud.WORD_CLOUD_PATH + preferences['input'],
+                                         WordCloud.WORD_CLOUD_PATH + 'text.txt',
+                                         lambda x: True,
+                                         min_occurence=min_freq)
+
+        # Returns the results from verifying settings for this wordcloud
+        return self._word_cloud.verify_word_cloud_setup()
 
     def _raw_messages(self, name=None):
         """Number of messages for people in the chat
