@@ -220,26 +220,30 @@ class MessageReader:
 
     @staticmethod
     def help():
+        """Responsivelvy provides help for using MessageReader"""
         clear_screen()
         print("Welcome to the help function for MessageReader\n\n")
+
         condition = True
-        while condition:
+        while condition:  # Continue's offering help until the user escapes with option 3
             print(Fore.LIGHTMAGENTA_EX + Back.BLACK + 'Please select which feature you would like help with:')
             print(Style.RESET_ALL)
-
             print(Fore.LIGHTCYAN_EX + Back.BLACK + '0) What can I do here??')
             print(Style.RESET_ALL + '\n1) Viewing a list of conversations you can analyze')
             print('2) Getting started analyzing a specific conversation')
             print('3) Exit helper\n')
-
             print("Choose a number between 0 and 3")
+            # Which choice would the user like help with?
+
             choice_condition = True
             while choice_condition:
                 choice = input('> ')
                 choice_condition = choice not in [str(i) for i in range(4)]
             clear_screen()
+            # Gets the user's choice of 0-3 and clears the screen after in preparation
 
             if choice == '0':
+                # Helps user with an idea of what they can do with a messagereader
                 print("Option 0:")
                 print(Fore.LIGHTCYAN_EX + Back.BLACK + '\"What can I do here??\"')
                 print(Style.RESET_ALL + 'Good question. Here you can perform a variety of analysis on your facebook'
@@ -257,6 +261,7 @@ class MessageReader:
                       'below')
 
             elif choice == '1':
+                # Helps users view a list of conversations they can analyze
                 print("Option 1: Viewing a list of conversations you can analyze\n")
                 print(Fore.RED + '*', end=' ')
                 print('To view a list of conversations that you can analyze, exit this helper and execute the '
@@ -268,6 +273,7 @@ class MessageReader:
                 print('\nAfter picking a conversation to analyze, see option (2) below')
 
             elif choice == '2':
+                # Helps users see how to grab a specific conversation
                 print(Fore.RED + '*', end=' ')
                 print('To analyze a specific conversation, you must retrieve it in one of 3 main ways:')
                 print(Fore.GREEN + 'a)', end=' ')
@@ -289,6 +295,8 @@ class MessageReader:
                       '`{0}`'.format(color_method('help(variable_name_from_above)')))
 
                 print('\n\n...would you like an example? [Y/n]')
+
+                # Describes an example of how to grab a conversation
                 if user_says_yes():
                     print(Fore.LIGHTRED_EX + "\nEXAMPLE)")
                     print("Let\'s say I want to see my top 3 conversations. I can do this with command "
@@ -306,14 +314,13 @@ class MessageReader:
                     print(Fore.LIGHTBLACK_EX + ">>> edward = m.get_convo(3)\n")
                     print("Here, we use the `{0}` method to retrieve our conversation. The 3 corresponds to "
                           "our 3rd most contacted person from the `{1}` method"
-                          .format(color_method("get_convo"), color_method("print_names")))
+                          .format(color_method("get_convo()"), color_method("print_names()")))
                     print("Additionally, the fact that we used the variable name \"edward\" is arbitrary. Any name can "
                           "be used, I've just fallen into the habit of naming conversation variables after the "
                           "name of the conversation, so it\'s easy to remember later")
                     print("\nOnce we\'ve successfully saved the chat we'd like, we can proceed to analyze it by "
-                          "executing the command `{0}` (replace edward with whatever variable name you used"
+                          "executing the command `{0}` (replace edward with whatever variable name you used)"
                           .format(color_method('edward.help()')))
-
 
             condition = choice != '3'
             if condition:  # We're continuing for another round
@@ -371,6 +378,7 @@ def contents_equal(lst1, lst2):
     return True
 
 def user_says_yes():
+    """Returns True if the user types 'y' or 'yes' and False for 'no', 'n (ignoring case)'"""
     while True:
         choice = input('> ').lower()
         if choice in ['y','yes']:
@@ -380,6 +388,7 @@ def user_says_yes():
 
 
 def color_method(string):
+    """Colors a function call passed with one color, making the arguments / parameters another"""
     OUTER_CODE_COLOR = Fore.LIGHTGREEN_EX
     INNER_CODE_COLOR = Fore.LIGHTBLACK_EX
 
