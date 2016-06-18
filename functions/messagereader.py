@@ -4,7 +4,7 @@ import os
 import random
 from colorama import Fore, Back, Style, init
 
-
+from functions.setup_functions import clear_screen
 from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
 
@@ -220,13 +220,15 @@ class MessageReader:
 
     @staticmethod
     def help():
+        clear_screen()
+        print("Welcome to the help function for MessageReader\n\n")
         condition = True
         while condition:
             print(Fore.LIGHTMAGENTA_EX + Back.BLACK + 'Please select which feature you would like help with:')
             print(Style.RESET_ALL)
 
             print(Fore.LIGHTCYAN_EX + Back.BLACK + '0) What can I do here??')
-            print(Style.RESET_ALL + '\n1) Viewing a list of conversations to analyze')
+            print(Style.RESET_ALL + '\n1) Viewing a list of conversations you can analyze')
             print('2) Getting started analyzing a specific conversation')
             print('3) Exit helper\n')
 
@@ -235,10 +237,10 @@ class MessageReader:
             while choice_condition:
                 choice = input('> ')
                 choice_condition = choice not in [str(i) for i in range(4)]
-            print()
+            clear_screen()
 
             if choice == '0':
-                print()
+                print("Option 0:")
                 print(Fore.LIGHTCYAN_EX + Back.BLACK + '\"What can I do here??\"')
                 print(Style.RESET_ALL + 'Good question. Here you can perform a variety of analysis on your facebook'
                                         ' conversations, '
@@ -255,12 +257,14 @@ class MessageReader:
                       'below')
 
             elif choice == '1':
+                print("Option 1: Viewing a list of conversations you can analyze\n")
                 print(Fore.RED + '*', end=' ')
                 print('To view a list of conversations that you can analyze, exit this helper and execute the '
-                      'command \"m.print_names()\"')
+                      'command `{0}`'.format(color_method('m.print_names()')))
                 print(Fore.RED + '*', end=' ')
-                print('To get more options on printing conversations, exit the helper and execute'
-                      ' \"help(m.print_names)\"')
+                print('To get more options on printing conversations, exit the helper and execute `{0}`. This is '
+                      'only if you plan on doing fancy stuff'
+                      .format(color_method('help(m.print_names)')))
                 print('\nAfter picking a conversation to analyze, see option (2) below')
 
             elif choice == '2':
@@ -313,11 +317,11 @@ class MessageReader:
 
             condition = choice != '3'
             if condition:  # We're continuing for another round
-                print()
-                print('-' * 75)
                 print('\nContinue getting help? [Y/n]')
                 if not user_says_yes():
                     return
+
+            clear_screen()
 
     def _raw_rank(self, convo_name):
         """Returns the rank of the particular conversation, or None if not found"""

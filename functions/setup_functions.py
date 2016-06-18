@@ -1,3 +1,4 @@
+import os
 from bs4 import BeautifulSoup
 from colorama import init, Fore,Back, Style
 
@@ -140,7 +141,7 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
 
                 are_same = input(Fore.MAGENTA + Back.BLACK + "\nAre these two chunks from "
                                                              "the same conversation? [Y/n]\n You might "
-                                                             "have to look this up on facebook.com\n> ")
+                                                             "have to look this up on facebook.com\n> " + Style.RESET_ALL)
                 while are_same.lower() not in ['y', 'yes', 'n', 'no']:
                     are_same = input(Style.RESET_ALL + "[Y/n] > ")
                 # User input for whether the two message groups are in the same conversation
@@ -154,6 +155,8 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
             else:
                 # this conversation existed but was after our current one, so increment the number and try again
                 duplicate_num += 1
+
+            clear_screen()
 
         if not added:
             # if the current message group hasn't been added, add with a new duplicate #
@@ -183,21 +186,22 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
                 # if the new message group is after the new message group it but not within 3 minutes
                 # we need user input to see if the two belong to the same chat
 
-                print(Fore.RED + Back.BLACK + '# previous convo end for {0}'.format(convo_name))
+                print(Fore.RED + Back.BLACK + '# previous convo end for {0}'.format(convo_name) + Style.RESET_ALL)
                 for i in range(- min(5, len(msgs[convo_name])), 0):
                     print(msgs[convo_name][i])
-                print(Fore.RED + Back.BLACK + "\n# next convo start")
+                print(Fore.RED + Back.BLACK + "\n# next convo start" + Style.RESET_ALL)
                 for i in range(0, min(6, len(cur_thread))):
                     print(cur_thread[i])
                 # Prints the last 5 messages of the previous message group and the first 5 message of
                 # the current message group, both in RED with a BLACK background
 
-                are_same = input(Fore.MAGENTA + Back.BLACK + "\nAre these two chunks from the same conversation?"
-                                                             " [Y/n]\nYou might have to look this up on "
-                                                             "facebook.com\n> ")
-                while are_same.lower() not in ['y', 'yes', 'n', 'no']:
-                    are_same = input(Style.RESET_ALL + "[Y/n] > ")
-                print('\n' * 5)
+                print(Fore.MAGENTA + Back.BLACK + "\nAre these two chunks from the same conversation? "
+                                                  "[Y/n]\nYou might have to look this up on facebook.com" +
+                      Style.RESET_ALL)
+                are_same = input("> ").lower()
+                while are_same not in ['y', 'yes', 'n', 'no']:
+                    are_same = input("[Y/n] > ").lower()
+                clear_screen()
                 # user input to decide if the above two message groups are the same conversation
 
                 if are_same.lower() in ['y', 'yes']: # if part of same convo append the new to the old
@@ -219,4 +223,9 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
     print('\a', '')
     return (msgs, str(footer))
 
+
+def clear_screen():
+    """Clears the user's screen/ terminal"""
+    #  http://stackoverflow.com/questions/2084508/clear-terminal-in-python
+    os.system('cls' if os.name == 'nt' else 'clear')
 

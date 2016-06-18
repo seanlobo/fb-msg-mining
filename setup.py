@@ -15,8 +15,8 @@ if os.path.isfile('data/data.txt'):
 
 start = time.time()
 
-print('\nSetting up the data, this could take a few minutes depending on how much data you have\n'
-      '(aka how much you chat) and your computer\'s processor speeds\n')
+print('\nSetting up the data, this could take a few minutes depending on how much\n '
+      'data you have (aka how much you chat) and your computer\'s processor speeds\n')
 
 os.makedirs('data', exist_ok=True)
 msgs, footer = setup_functions.get_all_msgs_dict('html/messages.htm')
