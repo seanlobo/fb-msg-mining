@@ -5,7 +5,7 @@ import random
 from colorama import Fore, Back, Style, init
 
 from functions.setup_functions import clear_screen
-from functions.convoreader import ConvoReader
+from functions.convoreader import ConvoReader, user_says_yes
 from functions.customdate import CustomDate
 
 init(autoreset=True)
@@ -376,28 +376,3 @@ def contents_equal(lst1, lst2):
         if ele not in lst2:
             return False
     return True
-
-def user_says_yes():
-    """Returns True if the user types 'y' or 'yes' and False for 'no', 'n (ignoring case)'"""
-    while True:
-        choice = input('> ').lower()
-        if choice in ['y','yes']:
-            return True
-        elif choice in ['no', 'n']:
-            return False
-
-
-def color_method(string):
-    """Colors a function call passed with one color, making the arguments / parameters another"""
-    OUTER_CODE_COLOR = Fore.LIGHTGREEN_EX
-    INNER_CODE_COLOR = Fore.LIGHTBLACK_EX
-
-    result = ""
-
-    if '(' in string:
-        result += OUTER_CODE_COLOR + string[:string.find('(') + 1]
-        result += INNER_CODE_COLOR + string[string.find('(') + 1:-1]
-        result += OUTER_CODE_COLOR + ')' + Style.RESET_ALL
-    else:
-        result += INNER_CODE_COLOR + string + Style.RESET_ALL
-    return result

@@ -5,8 +5,10 @@ import os
 import re
 
 from functions.baseconvoreader import BaseConvoReader
+from functions.wordcloud import WordCloud
 from functions.customdate import CustomDate
 import functions.emojis as emojis
+from functions.setup_functions import clear_screen
 
 
 init(autoreset=True)
@@ -196,80 +198,6 @@ class ConvoReader(BaseConvoReader):
         # Making sure user input is good
 
         self._preferences['global']['threshold'] = threshold
-
-    def _print_messages(self, start=None, end=None):
-        """Prints to the screen the messages between start and end
-        Parameters:
-            start: The start index
-            end: The end index
-        """
-        start = 0 if start is None else start
-        end = len(self) - 1 if end is None else end
-        try:
-            assert isinstance(start, int), "Start needs to be an integer"
-            assert isinstance(end, int), "End needs to be an integer"
-            assert 0 <= start < len(self), "Start needs to be between 0 and {0}".format(len(self))
-            assert 0 <= end < len(self), "End needs to be between 0 and {0}".format(len(self))
-            assert start <= end, "End should be greater than or equal to start"
-        except AssertionError as e:
-            print(str(e))
-            return
-        # Making sure user input is good
-
-        MAX_LEN_INDEX = len(str(end)) + 2
-        for i in range(start, end):
-            if self._convo[i - 1][2].distance_from(self._convo[i][2]) < -self._preferences['global']['threshold']:
-                print()
-            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
-            self._print_message(i)
-
-    def _print_selected_messages(self, *args, padding=None):
-        """Prints to the screen all message numbers in args padded by padding amount
-        Parameters:
-            *args: An arbitrary number of integers representing conversation #s to view
-            padding (optional): The number of messages to pad each query by
-        """
-        def get_range(center, padding):
-            """Returns a range object with a padded center, and with a minimum of 0 and maximum of len(self)"""
-            assert isinstance(center, int), "Center needs to be an integer"
-            assert isinstance(padding, int), "Padding neesd to be an integer"
-            assert 0 <= center < len(self), "Passed value must be between 0 and {0}".format(len(self))
-            assert padding >= 0, "Padding needs to be greater than or equal to 0"
-            return range(max(0, center - padding), min(len(self), center + padding + 1))
-
-        padding = 5 if padding is None else padding
-
-        start_end_ranges = [get_range(num, padding) for num in args]
-        MAX_LEN_INDEX = len(str(max(start_end_ranges, key=lambda x: len(str(x.stop))).stop)) + 1
-
-        for start_end in start_end_ranges:
-            for i in start_end:
-                print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="- ")
-                self._print_message(i)
-            print('\n')
-
-    def _print_message_dates(self, start=None, end=None):
-        """Prints a "pretty" version of the conversation history"""
-        CustomDate.assert_dates(start, end)
-        if start is not None:
-            start = CustomDate.from_date_string(start)
-            assert start.date >= self._convo[0][2].date, \
-                "Your conversations only begin after {0}".format(self._convo[0][2].full_date)
-            start = CustomDate.bsearch_index(self._convo, start, key=lambda x: x[2])
-        else:
-            start = 0
-        if end is not None:
-            end = CustomDate.from_date(CustomDate.from_date_string(end) + 1)
-            assert end.date <= self._convo[-1][2].date,\
-                "Your conversations ends on {0}".format(self._convo[-1][2].full_date)
-            end = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2])
-        else:
-            end = len(self._convo)
-
-        MAX_LEN_INDEX = len(str(end)) + 2
-        for i in range(start, end):
-            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
-            self._print_message(i)
 
     def msgs_graph(self, contact=None, start=None, end=None, forward_shift=0):
         """Prettily prints to the screen the message history of a chat
@@ -638,6 +566,81 @@ class ConvoReader(BaseConvoReader):
         else:
             print(" | " + str(date))
 
+    def _print_messages(self, start=None, end=None):
+        """Prints to the screen the messages between start and end
+        Parameters:
+            start: The start index
+            end: The end index
+        """
+        start = 0 if start is None else start
+        end = len(self) - 1 if end is None else end
+        try:
+            assert isinstance(start, int), "Start needs to be an integer"
+            assert isinstance(end, int), "End needs to be an integer"
+            assert 0 <= start < len(self), "Start needs to be between 0 and {0}".format(len(self))
+            assert 0 <= end < len(self), "End needs to be between 0 and {0}".format(len(self))
+            assert start <= end, "End should be greater than or equal to start"
+        except AssertionError as e:
+            print(str(e))
+            return
+        # Making sure user input is good
+
+        MAX_LEN_INDEX = len(str(end)) + 2
+        for i in range(start, end):
+            if self._convo[i - 1][2].distance_from(self._convo[i][2]) < -self._preferences['global']['threshold']:
+                print()
+            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
+            self._print_message(i)
+
+    def _print_selected_messages(self, *args, padding=None):
+        """Prints to the screen all message numbers in args padded by padding amount
+        Parameters:
+            *args: An arbitrary number of integers representing conversation #s to view
+            padding (optional): The number of messages to pad each query by
+        """
+
+        def get_range(center, padding):
+            """Returns a range object with a padded center, and with a minimum of 0 and maximum of len(self)"""
+            assert isinstance(center, int), "Center needs to be an integer"
+            assert isinstance(padding, int), "Padding neesd to be an integer"
+            assert 0 <= center < len(self), "Passed value must be between 0 and {0}".format(len(self))
+            assert padding >= 0, "Padding needs to be greater than or equal to 0"
+            return range(max(0, center - padding), min(len(self), center + padding + 1))
+
+        padding = 5 if padding is None else padding
+
+        start_end_ranges = [get_range(num, padding) for num in args]
+        MAX_LEN_INDEX = len(str(max(start_end_ranges, key=lambda x: len(str(x.stop))).stop)) + 1
+
+        for start_end in start_end_ranges:
+            for i in start_end:
+                print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="- ")
+                self._print_message(i)
+            print('\n')
+
+    def _print_message_dates(self, start=None, end=None):
+        """Prints a "pretty" version of the conversation history"""
+        CustomDate.assert_dates(start, end)
+        if start is not None:
+            start = CustomDate.from_date_string(start)
+            assert start.date >= self._convo[0][2].date, \
+                "Your conversations only begin after {0}".format(self._convo[0][2].full_date)
+            start = CustomDate.bsearch_index(self._convo, start, key=lambda x: x[2])
+        else:
+            start = 0
+        if end is not None:
+            end = CustomDate.from_date(CustomDate.from_date_string(end) + 1)
+            assert end.date <= self._convo[-1][2].date, \
+                "Your conversations ends on {0}".format(self._convo[-1][2].full_date)
+            end = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2])
+        else:
+            end = len(self._convo)
+
+        MAX_LEN_INDEX = len(str(end)) + 2
+        for i in range(start, end):
+            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
+            self._print_message(i)
+
     def __getitem__(self, index):
         """Returns the tuple (person, message, datetime) for the corresponding index"""
         if type(index) is not int:
@@ -660,3 +663,31 @@ class ConvoReader(BaseConvoReader):
     def __repr__(self):
         """Returns a valid constructor for this object"""
         return "ConvoReader({0}, {1})".format(repr(self._name), repr(self._convo))
+
+
+
+
+def color_method(string):
+    """Colors a function call passed with one color, making the arguments / parameters another"""
+    OUTER_CODE_COLOR = Fore.LIGHTGREEN_EX
+    INNER_CODE_COLOR = Fore.LIGHTBLACK_EX
+
+    result = ""
+
+    if '(' in string:
+        result += OUTER_CODE_COLOR + string[:string.find('(') + 1]
+        result += INNER_CODE_COLOR + string[string.find('(') + 1:-1]
+        result += OUTER_CODE_COLOR + ')' + Style.RESET_ALL
+    else:
+        result += INNER_CODE_COLOR + string + Style.RESET_ALL
+    return result
+
+
+def user_says_yes():
+    """Returns True if the user types 'y' or 'yes' and False for 'no', 'n (ignoring case)'"""
+    while True:
+        choice = input('> ').lower()
+        if choice in ['y','yes']:
+            return True
+        elif choice in ['no', 'n']:
+            return False

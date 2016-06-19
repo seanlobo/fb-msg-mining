@@ -1,9 +1,9 @@
 # Place to run all commands
 
-from functions.messagereader import MessageReader, color_method
+from functions.messagereader import MessageReader
 from functions.setup_functions import clear_screen
 from functions.wordcloud import WordCloud
-from functions.convoreader import ConvoReader
+from functions.convoreader import ConvoReader, color_method
 from functions.customdate import CustomDate
 from functions import emojis
 
