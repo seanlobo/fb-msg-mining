@@ -19,8 +19,8 @@ class WordCloud:
         """
         verification = dict()
         if self.wc_type == "circular":
-            assertions = [self._assert_dimensions_for_wc, self._assert_output_name_for_wc, self._assert_color_for_wc,
-                          lambda x: None]
+            assertions = [WordCloud._assert_dimensions_for_wc, WordCloud._assert_output_name_for_wc,
+                          WordCloud._assert_color_for_wc, lambda x: None]
             file_names = ['dimensions.txt', 'output_name.txt', 'colors.txt', 'text.txt']
             fn = lambda num: assertions[num]
             for i in range(len(assertions)):
@@ -69,7 +69,7 @@ class WordCloud:
             f.write(string)
 
     def setup_word_cloud_starter_files(self):
-        """Creates the word cloud directory"""
+        """Creates the word cloud directory along with starter files"""
         shutil.rmtree(WordCloud.WORD_CLOUD_PATH) if os.path.exists(WordCloud.WORD_CLOUD_PATH) else None
         os.makedirs(WordCloud.WORD_CLOUD_PATH, exist_ok=True)
         if os.path.isfile(self.path + 'excludedWords.txt'):
@@ -79,6 +79,7 @@ class WordCloud:
 
     @staticmethod
     def set_dimensions(x, y):
+        """Saves the specified integer dimensions to a file"""
         WordCloud._assert_dimensions_for_wc([x, y])
 
         with open(WordCloud.WORD_CLOUD_PATH + 'dimensions.txt', mode='w', encoding='utf-8') as f:
@@ -86,6 +87,7 @@ class WordCloud:
 
     @staticmethod
     def set_num_word_sets(num):
+        """Saves the specified integer to a file"""
         WordCloud._assert_num_text_set_for_wc(num)
 
         with open(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt', mode='w', encoding='utf-8') as f:
@@ -93,6 +95,10 @@ class WordCloud:
 
     @staticmethod
     def create_text_set(set_num, raw_file_name, min_frequency=1):
+        """Creates a text file for the corresponding set_num specified with the raw attributes
+        Parameters:
+            set_num: The integer value specifying 
+        """
         # ensures that there is a valid number of text sets in the wordCloud directory
         assert os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt'), "You need to specify a number " \
                                                                                 "of text sets first"
@@ -148,6 +154,18 @@ class WordCloud:
 
         with open(WordCloud.WORD_CLOUD_PATH + 'output_name.txt', mode='w', encoding='utf-8') as f:
             f.write(name)
+
+    @staticmethod
+    def set_num_words_to_include(limit):
+        WordCloud._assert_num_words_to_include(limit)
+
+        with open(WordCloud.WORD_CLOUD_PATH + 'set_num_words_to_include.txt', mode='r', encoding='utf-8') as f:
+            f.write(limit)
+
+    @staticmethod
+    def _assert_num_words_to_include(limit):
+        assert isinstance(limit, int), "limit must be an integer"
+        assert 0 < limit, "This would be a very boring word cloud if I let you give a frequency less than 1"
 
     @staticmethod
     def _assert_dimensions_for_wc(dimensions):

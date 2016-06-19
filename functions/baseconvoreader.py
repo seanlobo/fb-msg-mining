@@ -121,11 +121,18 @@ class BaseConvoReader:
     def _setup_new_word_cloud(self, **preferences):
         """Takes in variable parameters, combining them and setting up the current Word Cloud
         Parameters:
-            type        -  A string representing the type of word cloud. Must be from WorldCloud.WORD_CLOUD_TYPES
-            output_name -  A string representing the output name of the wordcloud picture
+            type                      -  A string representing the type of word cloud. Must be from
+                                         WorldCloud.WORD_CLOUD_TYPES
+            output_name               -  A string representing the output name of the wordcloud picture
+            set_num_words_to_include  -  An integer representing the max number of words to be included
+            min_cutoff_freq           -  An integer specifying the minimum frequency of words to be included
+
+            * Mainly for Circular/ rectangular ones *
             colors      -  A list of rgb colors (each rbg color must be either a list or tuple of length 3)
             dimensions  -  A list representing the pixel values of the height and width, respectively
             input       -  A string representing the file containing raw frequencies to be used as data
+
+
         """
         # Creates wordcloud with directory
         assert 'type' in preferences, "You must pass a type argument"
@@ -137,22 +144,28 @@ class BaseConvoReader:
 
         # Grabs preferences that should be common to all wordclouds
         output_name = preferences['output_name']
+        num_words_to_include = preferences['set_num_words_to_include'] if 'set_num_words_to_include' in preferences\
+                                                                       else None
+        min_cutoff_freq = preferences['min_cutoff_freq'] if 'min_cutoff_freq' in preferences else 1
+
+        # Applies generic wordcloud preferences (from above)
+        self._word_cloud.set_output_name(output_name)
+        self._word_cloud.set_num_words_to_include(num_words_to_include)
 
         if wc_type == 'circular':
             # Grabs preferences specific to circular wordclouds
             colors = preferences['colors']
             dimensions = preferences['dimensions']
-            min_freq = preferences['min_frequency'] if 'min_frequency' in preferences else 1
 
-            # Applies grabbed preferences to wordcloud
+            # Applies specific preferences to wordcloud
             for color in colors:
                 self._word_cloud.append_color(color)
-            self._word_cloud.set_output_name(output_name)
             self._word_cloud.set_dimensions(*dimensions)
+
             self._word_cloud.freq_to_raw(WordCloud.WORD_CLOUD_PATH + preferences['input'],
                                          WordCloud.WORD_CLOUD_PATH + 'text.txt',
                                          lambda x: True,
-                                         min_occurence=min_freq)
+                                         min_occurence=min_cutoff_freq)
 
         # Returns the results from verifying settings for this wordcloud
         return self._word_cloud.verify_word_cloud_setup()
@@ -163,7 +176,7 @@ class BaseConvoReader:
             name (optional): The name (as a string) of the person you are interested in
         Return:
             A number if name is not passed, otherwise a Counter object storing the number
-            of mesages as values paired with names of people as keys.
+            of messages as values paired with names of people as keys.
         """
         if name is None:
             return self.__msgs_per_person()
