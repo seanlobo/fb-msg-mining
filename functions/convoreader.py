@@ -1,8 +1,9 @@
-from colorama import init, Fore, Back, Style
 from collections import Counter
 import inspect
 import os
 import re
+from colorama import init, Fore, Back, Style
+
 
 from functions.baseconvoreader import BaseConvoReader
 from functions.wordcloud import WordCloud
@@ -15,7 +16,7 @@ init(autoreset=True)
 
 
 class ConvoReader(BaseConvoReader):
-    def __init__(self, convo_name, convo_list):
+    def __init__(self, convo_name: str, convo_list: list):
         """Constructor for ConvoReader, important instance variables summarized below:
         name  String - this conversation's name, all people in the conversation concatenated together
                         separated by commas and a space. E.g. "swetha raman, sean lobo"
@@ -142,7 +143,19 @@ class ConvoReader(BaseConvoReader):
                 print()
 
     def word_cloud(self, **preferences):
-        """Interactive method for users to set preferences for word cloud generation"""
+        """Interactive method for users to set preferences for word cloud generation
+         Parameters:
+            type                      -  A string representing the type of word cloud. Must be from
+                                         WorldCloud.WORD_CLOUD_TYPES
+            output_name               -  A string representing the output name of the wordcloud picture
+            set_num_words_to_include  -  An integer representing the max number of words to be included
+            min_cutoff_freq           -  An integer specifying the minimum frequency of words to be included
+
+            * Mainly for Circular/ rectangular ones *
+            colors      -  A list of rgb colors (each rbg color must be either a list or tuple of length 3)
+            dimensions  -  A list representing the pixel values of the height and width, respectively
+            input_name  -  A string representing the file containing raw frequencies to be used as data
+        """
         clear_screen()
 
         # Getting the user's type, this is mandatory
@@ -220,7 +233,7 @@ class ConvoReader(BaseConvoReader):
             print()
             return
 
-    def set_time_threshold(self, threshold):
+    def set_time_threshold(self, threshold: int):
         try:
             assert isinstance(threshold, int), "threshold should be an integer, not a {0}".format(type(threshold))
             assert threshold > 0, "threshold should be greater than 0 minutes"
@@ -228,10 +241,9 @@ class ConvoReader(BaseConvoReader):
             print(e)
             return
         # Making sure user input is good
-
         self._preferences['global']['threshold'] = threshold
 
-    def msgs_graph(self, contact=None, start=None, end=None, forward_shift=0):
+    def msgs_graph(self, contact: str=None, start: str=None, end: str=None, forward_shift: int=0):
         """Prettily prints to the screen the message history of a chat
         Parameter:
             contact (optional): the name (as a string) of the person you are interested in.
@@ -306,7 +318,7 @@ class ConvoReader(BaseConvoReader):
             print("{0}: {1}%".format(CustomDate.WEEK_INDEXES_TO_DAY_OF_WEEK[day], str(freq * 100)[:5]))
         print()
 
-    def msgs_by_time(self, window=60, contact=None, threshold=None):
+    def msgs_by_time(self, window: int=60, contact: str=None, threshold: int=None):
         """Prints to the screen a graphical result of msgs_by_time
         Parameters:
             window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
@@ -385,7 +397,7 @@ class ConvoReader(BaseConvoReader):
                 print(self._preferences)
             elif choice in range(1, len(self._people) + 1):
                 # Colorama choices supported are (https://pypi.python.org/pypi/colorama)
-                # see self.color_choices
+                # see self.COLOR_CHOICES
                 options = ["Name", "Message", "Date"]
                 print()
                 for i, option in enumerate(options):
@@ -413,19 +425,16 @@ class ConvoReader(BaseConvoReader):
             print(Fore.LIGHTBLACK_EX + open(self._path + 'preferences.txt').read())
             print("Previous preferences have been found (printed above), "
                   "are you sure you would like to override them? [Y/n]")
-            while True:
-                choice = input("> ").lower()
-                if choice in ['no', 'n']:
-                    return
-                if choice in ['y', 'yes']:
-                    break
+            if user_says_yes():
+                return
         os.makedirs(self._path[0:-1], exist_ok=True)
         with open(self._path + 'preferences.txt', mode='w', encoding='utf-8') as f:
             f.write(repr(self._preferences))
 
-    def find(self, query, ignore_case=False, regex=False):
+    def find(self, query: str, ignore_case=False, regex=False):
         """Prints to the console the results of searching for the query string
             Parameters:
+                query: The string query searched for
                 ignore_case (optional): Whether the query string is case sensitive
                 regex (optional): Whether the query is a regular expression to be fully matched
         """
@@ -445,9 +454,10 @@ class ConvoReader(BaseConvoReader):
             print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
 
-    def times(self, query, ignore_case=False, regex=False):
+    def times(self, query: str, ignore_case=False, regex=False):
         """Returns the number of times a message matching the query string occurs in the conversation
             Parameters:
+                query: The string query searched for
                 ignore_case (optional): Whether the query string is case sensitive
                 regex (optional): Whether the query is a regular expression to be fully matched
         """
@@ -498,13 +508,13 @@ class ConvoReader(BaseConvoReader):
                 return
 
     @staticmethod
-    def get_emoji(text):
+    def get_emoji(text: str) -> str:
         """Returns the emoji corresponding to the src value passed,
         or the string passed if appropriate emojis isn't found
         """
         return emojis.src_to_emoiji(text)
 
-    def _pick_color(self, person):
+    def _pick_color(self, person: int) -> int:
         """Helper method to get user input for picking a color of text
         Parameters:
             person: the index + 1 of self._people corresponding to the user
@@ -559,7 +569,7 @@ class ConvoReader(BaseConvoReader):
         preferences['global'] = dict(threshold=240)
         return preferences
 
-    def _print_message(self, number):
+    def _print_message(self, number: int):
         """Helper method used to prettily print to the screen the person, message and date
         corresponding to the passed parameter number
         Parameter:
@@ -809,10 +819,10 @@ class ConvoReader(BaseConvoReader):
         return "ConvoReader({0}, {1})".format(repr(self._name), repr(self._convo))
 
 
-def color_method(string):
+def color_method(string: str) -> str:
     """Colors a function call passed with one color, making the arguments / parameters another"""
     OUTER_CODE_COLOR = Fore.LIGHTGREEN_EX
-    INNER_CODE_COLOR = Fore.LIGHTBLACK_EX
+    INNER_CODE_COLOR = Fore.LIGHTBLUE_EX
 
     result = "" + Back.BLACK
 

@@ -2,7 +2,6 @@ from collections import Counter
 from math import ceil
 import re
 import os
-import shutil
 
 
 from functions.customdate import CustomDate
@@ -21,7 +20,7 @@ class BaseConvoReader:
         self._path = 'data/conversation_data/' + BaseConvoReader.list_to_combined_string(self._people)
         self._word_cloud = None
 
-    def characters(self, person=None):
+    def characters(self, person=None) -> Counter:
         """Returns character frequency in conversation in a Counter object"""
         if person is not None:
             assert type(person) is str, "Optional parameter person must be a string"
@@ -34,7 +33,7 @@ class BaseConvoReader:
                 res.update(msg)
         return res
 
-    def emojis(self, person=None):
+    def emojis(self, person=None) -> Counter:
         """Returns emojis frequency for conversation in a Counter object
         Parameter:
             person (optional): the name of the person whose emojis you would like. If left to default
@@ -61,7 +60,7 @@ class BaseConvoReader:
                             res[key] = val
         return res
 
-    def get_people(self):
+    def get_people(self) -> list:
         duplicate = re.compile("duplicate #\d+", re.IGNORECASE)
         people = []
         for person in sorted(self._name.split(', ')):
@@ -73,7 +72,10 @@ class BaseConvoReader:
         return sorted(people)
 
     def save_word_freq(self, path=None):
-        """Saves to a file the ordered rankings of word frequencies by person in the chat"""
+        """Saves to a file the ordered rankings of word frequencies by person in the chat
+        Parameters:
+            path (optional): a string path representing the directory to save files at
+        """
         path = self._path if path is None else path
         os.makedirs(path[0:-1], exist_ok=True)
         for person, counter in self._individual_words.items():

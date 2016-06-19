@@ -10,7 +10,7 @@ class WordCloud:
         self.wc_type = wc_type
         self.path = path
 
-    def verify_word_cloud_setup(self):
+    def verify_word_cloud_setup(self) -> dict:
         """Verifies that all the settings for a word cloud are met
         Return:
             A dictionary with keys being files corresponding to qualities for this word cloud, and values being
@@ -47,7 +47,7 @@ class WordCloud:
 
 
     @staticmethod
-    def freq_to_raw(freqs, output, key, min_occurence=1):
+    def freq_to_raw(freqs: str, output: str, key: lambda x: 'val', min_occurence: int =1):
         """Converts a frequency file into a raw file, with passed constraints
         Parameters:
             freqs: the path to the frequency file
@@ -78,7 +78,7 @@ class WordCloud:
             f.write(self.wc_type)
 
     @staticmethod
-    def set_dimensions(x, y):
+    def set_dimensions(x: int, y: int):
         """Saves the specified integer dimensions to a file"""
         WordCloud.assert_dimensions_for_wc([x, y])
 
@@ -86,7 +86,7 @@ class WordCloud:
             f.write(str(x) + '\n' + str(y))
 
     @staticmethod
-    def set_num_word_sets(num):
+    def set_num_word_sets(num: int):
         """Saves the specified integer to a file"""
         WordCloud.assert_num_text_set_for_wc(num)
 
@@ -94,10 +94,13 @@ class WordCloud:
             f.write(str(num))
 
     @staticmethod
-    def create_text_set(set_num, raw_file_name, min_frequency=1):
+    def create_text_set(set_num: int, raw_file_name: str, min_frequency: int =1):
         """Creates a text file for the corresponding set_num specified with the raw attributes
         Parameters:
-            set_num: The integer value specifying 
+            set_num: The integer value specifying
+            raw_file_name: A string representing the path to the file wanted
+            min_frequency (optional): An integer representing the minimum number of times a word
+                                    has to have to be counted
         """
         # ensures that there is a valid number of text sets in the wordCloud directory
         assert os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt'), "You need to specify a number " \
@@ -133,7 +136,7 @@ class WordCloud:
                               min_occurence=min_frequency)
 
     @staticmethod
-    def append_color(color):
+    def append_color(color: 'tuple or list (length 3) of ints'):
         """Appends the set colors to colors.txt if colors exists otherwise calls set_colors"""
         WordCloud.assert_color_for_wc(color)
         if os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'colors.txt'):
@@ -148,7 +151,7 @@ class WordCloud:
         os.remove(WordCloud.WORD_CLOUD_PATH + 'colors.txt')
 
     @staticmethod
-    def set_output_name(name):
+    def set_output_name(name: str):
         """Writes the passed name to output_name.txt"""
         WordCloud.assert_output_name_for_wc(name)
 
@@ -156,19 +159,19 @@ class WordCloud:
             f.write(name)
 
     @staticmethod
-    def set_num_words_to_include(limit):
+    def set_num_words_to_include(limit: int):
         WordCloud.assert_num_words_to_include(limit)
 
         with open(WordCloud.WORD_CLOUD_PATH + 'set_num_words_to_include.txt', mode='w', encoding='utf-8') as f:
             f.write(str(limit))
 
     @staticmethod
-    def assert_num_words_to_include(limit):
+    def assert_num_words_to_include(limit: int):
         assert isinstance(limit, int), "limit must be an integer"
         assert 0 < limit, "This would be a very boring word cloud if I let you give a frequency less than 1"
 
     @staticmethod
-    def assert_dimensions_for_wc(dimensions):
+    def assert_dimensions_for_wc(dimensions: 'list or tuple (length 2) of ints'):
         assert isinstance(dimensions, list) or isinstance(dimensions, tuple), "Dimensions is an invalid type"
         x, y = dimensions
         assert isinstance(x, int), "X needs to be an integer"
@@ -177,18 +180,18 @@ class WordCloud:
         assert 0 < y, "Y must be greater than 0"
 
     @staticmethod
-    def assert_color_for_wc(color):
+    def assert_color_for_wc(color: 'list or tuple (length 3) of ints'):
         assert (isinstance(color, tuple) or isinstance(color, list)) and all(isinstance(ele, int) for ele in color), \
             "Color must be a tuple (or list) with 3 ints, e.g. (100, 100, 100)"
         assert all(0 <= val <= 255 for val in color), "All rgb values must be between 0 and 255"
 
     @staticmethod
-    def assert_output_name_for_wc(name):
+    def assert_output_name_for_wc(name: str):
         assert isinstance(name, str), "Name should be a string"
         assert '.png' in name, "Name should be a .png file"
         assert ' ' not in name, "File names can't have spaces"
 
     @staticmethod
-    def assert_num_text_set_for_wc(num):
+    def assert_num_text_set_for_wc(num: int):
         assert isinstance(num, int), "Num must be an integer"
         assert num >= 1, "Num should be greater than 1"

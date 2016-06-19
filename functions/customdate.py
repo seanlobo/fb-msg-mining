@@ -2,6 +2,7 @@ from math import ceil
 from datetime import date, timedelta
 import re
 
+
 class CustomDate():
     MONTHS_TO_INDEXES = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6, 'July': 7,
               'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12,}
@@ -32,7 +33,7 @@ class CustomDate():
         self.date = date(int(year), int(CustomDate.MONTHS_TO_INDEXES[month]), int(day_of_month))
 
     @classmethod
-    def from_date(cls, date_obj):
+    def from_date(cls, date_obj: date):
         """Alternative constructor using a datetime.date object
         Creates a CustomDate object with a default time of 12:00am PDT
         """
@@ -52,30 +53,27 @@ class CustomDate():
         return cls(date_string)
 
     @classmethod
-    def from_date_string(cls, date_string):
+    def from_date_string(cls, date_string: str):
         """Alternative constructor using a date string in the form '{month}/{day}/{year}'"""
         date_lst = [int(ele) for ele in date_string.split('/')]
         return CustomDate.from_date(date(date_lst[2], date_lst[0], date_lst[1]))
 
-    def to_string(self):
+    def to_string(self) -> str:
         return "{0}/{1}/{2}".format(self.date.month, self.date.day, self.date.year)
 
-    def day(self):
+    def day(self) -> int:
         return self.date.day
 
-    def month(self):
+    def month(self) -> int:
         return self.date.month
 
-    def weekday(self):
+    def weekday(self) -> int:
         return self.date.weekday()
 
-    def year(self):
+    def year(self) -> int:
         return self.date.year
 
-    def time(self):
-        return self.time
-
-    def minutes(self):
+    def minutes(self) -> int:
         minutes = self.time[:-2]
         minutes = (int((minutes[:minutes.find(':')])) % 12) \
                   * 60 + int(minutes[minutes.find(':') + 1:])
@@ -83,7 +81,15 @@ class CustomDate():
             minutes += 12 * 60
         return minutes
 
-    def minutes_to_time(minutes):
+    def distance_from(self, other) -> int:
+        """Returns the number of minutes ahead of other self is.
+        If self is an earlier time result will be negative"""
+        assert isinstance(other, CustomDate), "You must pass a valid CustomDate object"
+        return (self.minutes() - other.minutes()) + (self - other) * 24 * 60
+
+    @staticmethod
+    def minutes_to_time(minutes: int) -> str:
+        """Opposite of .minutes() function, turns an int minutes into a time between 12:00am and 11:59pm"""
         assert minutes >= 0, "You can't have negative minutes"
         assert minutes <= 24 * 60, "You passed more than 1 day of minutes"
 
@@ -97,14 +103,8 @@ class CustomDate():
             mins = '0' + mins
         return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes >= 12 * 60 else 'am')
 
-    def distance_from(self, other):
-        """Returns the number of minutes ahead of other self is.
-        If self is an earlier time result will be negative"""
-        assert isinstance(other, CustomDate), "You must pass a valid CustomDate object"
-        return (self.minutes() - other.minutes()) + (self - other) * 24 * 60
-
     @staticmethod
-    def bsearch_index(lst, date, low=0, high=None, key=lambda x: x):
+    def bsearch_index(lst, date, low=0, high=None, key=lambda x: x) -> int:
         if high is None:
             high = len(lst) - 1
         mid = (low + high) // 2
@@ -131,7 +131,7 @@ class CustomDate():
         return mid
 
     @staticmethod
-    def assert_date_string(date_string):
+    def assert_date_string(date_string: str):
         assert isinstance(date_string, str), "The date-string needs to be a string"
 
         r = re.compile('\d{1,2}/\d{1,2}/\d{1,4}')

@@ -4,8 +4,9 @@ import os
 import random
 from colorama import Fore, Back, Style, init
 
+
 from functions.setup_functions import clear_screen
-from functions.convoreader import ConvoReader, user_says_yes
+from functions.convoreader import ConvoReader, user_says_yes, color_method
 from functions.customdate import CustomDate
 
 init(autoreset=True)
@@ -15,8 +16,14 @@ class MessageReader:
 
     def __init__(self):
         with open('data/data.txt', mode='r', encoding='UTF8') as f:
-            self.data = eval(f.readline())
-            self.download = f.readline()
+            try:
+                self.data = eval(f.readline())
+                self.download = f.readline()
+            except Exception as e:
+                print(Fore.LIGHTRED_EX + Back.BLACK + "An error occured when reading in your data file. Please make "
+                                                      "sure setup.py finished properly")
+                print(e)
+                exit()
         self.names = self._get_convo_names_freq()
         self.person = join(self.download.split(' ')[2:-8], split=" ")
 
@@ -220,7 +227,7 @@ class MessageReader:
 
     @staticmethod
     def help():
-        """Responsivelvy provides help for using MessageReader"""
+        """Responsively provides help for using MessageReader"""
         clear_screen()
         print("Welcome to the help function for MessageReader\n\n")
 
