@@ -19,8 +19,8 @@ class WordCloud:
         """
         verification = dict()
         if self.wc_type == "circular":
-            assertions = [WordCloud._assert_dimensions_for_wc, WordCloud._assert_output_name_for_wc,
-                          WordCloud._assert_color_for_wc, lambda x: None]
+            assertions = [WordCloud.assert_dimensions_for_wc, WordCloud.assert_output_name_for_wc,
+                          WordCloud.assert_color_for_wc, lambda x: None]
             file_names = ['dimensions.txt', 'output_name.txt', 'colors.txt', 'text.txt']
             fn = lambda num: assertions[num]
             for i in range(len(assertions)):
@@ -80,7 +80,7 @@ class WordCloud:
     @staticmethod
     def set_dimensions(x, y):
         """Saves the specified integer dimensions to a file"""
-        WordCloud._assert_dimensions_for_wc([x, y])
+        WordCloud.assert_dimensions_for_wc([x, y])
 
         with open(WordCloud.WORD_CLOUD_PATH + 'dimensions.txt', mode='w', encoding='utf-8') as f:
             f.write(str(x) + '\n' + str(y))
@@ -88,7 +88,7 @@ class WordCloud:
     @staticmethod
     def set_num_word_sets(num):
         """Saves the specified integer to a file"""
-        WordCloud._assert_num_text_set_for_wc(num)
+        WordCloud.assert_num_text_set_for_wc(num)
 
         with open(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt', mode='w', encoding='utf-8') as f:
             f.write(str(num))
@@ -135,7 +135,7 @@ class WordCloud:
     @staticmethod
     def append_color(color):
         """Appends the set colors to colors.txt if colors exists otherwise calls set_colors"""
-        WordCloud._assert_color_for_wc(color)
+        WordCloud.assert_color_for_wc(color)
         if os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'colors.txt'):
             with open(WordCloud.WORD_CLOUD_PATH + 'colors.txt', mode='a', encoding='utf-8') as f:
                 f.write('{0}, {1}, {2}\n'.format(*color))
@@ -150,25 +150,25 @@ class WordCloud:
     @staticmethod
     def set_output_name(name):
         """Writes the passed name to output_name.txt"""
-        WordCloud._assert_output_name_for_wc(name)
+        WordCloud.assert_output_name_for_wc(name)
 
         with open(WordCloud.WORD_CLOUD_PATH + 'output_name.txt', mode='w', encoding='utf-8') as f:
             f.write(name)
 
     @staticmethod
     def set_num_words_to_include(limit):
-        WordCloud._assert_num_words_to_include(limit)
+        WordCloud.assert_num_words_to_include(limit)
 
         with open(WordCloud.WORD_CLOUD_PATH + 'set_num_words_to_include.txt', mode='w', encoding='utf-8') as f:
             f.write(str(limit))
 
     @staticmethod
-    def _assert_num_words_to_include(limit):
+    def assert_num_words_to_include(limit):
         assert isinstance(limit, int), "limit must be an integer"
         assert 0 < limit, "This would be a very boring word cloud if I let you give a frequency less than 1"
 
     @staticmethod
-    def _assert_dimensions_for_wc(dimensions):
+    def assert_dimensions_for_wc(dimensions):
         assert isinstance(dimensions, list) or isinstance(dimensions, tuple), "Dimensions is an invalid type"
         x, y = dimensions
         assert isinstance(x, int), "X needs to be an integer"
@@ -177,17 +177,18 @@ class WordCloud:
         assert 0 < y, "Y must be greater than 0"
 
     @staticmethod
-    def _assert_color_for_wc(color):
+    def assert_color_for_wc(color):
         assert (isinstance(color, tuple) or isinstance(color, list)) and all(isinstance(ele, int) for ele in color), \
             "Color must be a tuple (or list) with 3 ints, e.g. (100, 100, 100)"
         assert all(0 <= val <= 255 for val in color), "All rgb values must be between 0 and 255"
 
     @staticmethod
-    def _assert_output_name_for_wc(name):
+    def assert_output_name_for_wc(name):
         assert isinstance(name, str), "Name should be a string"
         assert '.png' in name, "Name should be a .png file"
+        assert ' ' not in name, "File names can't have spaces"
 
     @staticmethod
-    def _assert_num_text_set_for_wc(num):
+    def assert_num_text_set_for_wc(num):
         assert isinstance(num, int), "Num must be an integer"
         assert num >= 1, "Num should be greater than 1"

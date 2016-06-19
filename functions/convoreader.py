@@ -150,6 +150,7 @@ class ConvoReader(BaseConvoReader):
             wc_type = self._word_cloud_get_from_list('type')
         else:
             wc_type = preferences['type']
+            assert wc_type in WordCloud.WORD_CLOUD_TYPES, "Invalid type for wordcloud"
         print()
 
         # Getting the user's output_name for the wordcloud, this is also mandatory
@@ -157,9 +158,10 @@ class ConvoReader(BaseConvoReader):
             output_name = self._word_cloud_get_one_liner('output_name')
         else:
             output_name = preferences['output_name']
+            WordCloud.assert_output_name_for_wc(output_name)
         clear_screen()
 
-        if wc_type == 'circular':
+        if wc_type == 'circular' or wc_type == 'rectangular':
             preferences = self._word_clouds_get_all(['set_num_words_to_include', 'min_cutoff_freq'])
             preferences['output_name'] = output_name
             preferences['type'] = wc_type
@@ -167,7 +169,7 @@ class ConvoReader(BaseConvoReader):
 
             ready = self._setup_new_word_cloud(preferences)
         else:
-            raise Exception()
+            raise Exception("Invalid type for wordcloud specified")
 
         return ready
 
@@ -456,15 +458,20 @@ class ConvoReader(BaseConvoReader):
 
     def help(self):
         """Method to give users help/ tips on how to use ConvoReaders"""
-        print('Below is a list of all data-analyzing functions you can perform on conversations.')
+        print('Below is a list of the most important data-analyzing functions you can perform on conversations.')
         print('Select one of the following to view more details')
 
-        all_methods = [method for method in dir(self) if '__' not in method and method[0] != '_']
+        all_methods = [ConvoReader.emojis, ConvoReader.print_people, ConvoReader.save_word_freq,
+                       ConvoReader.messages, ConvoReader.words, ConvoReader.ave_words, ConvoReader.frequency,
+                       ConvoReader.prettify, ConvoReader.msgs_graph, ConvoReader.msgs_by_time,
+                       ConvoReader.msgs_by_weekday, ConvoReader.set_preferences, ConvoReader.find, ConvoReader.times]
         while True:
             print('\n0) Exit\n')
 
+            len_longest_str = len(str(len(all_methods)))
             for i, method in enumerate(all_methods):
-                print('{0}) {1}'.format(str(i + 1), method))
+                method_name = method.__name__
+                print('{0}){1}{2}'.format(str(i + 1), ' ' * (len_longest_str - len(str(i + 1)) + 1), method_name))
 
             print('\nSelect your choice')
             while True:
@@ -476,21 +483,19 @@ class ConvoReader(BaseConvoReader):
             if choice == -1:
                 return
 
-            print('\n' * 2)
-            print("Docs for {0}".format(all_methods[choice]))
-            print(inspect.getdoc(eval('self.{0}'.format(all_methods[choice]))))
+            print('\n')
+            print("Docs for {0}".format(color_method(all_methods[choice].__name__ +
+                                                     str(inspect.signature(all_methods[choice])))))
+            print(inspect.getdoc(all_methods[choice]))
 
             print()
 
             print("View help again? [Y/n] ")
-            again = ""
-            while again.lower() not in ['y', 'yes', 'n', 'no']:
-                again = input('> ')
+            again = user_says_yes()
 
-            if again.lower() in ['no', 'n']:
+            clear_screen()
+            if not again:
                 return
-            
-            print('\n' * 4)
 
     @staticmethod
     def get_emoji(text):
@@ -714,13 +719,13 @@ class ConvoReader(BaseConvoReader):
 
     def _word_cloud_get_one_liner(self, attribute):
         if attribute == 'output_name':
-            intro = "What name would you like for the output wordcloud file? It must end in '.png'"
-            assertion = WordCloud._assert_output_name_for_wc
+            intro = "What name would you like for the output wordcloud file? It must end in '.png' and can't have spaces"
+            assertion = WordCloud.assert_output_name_for_wc
             assertion_failure_string = '\nplease try again. Remember to end the name in \".png\", for example ' \
                                        '\"example.png\"'
         elif attribute == 'set_num_words_to_include':
             intro = "How many words would you like to include (at maximum) in your word cloud? Type an integer"
-            assertion = lambda x: WordCloud._assert_num_words_to_include(int(x))
+            assertion = lambda x: WordCloud.assert_num_words_to_include(int(x))
             assertion_failure_string = "Please try again, type an integer"
         elif attribute == 'min_cutoff_freq':
             intro = "What's the length of the smallest word you would like to include in the wordcloud?"
@@ -809,7 +814,7 @@ def color_method(string):
     OUTER_CODE_COLOR = Fore.LIGHTGREEN_EX
     INNER_CODE_COLOR = Fore.LIGHTBLACK_EX
 
-    result = ""
+    result = "" + Back.BLACK
 
     if '(' in string:
         result += OUTER_CODE_COLOR + string[:string.find('(') + 1]
