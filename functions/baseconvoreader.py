@@ -118,7 +118,7 @@ class BaseConvoReader:
 
         return name + '/'
 
-    def _setup_new_word_cloud(self, **preferences):
+    def _setup_new_word_cloud(self, preferences):
         """Takes in variable parameters, combining them and setting up the current Word Cloud
         Parameters:
             type                      -  A string representing the type of word cloud. Must be from
@@ -130,7 +130,7 @@ class BaseConvoReader:
             * Mainly for Circular/ rectangular ones *
             colors      -  A list of rgb colors (each rbg color must be either a list or tuple of length 3)
             dimensions  -  A list representing the pixel values of the height and width, respectively
-            input       -  A string representing the file containing raw frequencies to be used as data
+            input_name  -  A string representing the file containing raw frequencies to be used as data
 
 
         """
@@ -145,7 +145,7 @@ class BaseConvoReader:
         # Grabs preferences that should be common to all wordclouds
         output_name = preferences['output_name']
         num_words_to_include = preferences['set_num_words_to_include'] if 'set_num_words_to_include' in preferences\
-                                                                       else None
+                                                                       else 1000
         min_cutoff_freq = preferences['min_cutoff_freq'] if 'min_cutoff_freq' in preferences else 1
 
         # Applies generic wordcloud preferences (from above)
@@ -154,15 +154,15 @@ class BaseConvoReader:
 
         if wc_type == 'circular':
             # Grabs preferences specific to circular wordclouds
-            colors = preferences['colors']
-            dimensions = preferences['dimensions']
+            colors = preferences['colors'] if 'colors' in preferences else [[255, 255, 255]]
+            dimensions = preferences['dimensions'] if 'dimensions' in preferences else [1000, 1000]
 
             # Applies specific preferences to wordcloud
             for color in colors:
                 self._word_cloud.append_color(color)
             self._word_cloud.set_dimensions(*dimensions)
 
-            self._word_cloud.freq_to_raw(WordCloud.WORD_CLOUD_PATH + preferences['input'],
+            self._word_cloud.freq_to_raw(WordCloud.WORD_CLOUD_PATH + preferences['input_name'],
                                          WordCloud.WORD_CLOUD_PATH + 'text.txt',
                                          lambda x: True,
                                          min_occurence=min_cutoff_freq)

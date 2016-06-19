@@ -141,6 +141,36 @@ class ConvoReader(BaseConvoReader):
                 print(string)
                 print()
 
+    def word_cloud(self, **preferences):
+        """Interactive method for users to set preferences for word cloud generation"""
+        clear_screen()
+
+        # Getting the user's type, this is mandatory
+        if 'type' not in preferences:
+            wc_type = self._word_cloud_get_from_list('type')
+        else:
+            wc_type = preferences['type']
+        print()
+
+        # Getting the user's output_name for the wordcloud, this is also mandatory
+        if 'output_name' not in preferences:
+            output_name = self._word_cloud_get_one_liner('output_name')
+        else:
+            output_name = preferences['output_name']
+        clear_screen()
+
+        if wc_type == 'circular':
+            preferences = self._word_clouds_get_all(['set_num_words_to_include', 'min_cutoff_freq'])
+            preferences['output_name'] = output_name
+            preferences['type'] = wc_type
+            preferences['input_name'] = self._word_cloud_get_from_list('input_name')
+
+            ready = self._setup_new_word_cloud(preferences)
+        else:
+            raise Exception()
+
+        return ready
+
     def prettify(self, mode=None, **kwargs):
         """Prettily prints messages to the screen in 3 different modes
         Parameters:
@@ -641,6 +671,115 @@ class ConvoReader(BaseConvoReader):
             print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
 
+    def _start_kumo(self):
+        pass
+        # Todo Start java program
+
+    def _word_clouds_get_all(self, values):
+        choices = sorted(values)
+        res = dict()
+        while True:
+            print("Now selecting more specific features. Below are your preferences:")
+            num_choices_max_length = len(str(len(choices)))
+            print("{0}){1}Exit".format(0, ' ' * num_choices_max_length))
+            for i in range(1, len(choices) + 1):
+                print("{0}){1}{2} = {3}".format(i, ' ' * (num_choices_max_length + 1 - len(str(i))),
+                                                choices[i - 1], res[choices[i - 1]] if choices[i - 1] in res
+                                                else 'DEFAULT SETTINGS'))
+            print()
+            print("Choose which feature you would like to specify:")
+
+            choice_range = [str(i) for i in range(len(choices) + 1)]
+            while True:
+                choice = input('> ')
+                if choice in choice_range:
+                    choice = int(choice) - 1
+                    print()
+                    break
+
+            if choice == -1:  # User wants to exit
+                print("Are you sure you would like to exit?")
+                if user_says_yes():
+                    clear_screen()
+                    return res
+            else:  # user continues selecting preferences
+                user_choice = self._word_cloud_get_one_liner(choices[choice])
+                res[choices[choice]] = user_choice
+
+                print("Would you like to continue choosing preferences?")
+                if not user_says_yes():  # Does the user want to quit?
+                    clear_screen()
+                    return res
+            clear_screen()
+
+    def _word_cloud_get_one_liner(self, attribute):
+        if attribute == 'output_name':
+            intro = "What name would you like for the output wordcloud file? It must end in '.png'"
+            assertion = WordCloud._assert_output_name_for_wc
+            assertion_failure_string = '\nplease try again. Remember to end the name in \".png\", for example ' \
+                                       '\"example.png\"'
+        elif attribute == 'set_num_words_to_include':
+            intro = "How many words would you like to include (at maximum) in your word cloud? Type an integer"
+            assertion = lambda x: WordCloud._assert_num_words_to_include(int(x))
+            assertion_failure_string = "Please try again, type an integer"
+        elif attribute == 'min_cutoff_freq':
+            intro = "What's the length of the smallest word you would like to include in the wordcloud?"
+
+            def assertion(x):
+                assert int(x) > 0, "X must be an integer greater than 0"
+
+            assertion_failure_string = "Please try again, type an integer"
+        else:
+            raise ValueError("invalid value of attribute passed")
+        while True:
+            print(intro)
+            name = input('> ')
+            passed_assertion = False
+            try:
+                assertion(name)
+                passed_assertion = True
+            except Exception as e:
+                print(e)
+                print(assertion_failure_string)
+            if passed_assertion:
+                print("Would you like to confirm \"{0}\" as your {1}? [Y/n]".format(name, attribute))
+                if user_says_yes():
+                    if attribute == 'set_num_words_to_include' or attribute == 'min_cutoff_freq':
+                        name = int(name)
+                    return name
+
+    def _word_cloud_get_from_list(self, attribute):
+        if attribute == 'type':
+            intro = "What type of word cloud would you like? Chose one from the following:"
+            lst_of_choices = WordCloud.WORD_CLOUD_TYPES
+        elif attribute == 'input_name':
+            intro = "Which of the following files would you like to use for the word cloud?"
+
+            def name_to_file(name):
+                # Based on save_word_freq in baseconvoreader
+                file_name = ""
+                for part in name.split():
+                    file_name += part + '-'
+                file_name = file_name[:-1]
+                return file_name + '_word_freq.txt'
+
+            lst_of_choices = list(map(name_to_file, self.get_people())) + ['total_word_freq.txt']
+        else:
+            raise ValueError("Invalid value of attribute")
+        print(intro)
+        # length of the string for the highest choice number
+        num_choices_max_length = len(str(len(lst_of_choices)))
+        for i in range(1, len(lst_of_choices) + 1):
+            print("{0}){1}{2}".format(i, ' ' * (num_choices_max_length + 1 - len(str(i))),
+                                      lst_of_choices[i - 1]))
+        print()
+        print("Choose which number you would like (between 1 and {0})".format(len(lst_of_choices)))
+        choice_range = [str(i) for i in range(1, len(lst_of_choices) + 1)]
+        while True:
+            choice = input('> ')
+            if choice in choice_range:
+                return lst_of_choices[int(choice) - 1]
+
     def __getitem__(self, index):
         """Returns the tuple (person, message, datetime) for the corresponding index"""
         if type(index) is not int:
@@ -663,8 +802,6 @@ class ConvoReader(BaseConvoReader):
     def __repr__(self):
         """Returns a valid constructor for this object"""
         return "ConvoReader({0}, {1})".format(repr(self._name), repr(self._convo))
-
-
 
 
 def color_method(string):

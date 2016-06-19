@@ -4,7 +4,7 @@ import shutil
 
 class WordCloud:
     WORD_CLOUD_PATH = 'data/wordClouds/'
-    WORD_CLOUD_TYPES = ['circular']
+    WORD_CLOUD_TYPES = ['circular', 'rectangular']
 
     def __init__(self, wc_type, path):
         self.wc_type = wc_type
@@ -159,8 +159,8 @@ class WordCloud:
     def set_num_words_to_include(limit):
         WordCloud._assert_num_words_to_include(limit)
 
-        with open(WordCloud.WORD_CLOUD_PATH + 'set_num_words_to_include.txt', mode='r', encoding='utf-8') as f:
-            f.write(limit)
+        with open(WordCloud.WORD_CLOUD_PATH + 'set_num_words_to_include.txt', mode='w', encoding='utf-8') as f:
+            f.write(str(limit))
 
     @staticmethod
     def _assert_num_words_to_include(limit):
