@@ -38,6 +38,8 @@ class BaseConvoReader:
         Parameter:
             person (optional): the name of the person whose emojis you would like. If left to default
                 None, an aggregate total for the conversation is returned
+        Return:
+            Counter
         """
         chars = self.characters(person)
         res = Counter()

@@ -468,44 +468,78 @@ class ConvoReader(BaseConvoReader):
 
     def help(self):
         """Method to give users help/ tips on how to use ConvoReaders"""
+        clear_screen()
+        print("Welcome to the help function for ConvoReader\n\n")
+
         print('Below is a list of the most important data-analyzing functions you can perform on conversations.')
         print('Select one of the following to view more details')
 
-        all_methods = [ConvoReader.emojis, ConvoReader.print_people, ConvoReader.save_word_freq,
-                       ConvoReader.messages, ConvoReader.words, ConvoReader.ave_words, ConvoReader.frequency,
-                       ConvoReader.prettify, ConvoReader.msgs_graph, ConvoReader.msgs_by_time,
-                       ConvoReader.msgs_by_weekday, ConvoReader.set_preferences, ConvoReader.find, ConvoReader.times]
+        # The methods I think are the most important to explain
+        most_important = [ConvoReader.find, ConvoReader.frequency, ConvoReader.prettify, ConvoReader.print_people,
+                          ConvoReader.msgs_graph, ConvoReader.save_word_freq, ConvoReader.set_preferences]
+
+        secondary = [ConvoReader.ave_words, ConvoReader.emojis, ConvoReader.messages,
+                     ConvoReader.msgs_by_time, ConvoReader.msgs_by_weekday, ConvoReader.times, ConvoReader.words]
         while True:
             print('\n0) Exit\n')
 
-            len_longest_str = len(str(len(all_methods)))
-            for i, method in enumerate(all_methods):
-                method_name = method.__name__
+            # Prints out each of the methods
+            print("The most important methods (in my opinion)")
+            len_longest_str = len(str(len(most_important) + len(secondary)))
+            for i, method in enumerate(most_important):
+                method_name = color_method(method.__name__)
                 print('{0}){1}{2}'.format(str(i + 1), ' ' * (len_longest_str - len(str(i + 1)) + 1), method_name))
+
+            # Secondary methods
+            print('\nSome more methods that might be useful')
+            for i, method in enumerate(secondary):
+                method_name = color_method(method.__name__)
+                print('{0}){1}{2}'.format(str(i + 1 + len(most_important)),
+                                          ' ' * (len_longest_str - len(str(i + 1 + len(most_important))) + 1),
+                                          method_name))
 
             print('\nSelect your choice')
             while True:
                 choice = input('> ')
-                if choice in [str(i) for i in range(len(all_methods) + 1)]:
+                if choice in [str(i) for i in range(len(most_important) + len(secondary) + 1)]:
                     break
+            # above get's user's choice of method
 
+            # if the user wants to exit let them
             choice = int(choice) - 1
             if choice == -1:
                 return
 
+            if choice >= len(most_important) - 1:
+                choice -= len(most_important)
+                methods = secondary
+            else:
+                methods = most_important
+
             print('\n')
-            print("Docs for {0}".format(color_method(all_methods[choice].__name__ +
-                                                     str(inspect.signature(all_methods[choice])))))
-            print(inspect.getdoc(all_methods[choice]))
+
+            if 'return' in methods[choice].__annotations__:
+                # in the form '(self, person=None) -> collections.Counter'
+                annotation = str(inspect.signature(methods[choice]))
+                # the part of the annotation up until the signature ends
+                end_method = annotation.find(' ->')
+                name = color_method(methods[choice].__name__ + annotation[:end_method])
+                name += color_method(annotation[end_method:])
+            else:
+                name = color_method(methods[choice].__name__ + str(inspect.signature(methods[choice])))
+
+            print(name)
+            print(inspect.getdoc(methods[choice]))
 
             print()
 
             print("View help again? [Y/n] ")
             again = user_says_yes()
 
-            clear_screen()
             if not again:
                 return
+
+            clear_screen()
 
     @staticmethod
     def get_emoji(text: str) -> str:
@@ -822,7 +856,7 @@ class ConvoReader(BaseConvoReader):
 def color_method(string: str) -> str:
     """Colors a function call passed with one color, making the arguments / parameters another"""
     OUTER_CODE_COLOR = Fore.LIGHTGREEN_EX
-    INNER_CODE_COLOR = Fore.LIGHTBLUE_EX
+    INNER_CODE_COLOR = Fore.CYAN
 
     result = "" + Back.BLACK
 
