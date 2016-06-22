@@ -42,9 +42,6 @@ class WordCloud:
                     verification[file_names[i]] = e
         return verification
 
-        # To run java stuff fro here
-        # http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
-
 
     @staticmethod
     def freq_to_raw(freqs: str, output: str, key: lambda x: 'val', min_occurence: int =1):

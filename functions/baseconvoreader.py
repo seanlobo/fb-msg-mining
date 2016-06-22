@@ -408,6 +408,7 @@ class BaseConvoReader:
         Parameters:
             ignore_case (optional): Whether to search by case sensitive
         """
+        # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
         key = lambda x: x
         if ignore_case:
             key = lambda x: x.lower()

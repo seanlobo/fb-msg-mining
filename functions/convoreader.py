@@ -2,6 +2,7 @@ from collections import Counter
 import inspect
 import os
 import re
+import subprocess
 from colorama import init, Fore, Back, Style
 
 
@@ -143,38 +144,51 @@ class ConvoReader(BaseConvoReader):
                 print()
 
     def word_cloud(self, **preferences):
-        """Interactive method for users to set preferences for word cloud generation
+        """Interactive method for users to set preferences for word cloud generation. Utilizes the java library Kumo
+             -------------------------------------
+        ---> | https://github.com/kennycason/kumo | <--- Good stuff
+             -------------------------------------
+
+         Accepts keyword arguments, all optional.
          Parameters:
             type                      -  A string representing the type of word cloud. Must be from
                                          WorldCloud.WORD_CLOUD_TYPES
+                                           e.g. type="circular"
             output_name               -  A string representing the output name of the wordcloud picture
-            set_num_words_to_include  -  An integer representing the max number of words to be included
+                                           e.g. output_name="my_word_cloud.png"
+            set_num_words_to_include  -  An integer representing the number of words to be included (1000 is
+                                         a reasonable value, but it depends on the dimensions)
+                                           e.g. set_num_words_to_include=1000
             min_cutoff_freq           -  An integer specifying the minimum frequency of words to be included
 
             * Mainly for Circular/ rectangular ones *
             colors      -  A list of rgb colors (each rbg color must be either a list or tuple of length 3)
+                            e.g. colors=[ [255,255,0], [0,255,0] ]
             dimensions  -  A list representing the pixel values of the height and width, respectively
-            input_name  -  A string representing the file containing raw frequencies to be used as data
+                            e.g. dimensions=[100, 100]
         """
         clear_screen()
 
         # Getting the user's type, this is mandatory
-        if 'type' not in preferences:
-            wc_type = self._word_cloud_get_from_list('type')
-        else:
+        if 'type' in preferences and preferences['type'] in WordCloud.WORD_CLOUD_TYPES:
             wc_type = preferences['type']
-            assert wc_type in WordCloud.WORD_CLOUD_TYPES, "Invalid type for wordcloud"
-        print()
+        else:
+            wc_type = self._word_cloud_get_from_list('type')
 
         # Getting the user's output_name for the wordcloud, this is also mandatory
-        if 'output_name' not in preferences:
+        try:
+            if 'output_name' in preferences:
+                WordCloud.assert_output_name_for_wc(preferences['output_name'])
+                output_name = preferences['output_name']
+            else:
+                output_name = self._word_cloud_get_one_liner('output_name')
+        except AssertionError as e:
             output_name = self._word_cloud_get_one_liner('output_name')
-        else:
-            output_name = preferences['output_name']
-            WordCloud.assert_output_name_for_wc(output_name)
+
         clear_screen()
 
         if wc_type == 'circular' or wc_type == 'rectangular':
+            # Gets user input for preferences and then calls the setup function
             preferences = self._word_clouds_get_all(['set_num_words_to_include', 'min_cutoff_freq'])
             preferences['output_name'] = output_name
             preferences['type'] = wc_type
@@ -184,7 +198,12 @@ class ConvoReader(BaseConvoReader):
         else:
             raise Exception("Invalid type for wordcloud specified")
 
-        return ready
+        if len(ready) == 0:
+            # ready is a dictionary that contains mappings of preference types ('type', 'output_name' etc.) mapped
+            # to errors associated with them from checking user values. iff ready is empty is the word cloud created
+            self.__start_kumo()
+        else:
+            return ready
 
     def prettify(self, mode=None, **kwargs):
         """Prettily prints messages to the screen in 3 different modes
@@ -234,6 +253,7 @@ class ConvoReader(BaseConvoReader):
             return
 
     def set_time_threshold(self, threshold: int):
+        """Sets a new value for threshold, the number of minutes that signify a break in a conversation"""
         try:
             assert isinstance(threshold, int), "threshold should be an integer, not a {0}".format(type(threshold))
             assert threshold > 0, "threshold should be greater than 0 minutes"
@@ -720,9 +740,13 @@ class ConvoReader(BaseConvoReader):
             print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
             self._print_message(i)
 
-    def _start_kumo(self):
-        pass
-        # Todo Start java program
+    def __start_kumo(self):
+        """Calls the java program, assuming that all conditions are met"""
+        # grabbed from http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
+        # with additions by http://stackoverflow.com/questions/11269575/how-to-hide-output-of-subprocess-in-python-2-7k
+        devnull = open(os.devnull, mode='w')
+        p = subprocess.Popen("java -jar wordclouds.jar", shell=True, stdout=devnull, stderr=subprocess.STDOUT)
+        sts = os.waitpid(p.pid, 0)
 
     def _word_clouds_get_all(self, values):
         choices = sorted(values)
@@ -812,7 +836,7 @@ class ConvoReader(BaseConvoReader):
                 file_name = file_name[:-1]
                 return file_name + '_word_freq.txt'
 
-            lst_of_choices = list(map(name_to_file, self.get_people())) + ['total_word_freq.txt']
+            lst_of_choices = list(map(name_to_file, self.get_people())) + ['total.txt']
         else:
             raise ValueError("Invalid value of attribute")
         print(intro)

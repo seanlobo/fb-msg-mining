@@ -21,7 +21,7 @@ Request a copy of your Facebook data:
 Go to Facebook and click on Settings -> "Download a copy" link near the middle of the page.
 You'll need to put in your facebook password in order to request the download, and you should
 recieve a confirmation email from facebook immediately, sent to the email you used when signing up.
-**It can less than an hour or up to a week to get your archive, and you only have 24 hours
+**It can take less than an hour or up to a week to get your archive, and you only have 24 hours
 before the link sent to you expires, so check carefully!**
 
 
