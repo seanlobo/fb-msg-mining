@@ -20,7 +20,7 @@ class BaseConvoReader:
         self._path = 'data/conversation_data/' + BaseConvoReader.list_to_combined_string(self._people)
         self._word_cloud = None
 
-    def characters(self, person=None) -> Counter:
+    def raw_characters(self, person=None) -> Counter:
         """Returns character frequency in conversation in a Counter object"""
         if person is not None:
             assert type(person) is str, "Optional parameter person must be a string"
@@ -33,15 +33,15 @@ class BaseConvoReader:
                 res.update(msg)
         return res
 
-    def emojis(self, person=None) -> Counter:
-        """Returns emojis frequency for conversation in a Counter object
+    def raw_emojis(self, person=None) -> Counter:
+        """Returns emojis frequency for the conversation in a Counter object
         Parameter:
-            person (optional): the name of the person whose emojis you would like. If left to default
+            person (optional): the name of the person whose raw_emojis you would like. If left to default
                 None, an aggregate total for the conversation is returned
         Return:
             Counter
         """
-        chars = self.characters(person)
+        chars = self.raw_characters(person)
         res = Counter()
         for key, val in chars.most_common():
             if '\\U000' in repr(key) and key is not None:
@@ -104,7 +104,7 @@ class BaseConvoReader:
     def list_to_combined_string(list_of_people):
         """Combines a list of people into a single string, converting each perons's name to lowercase, separating
         first/middle/last name(s) with hyphens (-) and various individual's names with underscores (_). Cuts off a
-        string past 255 characters
+        string past 255 raw_characters
         """
         name = ""
         for person in list_of_people:

@@ -46,33 +46,33 @@ class ConvoReader(BaseConvoReader):
         print(res)
 
     def messages(self, name=None):
-        """Number of messages for people in the chat
+        """Prints to the console the number of messages sent for people in the chat
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
         """
         value = self._raw_messages(name)
+        title_case_values = Counter({key.title(): val for key, val in value.items()})
         if type(value) is int:
             print(value)
         else:
-            for person, msgs in value.most_common():
-                print("{0}: {1}".format(person, msgs))
-        print()
+            self.print_counter(title_case_values)
+        print('Total: {0}'.format(sum(val for key, val in value.items())))
 
     def words(self, name=None):
-        """Number of words for people in the chat
+        """Prints to the console the number of words sent by each person
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
         """
         value = self._raw_words(name)
+        title_case_values = Counter({key.title(): val for key, val in value.items()})
         if type(value) is int:
             print(value)
         else:
-            for person, msgs in value.most_common():
-                print("{0}: {1}".format(person, msgs))
-        print()
+            self.print_counter(title_case_values)
+        print('Total: {0}'.format(sum(val for key, val in value.items())))
 
     def ave_words(self, name=None):
-        """Average number of words for people in the chat
+        """Prints to the console the average number of words / message each person in the conversation uses
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
         """
@@ -84,8 +84,37 @@ class ConvoReader(BaseConvoReader):
                 print("{0}: {1}".format(person, msgs))
         print()
 
+    def emojis(self, person=None, limit=None):
+        """Prints the rankings of emojis for this conversation. Can specify a limit for number of emojis to print, and
+        a single individual to count emojis for (default is everyone's aggregate total)
+        Parameters:
+            person (optional): A string representing the person whose emojis you would like to analyze
+            limit (optional): an integer representing the number of entries to print
+        """
+        ranking = self.raw_emojis(person=person)
+        try:
+            self.print_counter(ranking, limit=limit)
+        except AssertionError as e:
+            print(e)
+            return
+
+    def characters(self, person=None, limit=None):
+        """Prints the rankings of characters for this conversation. Can specify a limit for number of characters
+         to print, and a single individual to count charactesr for (default is everyone's aggregate total)
+            Parameters:
+                person (optional): A string representing the person whose characters you would like to analyze
+                limit (optional): an integer representing the number of entries to print
+            """
+        ranking = self.raw_characters(person=person)
+        try:
+            self.print_counter(ranking, limit=limit)
+        except AssertionError as e:
+            print(e)
+            return
+
     def frequency(self, person=None, word=None, limit=True):
-        """Frequency of words for people in the chat
+        """Prints to the console the frequency that people in this chat use various words. Can be used
+        to search for specific words and/ or people.
         Parameters:
             person (optional): The name (as a string) of the person you are interested in
             word (optional): The word (as a string) you are interested in
@@ -263,13 +292,14 @@ class ConvoReader(BaseConvoReader):
         # Making sure user input is good
         self._preferences['global']['threshold'] = threshold
 
-    def msgs_graph(self, contact: str=None, start: str=None, end: str=None, forward_shift: int=0):
-        """Prettily prints to the screen the message history of a chat
+    def msgs_graph(self, contact=None, start=None, end=None, forward_shift=0):
+        """Prettily prints to the screen the message history of a chat; a bar graph of date / number of messages
         Parameter:
             contact (optional): the name (as a string) of the person you are interested in.
                 (default: all contacts)
             start (optional): the date to start the graph from. Defaults to the date of the first message
             end (optional): the date to end the graph with. Defaults to the last message sent
+            forward_shift (optional): The number of minutes past 12:00am that are counted as part of the previous day
         """
         try:
             msgs_freq = self._raw_msgs_graph(contact, forward_shift)
@@ -339,7 +369,8 @@ class ConvoReader(BaseConvoReader):
         print()
 
     def msgs_by_time(self, window: int=60, contact: str=None, threshold: int=None):
-        """Prints to the screen a graphical result of msgs_by_time
+        """Prints to the screen a graphical result of message frequency by time of day; a bar graph with
+        % of total messages sent by intervals throughout the day
         Parameters:
             window (optional): The length of each bin in minutes (default, 60 minutes, or 1 hour)
             contact (optional): The contact you are interested in. (default, all contacts)
@@ -377,9 +408,7 @@ class ConvoReader(BaseConvoReader):
         print(to_print)
 
     def set_preferences(self):
-        """Allows users to choice color preferences and stores values to
-        self.preferences dictionary
-        """
+        """Allows users to set the preferences of this chat, such as color for printing output"""
 
         # The following idea is used in this method
         # >>> black = 'BLACK'
@@ -452,7 +481,7 @@ class ConvoReader(BaseConvoReader):
             f.write(repr(self._preferences))
 
     def find(self, query: str, ignore_case=False, regex=False):
-        """Prints to the console the results of searching for the query string
+        """Prints to the console every message that contains (or matches, if regex=True) the query string
             Parameters:
                 query: The string query searched for
                 ignore_case (optional): Whether the query string is case sensitive
@@ -487,7 +516,7 @@ class ConvoReader(BaseConvoReader):
         return len(indexes)
 
     def help(self):
-        """Method to give users help/ tips on how to use ConvoReaders"""
+        """Method to give users help / tips on how to use ConvoReaders"""
         clear_screen()
         print("Welcome to the help function for ConvoReader\n\n")
 
@@ -531,7 +560,7 @@ class ConvoReader(BaseConvoReader):
             if choice == -1:
                 return
 
-            if choice >= len(most_important) - 1:
+            if choice >= len(most_important):
                 choice -= len(most_important)
                 methods = secondary
             else:
@@ -568,6 +597,24 @@ class ConvoReader(BaseConvoReader):
         or the string passed if appropriate emojis isn't found
         """
         return emojis.src_to_emoiji(text)
+
+    @staticmethod
+    def print_counter(counter, limit=None):
+        """Prints the ranking of a counter object to the console, stopping at limit if it is an integer.
+        """
+        if limit is not None:
+            assert isinstance(limit, int), "Limit must be an integer"
+            assert limit > 0, "Now it'd be pretty boring if we printed 0 (or fewer!) elements, wouldn't it? " \
+                              "(limit must be > 0)"
+        else:
+            limit = len(counter)
+        values = counter.most_common()
+        MAX_LENGTH = len(str(limit)) + 1
+        for i in range(1, limit + 1):
+            print("{0}){1}{2}   - ({3})".format(i,
+                                                ' ' * (MAX_LENGTH - len(str(i))),
+                                                values[i - 1][0],
+                                                values[i - 1][1]))
 
     def _pick_color(self, person: int) -> int:
         """Helper method to get user input for picking a color of text
@@ -720,7 +767,13 @@ class ConvoReader(BaseConvoReader):
 
     def _print_message_dates(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
-        CustomDate.assert_dates(start, end)
+        try:
+            CustomDate.assert_dates(start, end)
+        except AssertionError as e:
+            print(e)
+            return
+        # verifying user dates are correct form
+
         if start is not None:
             start = CustomDate.from_date_string(start)
             assert start.date >= self._convo[0][2].date, \

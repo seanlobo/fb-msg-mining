@@ -208,7 +208,7 @@ class MessageReader:
             print(e)
 
     def total_emojis(self, only_me=True):
-        """Returns the total emojis in an aggragate sum of all your conversations
+        """Returns the total raw_emojis in an aggragate sum of all your conversations
             Parameters:
                 only_me (optional): Considers only your sent messages if True, otherwise both your sent and received
             Return:
@@ -218,9 +218,9 @@ class MessageReader:
         for i in range(1, len(self) + 1):
             try:
                 if only_me:
-                    res += self.get_convo(i).emojis(person=self.person)
+                    res += self.get_convo(i).raw_emojis(person=self.person)
                 else:
-                    res += self.get_convo(i).emojis()
+                    res += self.get_convo(i).raw_emojis()
             except AssertionError:
                 pass
         return res
