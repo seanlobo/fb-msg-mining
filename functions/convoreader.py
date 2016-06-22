@@ -143,7 +143,7 @@ class ConvoReader(BaseConvoReader):
                 print(string)
                 print()
 
-    def word_cloud(self, **preferences):
+    def word_clouds(self, **preferences):
         """Interactive method for users to set preferences for word cloud generation. Utilizes the java library Kumo
              -------------------------------------
         ---> | https://github.com/kennycason/kumo | <--- Good stuff
@@ -496,7 +496,8 @@ class ConvoReader(BaseConvoReader):
 
         # The methods I think are the most important to explain
         most_important = [ConvoReader.find, ConvoReader.frequency, ConvoReader.prettify, ConvoReader.print_people,
-                          ConvoReader.msgs_graph, ConvoReader.save_word_freq, ConvoReader.set_preferences]
+                          ConvoReader.msgs_graph, ConvoReader.save_word_freq, ConvoReader.set_preferences,
+                          ConvoReader.word_clouds]
 
         secondary = [ConvoReader.ave_words, ConvoReader.emojis, ConvoReader.messages,
                      ConvoReader.msgs_by_time, ConvoReader.msgs_by_weekday, ConvoReader.times, ConvoReader.words]
@@ -745,7 +746,7 @@ class ConvoReader(BaseConvoReader):
         # grabbed from http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
         # with additions by http://stackoverflow.com/questions/11269575/how-to-hide-output-of-subprocess-in-python-2-7k
         devnull = open(os.devnull, mode='w')
-        p = subprocess.Popen("java -jar wordclouds.jar", shell=True, stdout=devnull, stderr=subprocess.STDOUT)
+        p = subprocess.Popen("java -jar data/wordclouds.jar", shell=True, stdout=devnull, stderr=subprocess.STDOUT)
         sts = os.waitpid(p.pid, 0)
 
     def _word_clouds_get_all(self, values):
