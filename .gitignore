@@ -120,10 +120,13 @@ misc.
 .DS_Store
 test.py
 facebook*
-*data*
 temp.py
 testing
 !msgs_over_time.html
 tmp.py
 !skeleton.css
 !skeleton.html
+conversation_data
+output
+wordClouds
+data.txt
