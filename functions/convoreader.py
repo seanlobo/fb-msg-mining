@@ -296,7 +296,7 @@ class ConvoReader(BaseConvoReader):
             self._print_message_dates(start, end)
             return
         elif mode == "clusters":
-            assert "centers" in kwargs, "When calling prettify wtih mode=\"clusters\" " \
+            assert "centers" in kwargs, "When calling prettify with mode=\"clusters\" " \
                                         "you must pass in a centers argument"
             centers = kwargs["centers"]
             padding = kwargs['padding'] if 'padding' in kwargs else None
