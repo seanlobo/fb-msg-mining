@@ -51,12 +51,14 @@ class ConvoReader(BaseConvoReader):
             name (optional): The name (as a string) of the person you are interested in
         """
         value = self._raw_messages(name)
-        title_case_values = Counter({key.title(): val for key, val in value.items()})
         if type(value) is int:
             print(value)
+            return
         else:
+            title_case_values = Counter({key.title(): val for key, val in value.items()})
             self.print_counter(title_case_values)
-        print('Total: {0}'.format(sum(val for key, val in value.items())))
+            print('Total: {0}'.format(sum(val for key, val in value.items())))
+            return
 
     def words(self, name=None):
         """Prints to the console the number of words sent by each person
@@ -64,12 +66,14 @@ class ConvoReader(BaseConvoReader):
             name (optional): The name (as a string) of the person you are interested in
         """
         value = self._raw_words(name)
-        title_case_values = Counter({key.title(): val for key, val in value.items()})
         if type(value) is int:
             print(value)
+            return
         else:
+            title_case_values = Counter({key.title(): val for key, val in value.items()})
             self.print_counter(title_case_values)
-        print('Total: {0}'.format(sum(val for key, val in value.items())))
+            print('Total: {0}'.format(sum(val for key, val in value.items())))
+            return
 
     def ave_words(self, name=None):
         """Prints to the console the average number of words / message each person in the conversation uses
@@ -222,11 +226,28 @@ class ConvoReader(BaseConvoReader):
         if wc_type == 'circular' or wc_type == 'rectangular':
             word_cloud_preferences['input_name'] = self._get_input_name()
             clear_screen()
+
+            options = {'num_words_to_include': WordCloud.assert_output_name_for_wc,
+                       'colors': lambda x: all(WordCloud.assert_color_for_wc(color) for color in x),
+                       'dimensions': WordCloud.assert_dimensions_for_wc}
+            for custom_preference in options.keys():
+                if custom_preference in preferences:
+                    try:
+                        passed = False
+                        options[custom_preference](preferences[custom_preference])
+                        passed = True
+                    except AssertionError as e:
+                        pass
+                    if passed:
+                        word_cloud_preferences[custom_preference] = preferences[custom_preference]
+            # Above checks if user specified choices are valid, and adds them to preferences if so
+
             preference_choices = {'num_words_to_include': self._get_num_words_to_include,
                                   'min_word_length': self._get_min_word_length,
                                   'dimensions': self._get_dimensions,
                                   'colors': self._get_colors}
-            word_cloud_preferences.update(self._get_word_cloud_preferences(preference_choices))
+            word_cloud_preferences.update(self._get_word_cloud_preferences(preference_choices,
+                                                                           current_choices=word_cloud_preferences))
 
             ready = self._setup_new_word_cloud(word_cloud_preferences)
         else:
@@ -821,13 +842,13 @@ class ConvoReader(BaseConvoReader):
         sts = os.waitpid(p.pid, 0)
         print("Your word cloud should be in data/ouput/ !")
 
-    def _get_word_cloud_preferences(self, values: dict):
+    def _get_word_cloud_preferences(self, values: dict, current_choices=None):
         """Returns a dictionary mapping preference type strings to their values"""
         # colors
         # dimensions
 
         choices = sorted(values.keys())
-        res = dict()
+        res = current_choices if current_choices is not None else dict()
 
         while True:
             print("Now selecting more specific features. Below are your preferences:")
