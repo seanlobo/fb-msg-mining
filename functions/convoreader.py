@@ -185,10 +185,9 @@ class ConvoReader(BaseConvoReader):
                                            e.g. type="circular"
             output_name               -  A string representing the output name of the wordcloud picture
                                            e.g. output_name="my_word_cloud.png"
-            set_num_words_to_include  -  An integer representing the number of words to be included (1000 is
+            num_words_to_include      -  An integer representing the number of words to be included (1000 is
                                          a reasonable value, but it depends on the dimensions)
                                            e.g. set_num_words_to_include=1000
-            min_cutoff_freq           -  An integer specifying the minimum frequency of words to be included
 
             * Mainly for Circular/ rectangular ones *
             colors      -  A list of rgb colors (each rbg color must be either a list or tuple of length 3)
@@ -197,6 +196,7 @@ class ConvoReader(BaseConvoReader):
                             e.g. dimensions=[100, 100]
         """
         clear_screen()
+        word_cloud_preferences = dict()
 
         # Getting the user's type, this is mandatory
         if 'type' in preferences and preferences['type'] in WordCloud.WORD_CLOUD_TYPES:
@@ -215,15 +215,20 @@ class ConvoReader(BaseConvoReader):
             output_name = self._word_cloud_get_one_liner('output_name')
 
         clear_screen()
+        word_cloud_preferences['type'] = wc_type
+        word_cloud_preferences['output_name'] = output_name
+        # By this point we have the user's type and output name. Now we need to get more specific preferences
 
         if wc_type == 'circular' or wc_type == 'rectangular':
-            # Gets user input for preferences and then calls the setup function
-            preferences = self._word_clouds_get_all(['set_num_words_to_include', 'min_cutoff_freq'])
-            preferences['output_name'] = output_name
-            preferences['type'] = wc_type
-            preferences['input_name'] = self._word_cloud_get_from_list('input_name')
+            word_cloud_preferences['input_name'] = self._get_input_name()
+            clear_screen()
+            preference_choices = {'num_words_to_include': self._get_num_words_to_include,
+                                  'min_word_length': self._get_min_word_length,
+                                  'dimensions': self._get_dimensions,
+                                  'colors': self._get_colors}
+            word_cloud_preferences.update(self._get_word_cloud_preferences(preference_choices))
 
-            ready = self._setup_new_word_cloud(preferences)
+            ready = self._setup_new_word_cloud(word_cloud_preferences)
         else:
             raise Exception("Invalid type for wordcloud specified")
 
@@ -232,6 +237,7 @@ class ConvoReader(BaseConvoReader):
             # to errors associated with them from checking user values. iff ready is empty is the word cloud created
             self.__start_kumo()
         else:
+            print(ready)
             return ready
 
     def prettify(self, mode=None, **kwargs):
@@ -515,6 +521,8 @@ class ConvoReader(BaseConvoReader):
             else self._find_indexes(query, ignore_case=ignore_case)
         return len(indexes)
 
+    ############################################## HELP ##################################@@@###########
+
     def help(self):
         """Method to give users help / tips on how to use ConvoReaders"""
         clear_screen()
@@ -591,6 +599,8 @@ class ConvoReader(BaseConvoReader):
 
             clear_screen()
 
+    ############################################## HELP ##################################@@@###########
+
     @staticmethod
     def get_emoji(text: str) -> str:
         """Returns the emoji corresponding to the src value passed,
@@ -615,6 +625,8 @@ class ConvoReader(BaseConvoReader):
                                                 ' ' * (MAX_LENGTH - len(str(i))),
                                                 values[i - 1][0],
                                                 values[i - 1][1]))
+
+    ############################################## PREFERENCES ##################################@@@###########
 
     def _pick_color(self, person: int) -> int:
         """Helper method to get user input for picking a color of text
@@ -670,6 +682,10 @@ class ConvoReader(BaseConvoReader):
         preferences = {person: dict() for person in self._people}
         preferences['global'] = dict(threshold=240)
         return preferences
+
+    ############################################## PREFERENCES ##################################@@@###########
+
+    ##################################### PRINTING CONVERSATION TO CONSOLE ##################################@@@
 
     def _print_message(self, number: int):
         """Helper method used to prettily print to the screen the person, message and date
@@ -789,22 +805,30 @@ class ConvoReader(BaseConvoReader):
         else:
             end = len(self._convo)
 
-        MAX_LEN_INDEX = len(str(end)) + 2
-        for i in range(start, end):
-            print(str(i) + ' ' * (MAX_LEN_INDEX - len(str(i))), end="")
-            self._print_message(i)
+        self._print_messages(start=start, end=end)
 
-    def __start_kumo(self):
+    ##################################### PRINTING CONVERSATION TO CONSOLE ##################################@@@
+
+    ######################################## WORD CLOUD PRIVATE METHODS ########################################
+
+    @staticmethod
+    def __start_kumo():
         """Calls the java program, assuming that all conditions are met"""
         # grabbed from http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
         # with additions by http://stackoverflow.com/questions/11269575/how-to-hide-output-of-subprocess-in-python-2-7k
         devnull = open(os.devnull, mode='w')
         p = subprocess.Popen("java -jar data/wordclouds.jar", shell=True, stdout=devnull, stderr=subprocess.STDOUT)
         sts = os.waitpid(p.pid, 0)
+        print("Your word cloud should be in data/ouput/ !")
 
-    def _word_clouds_get_all(self, values):
-        choices = sorted(values)
+    def _get_word_cloud_preferences(self, values: dict):
+        """Returns a dictionary mapping preference type strings to their values"""
+        # colors
+        # dimensions
+
+        choices = sorted(values.keys())
         res = dict()
+
         while True:
             print("Now selecting more specific features. Below are your preferences:")
             num_choices_max_length = len(str(len(choices)))
@@ -813,9 +837,10 @@ class ConvoReader(BaseConvoReader):
                 print("{0}){1}{2} = {3}".format(i, ' ' * (num_choices_max_length + 1 - len(str(i))),
                                                 choices[i - 1], res[choices[i - 1]] if choices[i - 1] in res
                                                 else 'DEFAULT SETTINGS'))
+            # Prints out the list of preferences the user currently has
+
             print()
             print("Choose which feature you would like to specify:")
-
             choice_range = [str(i) for i in range(len(choices) + 1)]
             while True:
                 choice = input('> ')
@@ -823,21 +848,88 @@ class ConvoReader(BaseConvoReader):
                     choice = int(choice) - 1
                     print()
                     break
+            # Selecting the user's choice
 
             if choice == -1:  # User wants to exit
                 print("Are you sure you would like to exit?")
                 if user_says_yes():
                     clear_screen()
                     return res
-            else:  # user continues selecting preferences
-                user_choice = self._word_cloud_get_one_liner(choices[choice])
-                res[choices[choice]] = user_choice
+            # The user wants to exit
 
-                print("Would you like to continue choosing preferences?")
-                if not user_says_yes():  # Does the user want to quit?
-                    clear_screen()
-                    return res
+            else:  # continue selecting preferences
+                # create an element in the dictiaonry equal to the preference the user selected,
+                # and set it equal to the result of calling the function associated with that preference
+                res[choices[choice]] = values[choices[choice]]()
+
+            print("Would you like to continue choosing preferences?")
+            if not user_says_yes():  # Does the user want to quit?
+                clear_screen()
+                return res
             clear_screen()
+
+    def _get_colors(self):
+        result = []
+
+        max_colors = 5
+        print("How many colors would you like to choose? [1-{0}]".format(max_colors))
+        while True:
+            num_colors = input("> ")
+            if num_colors in [str(i) for i in range(1, max_colors + 1)]:
+                num_colors = int(num_colors)
+                break
+        # Get the number of colors the user would like
+
+        print("Specify your colors below, they must be in the form of three comma and space separated numbers.")
+        print(Fore.GREEN + Back.BLACK + "for example: 255, 0, 255")
+        i = 0
+        while i < num_colors:
+            passed = False
+            color = input('{0}) '.format(i + 1))
+            try:
+                cleaned_color = WordCloud.assert_color_string(color)
+                passed = True
+            except AssertionError as e:
+                print(e)
+                print()
+            if passed:
+                result.append(cleaned_color)
+                i += 1
+
+        return result
+
+    def _get_dimensions(self):
+        print("Specify the height and width you would like as integers (in pixels)")
+        while True:
+            while True:
+                try:
+                    height = int(input("height: "))
+                    break
+                except ValueError as e:
+                    print("Must type an integer")
+            while True:
+                try:
+                    width= int(input("width: "))
+                    break
+                except ValueError as e:
+                    print("Must type an integer")
+            try:
+                WordCloud.assert_dimensions_for_wc([width, height])
+                print('\nConfirm selection?')
+                if user_says_yes():
+                    return [width, height]
+            except AssertionError as e:
+                print(e)
+                print('\n')
+
+    def _get_num_words_to_include(self):
+        return self._word_cloud_get_one_liner('num_words_to_include')
+
+    def _get_min_word_length(self):
+        return self._word_cloud_get_one_liner('min_word_length')
+
+    def _get_input_name(self):
+        return self._word_cloud_get_from_list('input_name')
 
     def _word_cloud_get_one_liner(self, attribute):
         if attribute == 'output_name':
@@ -845,11 +937,11 @@ class ConvoReader(BaseConvoReader):
             assertion = WordCloud.assert_output_name_for_wc
             assertion_failure_string = '\nplease try again. Remember to end the name in \".png\", for example ' \
                                        '\"example.png\"'
-        elif attribute == 'set_num_words_to_include':
+        elif attribute == 'num_words_to_include':
             intro = "How many words would you like to include (at maximum) in your word cloud? Type an integer"
             assertion = lambda x: WordCloud.assert_num_words_to_include(int(x))
             assertion_failure_string = "Please try again, type an integer"
-        elif attribute == 'min_cutoff_freq':
+        elif attribute == 'min_word_length':
             intro = "What's the length of the smallest word you would like to include in the wordcloud?"
 
             def assertion(x):
@@ -858,6 +950,8 @@ class ConvoReader(BaseConvoReader):
             assertion_failure_string = "Please try again, type an integer"
         else:
             raise ValueError("invalid value of attribute passed")
+        # Above define standard assertions to test data with and strings to print for various cases
+
         while True:
             print(intro)
             name = input('> ')
@@ -871,16 +965,16 @@ class ConvoReader(BaseConvoReader):
             if passed_assertion:
                 print("Would you like to confirm \"{0}\" as your {1}? [Y/n]".format(name, attribute))
                 if user_says_yes():
-                    if attribute == 'set_num_words_to_include' or attribute == 'min_cutoff_freq':
+                    if attribute == 'num_words_to_include' or attribute == 'min_cutoff_freq':
                         name = int(name)
                     return name
 
     def _word_cloud_get_from_list(self, attribute):
         if attribute == 'type':
             intro = "What type of word cloud would you like? Chose one from the following:"
-            lst_of_choices = WordCloud.WORD_CLOUD_TYPES
+            lst_of_choices = sorted(WordCloud.WORD_CLOUD_TYPES.keys())
         elif attribute == 'input_name':
-            intro = "Which of the following files would you like to use for the word cloud?"
+            intro = "Which of the following files would you like to use as input for the word cloud?"
 
             def name_to_file(name):
                 # Based on save_word_freq in baseconvoreader
@@ -906,6 +1000,8 @@ class ConvoReader(BaseConvoReader):
             choice = input('> ')
             if choice in choice_range:
                 return lst_of_choices[int(choice) - 1]
+
+    ######################################## WORD CLOUD PRIVATE METHODS ########################################
 
     def __getitem__(self, index):
         """Returns the tuple (person, message, datetime) for the corresponding index"""

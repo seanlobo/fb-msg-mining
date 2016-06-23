@@ -4,9 +4,14 @@ import shutil
 
 class WordCloud:
     WORD_CLOUD_PATH = 'data/wordClouds/'
-    WORD_CLOUD_TYPES = ['circular', 'rectangular']
+    WORD_CLOUD_TYPES = {'circular': ['output_name', 'dimensions', 'colors', 'input_name', 'num_words_to_include',
+                                     'min_word_length'],
+                        'rectangular': ['output_name', 'dimensions', 'colors', 'input_name', 'num_words_to_include',
+                                        'min_word_length']}
 
     def __init__(self, wc_type, path):
+        assert wc_type in WordCloud.WORD_CLOUD_TYPES
+
         self.wc_type = wc_type
         self.path = path
 
@@ -18,30 +23,16 @@ class WordCloud:
             fully ready for creation
         """
         verification = dict()
-        if self.wc_type == "circular":
-            assertions = [WordCloud.assert_dimensions_for_wc, WordCloud.assert_output_name_for_wc,
-                          WordCloud.assert_color_for_wc, lambda x: None]
-            file_names = ['dimensions.txt', 'output_name.txt', 'colors.txt', 'text.txt']
-            fn = lambda num: assertions[num]
-            for i in range(len(assertions)):
-                try:
-                    assert os.path.isfile(WordCloud.WORD_CLOUD_PATH + file_names[i]), \
-                        "{0} is missing".format(file_names[i])
-                    with open(WordCloud.WORD_CLOUD_PATH + file_names[i], mode='r') as f:
-                        if i == 0:  # dimension
-                            val = [int(ele) for ele in f.read().split('\n')]
-                        elif i == 1:  # output name
-                            val = f.read()
-                        elif i == 2:  # colors
-                            val = [[int(col) for col in line.split(', ')] for line in f]
-                    if i != 2:
-                        fn(i)(val)
-                    else:
-                        [fn(2)(data) for data in val]
-                except (AssertionError, ValueError) as e:
-                    verification[file_names[i]] = e
-        return verification
+        if self.wc_type == "circular" or self.wc_type == "rectangular":
+            file_names = ['output_name.txt', 'dimensions.txt', 'colors.txt', 'text.txt', 'num_words_to_include.txt']
 
+        for file in file_names:
+            try:
+                self._read_in_file_and_check_assertions(file)
+            except AssertionError as e:
+                verification[file] = e
+
+        return verification
 
     @staticmethod
     def freq_to_raw(freqs: str, output: str, key: lambda x: 'val', min_occurence: int =1):
@@ -74,6 +65,28 @@ class WordCloud:
         with open(WordCloud.WORD_CLOUD_PATH + 'type.txt', mode='w', encoding='utf-8') as f:
             f.write(self.wc_type)
 
+    def read_dimensions(self):
+        assert os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'dimensions.txt'), "dimensions.txt does not exist!"
+        dimensions = []
+        for line in open(WordCloud.WORD_CLOUD_PATH + 'dimensions.txt', mode='r').readlines():
+            dimensions += [line]
+        assert len(dimensions) == 2, "dimensions.txt has to many lines"
+        return dimensions
+
+    def read_colors(self):
+        assert os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'colors.txt'), "colors.txt does not exist!"
+        colors = []
+        for line in open(WordCloud.WORD_CLOUD_PATH + 'colors.txt', mode='r').readlines():
+            colors += [line]
+        return colors
+
+    def read_file(self, file_name):
+        assert os.path.isfile(WordCloud.WORD_CLOUD_PATH + file_name), "{0} does not exist!".format(file_name)
+        with open(WordCloud.WORD_CLOUD_PATH + file_name, mode='r') as f:
+            return f.readline()
+
+    ######################################## WRITING TO FILES ########################################
+
     @staticmethod
     def set_dimensions(x: int, y: int):
         """Saves the specified integer dimensions to a file"""
@@ -81,56 +94,6 @@ class WordCloud:
 
         with open(WordCloud.WORD_CLOUD_PATH + 'dimensions.txt', mode='w', encoding='utf-8') as f:
             f.write(str(x) + '\n' + str(y))
-
-    @staticmethod
-    def set_num_word_sets(num: int):
-        """Saves the specified integer to a file"""
-        WordCloud.assert_num_text_set_for_wc(num)
-
-        with open(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt', mode='w', encoding='utf-8') as f:
-            f.write(str(num))
-
-    @staticmethod
-    def create_text_set(set_num: int, raw_file_name: str, min_frequency: int =1):
-        """Creates a text file for the corresponding set_num specified with the raw attributes
-        Parameters:
-            set_num: The integer value specifying
-            raw_file_name: A string representing the path to the file wanted
-            min_frequency (optional): An integer representing the minimum number of times a word
-                                    has to have to be counted
-        """
-        # ensures that there is a valid number of text sets in the wordCloud directory
-        assert os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt'), "You need to specify a number " \
-                                                                                "of text sets first"
-        try:
-            max_text_sets = 3
-            read_num = open(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt').read()
-            assert 0 < int(read_num), "The number of texts sets needs to be greater than 0..."
-            assert int(read_num) <= max_text_sets, "Currently only support a maximum of {0} text sets"\
-                .format(max_text_sets)
-        except ValueError:
-            assert False, "The value read from num_text_sets.txt is not a valid integer, please fix this"
-
-        # ensures set_num is valid
-        assert isinstance(set_num, int), "set_num must be an integer"
-        assert 0 < set_num < read_num, "set_num must be between 1 and {0}".format(read_num)
-
-        # Making sure min_frequency is valid
-        assert isinstance(min_frequency, int), "min_frequency must be an integer"
-        assert min_frequency >= 1, "min_frequency must be greater than or equal to 1"
-
-        # Making sure the specified raw file exists
-        assert os.path.isfile(raw_file_name), "The specified file for word frequencies ({0}) does not exist"\
-            .format(raw_file_name)
-
-        excluded_words = []
-        if os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'excluded.txt'):
-            for word in open(WordCloud.WORD_CLOUD_PATH + 'excluded.txt', mode='r').readlines():
-                excluded_words.append(word)
-        key = lambda x: x not in excluded_words
-
-        WordCloud.freq_to_raw(raw_file_name, WordCloud.WORD_CLOUD_PATH + 'word_set{0}.txt'.format(set_num), key,
-                              min_occurence=min_frequency)
 
     @staticmethod
     def append_color(color: 'tuple or list (length 3) of ints'):
@@ -148,6 +111,12 @@ class WordCloud:
         os.remove(WordCloud.WORD_CLOUD_PATH + 'colors.txt')
 
     @staticmethod
+    def set_colors(*colors):
+        WordCloud.clear_colors()
+        for color in colors:
+            WordCloud.append_color(color)
+
+    @staticmethod
     def set_output_name(name: str):
         """Writes the passed name to output_name.txt"""
         WordCloud.assert_output_name_for_wc(name)
@@ -159,11 +128,60 @@ class WordCloud:
     def set_num_words_to_include(limit: int):
         WordCloud.assert_num_words_to_include(limit)
 
-        with open(WordCloud.WORD_CLOUD_PATH + 'set_num_words_to_include.txt', mode='w', encoding='utf-8') as f:
+        with open(WordCloud.WORD_CLOUD_PATH + 'num_words_to_include.txt', mode='w', encoding='utf-8') as f:
             f.write(str(limit))
 
     @staticmethod
-    def assert_num_words_to_include(limit: int):
+    def set_min_word_length(min_length: int):
+        WordCloud.assert_min_word_length(min_length)
+
+        with open(WordCloud.WORD_CLOUD_PATH + 'min_word_length.txt', mode='w', encoding='utf-8') as f:
+            f.write(str(min_length))
+
+    ######################################## ASSERTING VALUES ARE VALID ########################################
+
+    def _read_in_file_and_check_assertions(self, file):
+        if file not in ['output_name.txt', 'dimensions.txt', 'colors.txt', 'text.txt', 'num_words_to_include.txt',
+                        'min_word_length.txt']:
+            raise ValueError("Invalid file name: {0}".format(file))
+
+        if file == 'output_name.txt':
+            output_name = self.read_file(file)
+            self.assert_output_name_for_wc(output_name)
+        elif file == 'dimensions.txt':
+            dimensions = self.read_dimensions()
+            try:
+                self.assert_dimensions_for_wc([int(val) for val in dimensions])
+            except ValueError as e:
+                raise AssertionError(str(e))
+        elif file == 'colors.txt':
+            colors = self.read_colors()
+            for line in colors:
+                self.assert_color_string(line)
+        elif file == 'text.txt':
+            input_name = self.read_file(file)
+        elif file == 'num_words_to_include.txt':
+            limit = self.read_file(file)
+            try:
+                limit = int(limit)
+            except ValueError:
+                raise AssertionError("num_words_to_include.txt has bad form, must have an integer")
+            self.assert_num_words_to_include(limit)
+        elif file == 'min_word_length.txt':
+            min_length = self.read_file(file)
+            try:
+                min_length = int(min_length)
+            except ValueError:
+                raise AssertionError("min_word_length.txt has bad form, must have an integer")
+            self.assert_num_words_to_include(min_length)
+
+    @staticmethod
+    def assert_min_word_length(min_length):
+        assert isinstance(min_length, int), "min_length must be an integer"
+        assert min_length > 0, "...Why would I let you pick a min length less than 0? Must be greater than or equal to 1"
+
+    @staticmethod
+    def assert_num_words_to_include(limit):
         assert isinstance(limit, int), "limit must be an integer"
         assert 0 < limit, "This would be a very boring word cloud if I let you give a frequency less than 1"
 
@@ -192,3 +210,66 @@ class WordCloud:
     def assert_num_text_set_for_wc(num: int):
         assert isinstance(num, int), "Num must be an integer"
         assert num >= 1, "Num should be greater than 1"
+
+    @staticmethod
+    def assert_color_string(color):
+        split = color.split(', ')
+        assert len(split) == 3, "color is invalid "
+        try:
+            split = list(map(int, split))
+        except ValueError as e:
+            raise AssertionError("color should be made of integers separated by commas and spaces, e.g. 0, 255, 255")
+        WordCloud.assert_color_for_wc(split)
+        return split
+
+    # @staticmethod
+    # def set_num_word_sets(num: int):
+    #     """Saves the specified integer to a file"""
+    #     WordCloud.assert_num_text_set_for_wc(num)
+    #
+    #     with open(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt', mode='w', encoding='utf-8') as f:
+    #         f.write(str(num))
+    #
+    # @staticmethod
+    # def create_text_set(set_num: int, raw_file_name: str, min_frequency: int = 1):
+    #     """Creates a text file for the corresponding set_num specified with the raw attributes
+    #     Parameters:
+    #         set_num: The integer value specifying
+    #         raw_file_name: A string representing the path to the file wanted
+    #         min_frequency (optional): An integer representing the minimum number of times a word
+    #                                 has to have to be counted
+    #     """
+    #     # ensures that there is a valid number of text sets in the wordCloud directory
+    #     assert os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt'), "You need to specify a number " \
+    #                                                                             "of text sets first"
+    #     try:
+    #         max_text_sets = 3
+    #         read_num = open(WordCloud.WORD_CLOUD_PATH + 'num_text_sets.txt').read()
+    #         assert 0 < int(read_num), "The number of texts sets needs to be greater than 0..."
+    #         assert int(read_num) <= max_text_sets, "Currently only support a maximum of {0} text sets" \
+    #             .format(max_text_sets)
+    #     except ValueError:
+    #         assert False, "The value read from num_text_sets.txt is not a valid integer, please fix this"
+    #
+    #     # ensures set_num is valid
+    #     assert isinstance(set_num, int), "set_num must be an integer"
+    #     assert 0 < set_num < read_num, "set_num must be between 1 and {0}".format(read_num)
+    #
+    #     # Making sure min_frequency is valid
+    #     assert isinstance(min_frequency, int), "min_frequency must be an integer"
+    #     assert min_frequency >= 1, "min_frequency must be greater than or equal to 1"
+    #
+    #     # Making sure the specified raw file exists
+    #     assert os.path.isfile(raw_file_name), "The specified file for word frequencies ({0}) does not exist" \
+    #         .format(raw_file_name)
+    #
+    #     excluded_words = []
+    #     if os.path.isfile(WordCloud.WORD_CLOUD_PATH + 'excluded.txt'):
+    #         for word in open(WordCloud.WORD_CLOUD_PATH + 'excluded.txt', mode='r').readlines():
+    #             excluded_words.append(word)
+    #     key = lambda x: x not in excluded_words
+    #
+    #     WordCloud.freq_to_raw(raw_file_name, WordCloud.WORD_CLOUD_PATH + 'word_set{0}.txt'.format(set_num), key,
+    #                           min_occurence=min_frequency)
+
+
