@@ -207,6 +207,50 @@ class MessageReader:
         except AssertionError as e:
             print(e)
 
+    def raw_top_conversations(self, start, end):
+        """Returns a counter for top conversations in a time period"""
+        CustomDate.assert_dates(start, end)
+        start, end = CustomDate.from_date_string(start), CustomDate.from_date(CustomDate.from_date_string(end) + 1)
+        rankings = Counter()
+
+        for i in range(len(self)):
+            convo = self.get_convo(i + 1)
+            name = convo._name.title()
+            rankings[name] = 0
+            for person, msg, date in convo:
+                if start <= date <= end:
+                    rankings[name] += 1
+
+        return rankings
+
+    def top_conversations(self, start, end, limit=10):
+        """Prints a ranking of top conversations in a time period
+        Parameters:
+            start: The date string representing the first day to start counting from (in the format {month}/{day}/{year}
+            end: The date string for the last day to count
+            limit (optional): An integer representing the number of conversations to print, or False to display all
+        """
+        try:
+            rankings = self.raw_top_conversations(start, end)
+            assert isinstance(limit, int) or isinstance(limit, False), "Limit should be an integer or False"
+            if isinstance(limit, int):
+                assert 1 <= limit, "Limit should be greater than or equal to 1"
+        except AssertionError as e:
+            print(e)
+            return
+
+        if limit is False or limit > len(self):
+            limit = len(self)
+
+        MAX_INT_LEN = len(str(limit)) + 1
+        i = 1
+        for convo, freq in rankings.most_common(limit):
+            if freq == 0:
+                break
+            print(Fore.GREEN + Back.BLACK + str(i) + ')', end="")
+            print("{0}{1} - {2}".format(' ' * (MAX_INT_LEN - len(str(i))), convo, freq))
+            i += 1
+
     def total_emojis(self, only_me=True):
         """Returns the total raw_emojis in an aggragate sum of all your conversations
             Parameters:

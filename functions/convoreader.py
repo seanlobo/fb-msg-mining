@@ -698,8 +698,6 @@ class ConvoReader(BaseConvoReader):
             print('\nThis most likely means you have modified the preferences.txt file in {0}'.format(self._path))
             print('To get rid of this warning, execute the command \"save_preferences()\"')
 
-        # Only executes if an exception occured or an assertion was raised
-        print("Using default settings")
         preferences = {person: dict() for person in self._people}
         preferences['global'] = dict(threshold=240)
         return preferences
