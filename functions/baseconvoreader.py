@@ -123,54 +123,15 @@ class BaseConvoReader:
         return name + '/'
 
     def _setup_new_word_cloud(self, preferences):
-        """Takes in all the preferences for a word cloud, and writes everything to files
-        Parameters:
-            type                      -  A string representing the type of word cloud. Must be from
-                                         WorldCloud.WORD_CLOUD_TYPES
-            output_name               -  A string representing the output name of the wordcloud picture
-            set_num_words_to_include  -  An integer representing the max number of words to be included
-            min_word_length           -  An integer specifying the minimum length of a word to be included
-
-            * Mainly for Circular/ rectangular ones *
-            colors      -  A list of rgb colors (each rbg color must be either a list or tuple of length 3)
-            dimensions  -  A list representing the pixel values of the height and width, respectively
-            input_name  -  A string representing the file containing raw frequencies to be used as data
-
-
-        """
-        # Creates wordcloud with directory
+        """Takes in all the preferences for a word cloud, and writes everything to files"""
         assert 'type' in preferences, "You must pass a type argument"
-        assert 'output_name' in preferences, 'You must pass an output_name argument'
-        wc_type = preferences['type']
-        self._word_cloud = WordCloud(wc_type, self._path)
-        self._word_cloud.setup_word_cloud_starter_files()
-        self.save_word_freq(path=WordCloud.WORD_CLOUD_PATH)
+        assert preferences['type'] in WordCloud.WORD_CLOUD_TYPES, "invalid type, {0} is not in {1}"\
+            .format(preferences['type'], WordCloud.WORD_CLOUD_TYPES)
+
         # Creates wordcloud with directory
-
-        # Grabs preferences that should be common to all wordclouds, with default settings
-        output_name = preferences['output_name']
-        num_words_to_include = preferences['num_words_to_include'] if 'num_words_to_include' in preferences\
-                                                                   else 1000
-        min_word_length = preferences['min_word_length'] if 'min_word_length' in preferences else 3
-
-        # Writes above to files
-        self._word_cloud.set_output_name(output_name)
-        self._word_cloud.set_num_words_to_include(num_words_to_include)
-        self._word_cloud.set_min_word_length(min_word_length)
-
-        if wc_type == 'circular':
-            # Grabs preferences specific to circular wordclouds with default settings
-            colors = preferences['colors'] if 'colors' in preferences else [[255, 255, 255]]
-            dimensions = preferences['dimensions'] if 'dimensions' in preferences else [1000, 1000]
-
-            # Applies specific preferences to wordcloud
-            for color in colors:
-                self._word_cloud.append_color(color)
-            self._word_cloud.set_dimensions(*dimensions)
-
-            self._word_cloud.freq_to_raw(WordCloud.WORD_CLOUD_PATH + preferences['input_name'],
-                                         WordCloud.WORD_CLOUD_PATH + 'text.txt',
-                                         lambda x: True)
+        wc_type = preferences['type']
+        self._word_cloud = WordCloud(wc_type, preferences)
+        self.save_word_freq(path=WordCloud.WORD_CLOUD_INPUT_PATH)
 
         # Returns the results from verifying settings for this wordcloud
         return self._word_cloud.verify_word_cloud_setup()
