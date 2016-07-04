@@ -1,13 +1,14 @@
 import os
 import shutil
 import datetime
-import sys
 import json
 
 
 class WordCloud:
     WORD_CLOUD_INPUT_PATH = 'data/word_clouds/input_data/'
     WORD_CLOUD_OUTPUT_PATH = 'data/word_clouds/output/'
+    WORD_CLOUD_EXCLUDED_WORDS_PATH = 'data/word_clouds/excluded_words/'
+
     WORD_CLOUD_TYPES = {'default': ['output_name', 'dimensions', 'colors', 'input_name', 'num_words_to_include',
                                     'min_word_length'],
                         }
@@ -17,7 +18,7 @@ class WordCloud:
     _DEFAULT_NUM_WORDS_TO_INCLUDE = 1000
     _DEFAULT_MIN_WORD_LENGTH = 3
     _DEFAULT_MAX_WORD_LENGTH = 100
-    _DEFAULT_OUTPUT_NAME = 'word_cloud_created_at_{0}.png'.format(str(datetime.datetime.now()).replace(' ', '_'))
+    _DEFAULT_OUTPUT_NAME = 'TIME_OF_CREATION.png'
     _DEFAULT_INPUT_NAME = 'total.txt'
     _DEFAULT_DIMENSIONS = [1000, 1000]
     _DEFAULT_COLORS = [[255, 255, 255]]
@@ -25,6 +26,7 @@ class WordCloud:
     _DEFAULT_MIN_FONT_SIZE = 10
     _DEFAULT_MAX_FONT_SIZE = 40
     _DEFAULT_FONT_TYPE = 'linear'
+    _DEFAULT_EXCLUDED_WORDS = []
 
     def __init__(self, wc_type='default', preferences=None):
         if preferences is None:
@@ -59,7 +61,8 @@ class WordCloud:
                     'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
                     'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
                     'shape': WordCloud._DEFAULT_SHAPE,
-                    'font_type': WordCloud._DEFAULT_FONT_TYPE
+                    'font_type': WordCloud._DEFAULT_FONT_TYPE,
+                    'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS
                     }
 
     def verify_word_cloud_setup(self) -> dict:
@@ -81,7 +84,8 @@ class WordCloud:
                                    'max_font_size': lambda x: self.assert_font_size(x, 'max'),
                                    'min_font_size': lambda x: self.assert_font_size(x, 'min'),
                                    'font_type': WordCloud.assert_font_type_for_wc,
-                                   'shape': WordCloud.assert_shape_for_wc
+                                   'shape': WordCloud.assert_shape_for_wc,
+                                   'excluded_words': lambda x: map(WordCloud.assert_excluded_words_for_wc, x)
                                    }
         else:
             raise ValueError("Invalid word cloud type: {0}".format(self.wc_type))
@@ -127,6 +131,8 @@ class WordCloud:
         shutil.rmtree(WordCloud.WORD_CLOUD_INPUT_PATH) if os.path.exists(WordCloud.WORD_CLOUD_INPUT_PATH) else None
         os.makedirs(WordCloud.WORD_CLOUD_INPUT_PATH, exist_ok=True)
         os.makedirs(WordCloud.WORD_CLOUD_OUTPUT_PATH, exist_ok=True)
+        os.makedirs(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH, exist_ok=True)
+
 
     def write_json(self):
         assert self.__safe_to_save, "Preferences have not been verified yet, run `verify_word_cloud_setup()` first"
@@ -223,4 +229,9 @@ class WordCloud:
         else:
             assert 0 < value and self.__preferences['min_font_size'] < value, \
                 "The max font size should be greater than {0}".format(self.__preferences['min_font_size'])
+
+    @staticmethod
+    def assert_excluded_words_for_wc(file_path):
+        assert isinstance(file_path, str), "file_path must be a string"
+        assert os.path.isfile(file_path), "the specified file_path does not exist"
 

@@ -233,6 +233,7 @@ class ConvoReader(BaseConvoReader):
                                   'min_word_length': self._get_min_word_length,
                                   'max_word_length': self._get_max_word_length,
                                   'min_font_size': self._get_min_font_size,
+                                  'excluded_words': self._get_excluded_words,
                                   'max_font_size': self._get_max_font_size,
                                   'output_name': self._get_output_name,
                                   'input_name': self._get_input_name,
@@ -855,10 +856,9 @@ class ConvoReader(BaseConvoReader):
         res = current_choices if current_choices is not None else dict()
 
         while True:
-            print("Now selecting more specific features. Below are your preferences:")
+            print("Now selecting more specific features. Below are your preferences:\n")
             num_choices_max_length = len(str(len(choices)))
             print(Fore.LIGHTRED_EX + Back.BLACK + "{0}){1}Exit".format(0, ' ' * num_choices_max_length))
-            print()
             for i in range(1, len(choices) + 1):
                 print(Fore.LIGHTCYAN_EX + Back.BLACK + "{0})".format(i) + Style.RESET_ALL, end="")
                 print("{0}{1} = {2}".format(' ' * (num_choices_max_length + 1 - len(str(i))),
@@ -978,6 +978,46 @@ class ConvoReader(BaseConvoReader):
             except AssertionError as e:
                 print(e)
                 print('\n')
+
+    def _get_excluded_words(self):
+        lst_of_choices = [f for f in os.listdir(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH)
+                          if os.path.isfile(os.path.join(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH, f))]
+        full_paths = [os.path.join(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH, f) for f in lst_of_choices]
+        # length of the string for the highest choice number
+        num_choices_max_length = len(str(len(lst_of_choices)))
+        choice_range = [str(i) for i in range(1, len(lst_of_choices) + 1)]
+        selected = []
+        while True:
+            print("Which file(s) would you like to use as excluded words? Select an option to "
+                  "toggle it selected / not selected")
+            print(Fore.LIGHTBLUE_EX + Back.BLACK + "blue text" + Style.RESET_ALL +
+                  " means this choice is already selected, and choosing it will unselect it\n")
+
+            print(Fore.LIGHTRED_EX + Back.BLACK + "0) Exit" + Style.RESET_ALL)
+            for i in range(1, len(lst_of_choices) + 1):
+                if full_paths[i - 1] in selected:
+                    print(Fore.LIGHTBLUE_EX + Back.BLACK + "{0}){1}{2}"
+                          .format(i, ' ' * (num_choices_max_length + 1 - len(str(i))), lst_of_choices[i - 1]) +
+                          Style.RESET_ALL)
+                else:
+                    print("{0}){1}{2}"
+                          .format(i, ' ' * (num_choices_max_length + 1 - len(str(i))), lst_of_choices[i - 1]))
+            print()
+            print("Choose which number you would like (between 0 and {0})".format(len(lst_of_choices)))
+
+            while True:
+                choice = input('> ').lower()
+                if choice in choice_range:
+                    choice = int(choice) - 1
+                    value = full_paths[choice]
+                    if value in selected:
+                        selected.remove(value)
+                    else:
+                        selected.append(value)
+                    print('\n')
+                    break
+                elif choice == '0' or choice == 'exit':
+                    return selected
 
     def _word_cloud_get_one_liner(self, attribute):
         if attribute == 'output_name':
