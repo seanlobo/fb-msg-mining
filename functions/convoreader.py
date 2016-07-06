@@ -200,6 +200,7 @@ class ConvoReader(BaseConvoReader):
                             e.g. dimensions=[100, 100]
         """
         clear_screen()
+        WordCloud.setup_word_cloud_starter_files()
 
         if 'type' in preferences and preferences['type'] in WordCloud.WORD_CLOUD_TYPES.keys():
             wc_type = preferences['type']
@@ -236,6 +237,7 @@ class ConvoReader(BaseConvoReader):
                                   'excluded_words': self._get_excluded_words,
                                   'max_font_size': self._get_max_font_size,
                                   'output_name': self._get_output_name,
+                                  'image_name': self._get_image_name,
                                   'input_name': self._get_input_name,
                                   'dimensions': self._get_dimensions,
                                   'font_type': self._get_font_type,
@@ -748,7 +750,7 @@ class ConvoReader(BaseConvoReader):
             print(msg, end="")
         if 'Date' in self._preferences[person]:
             try:
-                print( " | " + eval('Fore.{0}'.format(self._preferences[person]['Date'])) + str(date))
+                print(" | " + eval('Fore.{0}'.format(self._preferences[person]['Date'])) + str(date))
             except AttributeError:
                 print(" | " + str(date))
         else:
@@ -960,13 +962,13 @@ class ConvoReader(BaseConvoReader):
         while True:
             while True:
                 try:
-                    height = int(input("height: "))
+                    width = int(input("width: "))
                     break
                 except ValueError as e:
                     print("Must type an integer")
             while True:
                 try:
-                    width= int(input("width: "))
+                    height = int(input("height: "))
                     break
                 except ValueError as e:
                     print("Must type an integer")
@@ -1018,6 +1020,29 @@ class ConvoReader(BaseConvoReader):
                     break
                 elif choice == '0' or choice == 'exit':
                     return selected
+
+    def _get_image_name(self):
+        intro = "Which image would you like to use as a background? Note this will the program to fail " \
+                "if your shape attribute is not \"image\""
+        lst_of_choices = [f for f in os.listdir(WordCloud.WORD_CLOUD_IMAGE_PATH)
+                          if os.path.isfile(os.path.join(WordCloud.WORD_CLOUD_IMAGE_PATH, f)) and
+                          WordCloud.valid_picture(f)]
+        assert len(lst_of_choices) > 0, "You need to add some pictures to {0}".format(WordCloud.WORD_CLOUD_IMAGE_PATH)
+
+        print(intro)
+        # length of the string for the highest choice number
+        num_choices_max_length = len(str(len(lst_of_choices)))
+        for i in range(1, len(lst_of_choices) + 1):
+            print("{0}){1}{2}".format(i, ' ' * (num_choices_max_length + 1 - len(str(i))),
+                                      lst_of_choices[i - 1]))
+        print()
+        print("Choose which number you would like (between 1 and {0})".format(len(lst_of_choices)))
+        choice_range = [str(i) for i in range(1, len(lst_of_choices) + 1)]
+        while True:
+            choice = input('> ')
+            if choice in choice_range:
+                return os.path.join(WordCloud.WORD_CLOUD_IMAGE_PATH, lst_of_choices[int(choice) - 1])
+
 
     def _word_cloud_get_one_liner(self, attribute):
         if attribute == 'output_name':

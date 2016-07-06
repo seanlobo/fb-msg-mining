@@ -1,6 +1,5 @@
 import os
 import shutil
-import datetime
 import json
 
 
@@ -8,11 +7,12 @@ class WordCloud:
     WORD_CLOUD_INPUT_PATH = 'data/word_clouds/input_data/'
     WORD_CLOUD_OUTPUT_PATH = 'data/word_clouds/output/'
     WORD_CLOUD_EXCLUDED_WORDS_PATH = 'data/word_clouds/excluded_words/'
+    WORD_CLOUD_IMAGE_PATH = 'data/word_clouds/background_images/'
 
     WORD_CLOUD_TYPES = {'default': ['output_name', 'dimensions', 'colors', 'input_name', 'num_words_to_include',
-                                    'min_word_length'],
+                                    'min_word_length', 'image_name'],
                         }
-    WORD_CLOUD_SHAPES = ['circular', 'rectangular']
+    WORD_CLOUD_SHAPES = ['circular', 'rectangular', 'image']
     WORD_CLOUD_FONT_TYPES = ['linear', 'square_root']
 
     _DEFAULT_NUM_WORDS_TO_INCLUDE = 1000
@@ -27,6 +27,7 @@ class WordCloud:
     _DEFAULT_MAX_FONT_SIZE = 40
     _DEFAULT_FONT_TYPE = 'linear'
     _DEFAULT_EXCLUDED_WORDS = []
+    _DEFAULT_IMAGE_NAME = None
 
     def __init__(self, wc_type='default', preferences=None):
         if preferences is None:
@@ -51,18 +52,19 @@ class WordCloud:
     @staticmethod
     def get_default_preferences(wc_type):
         if wc_type == 'default':
-            return {'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
-                    'dimensions': WordCloud._DEFAULT_DIMENSIONS,
-                    'colors': WordCloud._DEFAULT_COLORS,
-                    'input_name': WordCloud._DEFAULT_INPUT_NAME,
-                    'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
+            return {'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
                     'min_word_length': WordCloud._DEFAULT_MIN_WORD_LENGTH,
                     'max_word_length': WordCloud._DEFAULT_MAX_WORD_LENGTH,
+                    'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS,
                     'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
                     'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
-                    'shape': WordCloud._DEFAULT_SHAPE,
+                    'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
+                    'dimensions': WordCloud._DEFAULT_DIMENSIONS,
+                    'input_name': WordCloud._DEFAULT_INPUT_NAME,
+                    'image_name': WordCloud._DEFAULT_IMAGE_NAME,
                     'font_type': WordCloud._DEFAULT_FONT_TYPE,
-                    'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS
+                    'colors': WordCloud._DEFAULT_COLORS,
+                    'shape': WordCloud._DEFAULT_SHAPE,
                     }
 
     def verify_word_cloud_setup(self) -> dict:
@@ -74,18 +76,19 @@ class WordCloud:
         """
         verification = dict()
         if self.wc_type == 'default':
-            attributes_to_check = {'output_name': WordCloud.assert_output_name_for_wc,
-                                   'dimensions': WordCloud.assert_dimensions_for_wc,
-                                   'colors': WordCloud.assert_colors_for_wc,
-                                   'input_name': self.assert_input_name_for_wc,
-                                   'num_words_to_include': WordCloud.assert_num_words_to_include,
+            attributes_to_check = {'num_words_to_include': WordCloud.assert_num_words_to_include,
                                    'min_word_length': lambda x: self.assert_word_length(x, 'min'),
                                    'max_word_length': lambda x: self.assert_word_length(x, 'max'),
                                    'max_font_size': lambda x: self.assert_font_size(x, 'max'),
                                    'min_font_size': lambda x: self.assert_font_size(x, 'min'),
+                                   'excluded_words': lambda x: map(WordCloud.assert_excluded_words_for_wc, x),
+                                   'output_name': WordCloud.assert_output_name_for_wc,
+                                   'image_name': self.asssert_image_name_for_wc,
+                                   'dimensions': WordCloud.assert_dimensions_for_wc,
+                                   'input_name': self.assert_input_name_for_wc,
                                    'font_type': WordCloud.assert_font_type_for_wc,
-                                   'shape': WordCloud.assert_shape_for_wc,
-                                   'excluded_words': lambda x: map(WordCloud.assert_excluded_words_for_wc, x)
+                                   'colors': WordCloud.assert_colors_for_wc,
+                                   'shape': WordCloud.assert_shape_for_wc
                                    }
         else:
             raise ValueError("Invalid word cloud type: {0}".format(self.wc_type))
@@ -126,13 +129,14 @@ class WordCloud:
         with open(output, mode='x') as f:
             f.write(string)
 
-    def setup_word_cloud_starter_files(self):
+    @staticmethod
+    def setup_word_cloud_starter_files():
         """Creates the word cloud directory along with starter files"""
         shutil.rmtree(WordCloud.WORD_CLOUD_INPUT_PATH) if os.path.exists(WordCloud.WORD_CLOUD_INPUT_PATH) else None
         os.makedirs(WordCloud.WORD_CLOUD_INPUT_PATH, exist_ok=True)
         os.makedirs(WordCloud.WORD_CLOUD_OUTPUT_PATH, exist_ok=True)
         os.makedirs(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH, exist_ok=True)
-
+        os.makedirs(WordCloud.WORD_CLOUD_IMAGE_PATH, exist_ok=True)
 
     def write_json(self):
         assert self.__safe_to_save, "Preferences have not been verified yet, run `verify_word_cloud_setup()` first"
@@ -235,3 +239,14 @@ class WordCloud:
         assert isinstance(file_path, str), "file_path must be a string"
         assert os.path.isfile(file_path), "the specified file_path does not exist"
 
+    def asssert_image_name_for_wc(self, img_name):
+        if isinstance(img_name, str):
+            assert self.__preferences['shape'] == 'image', \
+                'Only word clouds of shape "image" can have a background image'
+            assert os.path.isfile(img_name), "the specified image file_path does not exist"
+        else:
+            assert img_name is None, 'For word clouds that are not shape "image" the image_name should be None'
+
+    @staticmethod
+    def valid_picture(picture_name):
+        return ' ' not in picture_name and ('.png' in picture_name or '.bmp' in picture_name)
