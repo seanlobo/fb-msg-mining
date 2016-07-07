@@ -10,7 +10,7 @@ from functions.baseconvoreader import BaseConvoReader
 from functions.wordcloud import WordCloud
 from functions.customdate import CustomDate
 import functions.emojis as emojis
-from functions.setup_functions import clear_screen
+from functions.setup_functions import clear_screen, one_line
 
 
 init(autoreset=True)
@@ -245,7 +245,7 @@ class ConvoReader(BaseConvoReader):
                                   'shape': self._get_shape,
                                   }
             word_cloud_preferences.update(self._get_word_cloud_preferences(preference_choices,
-                                                                           current_choices=word_cloud_preferences))
+                                                                           previous_choices=word_cloud_preferences))
 
             ready = self._setup_new_word_cloud(word_cloud_preferences)
         else:
@@ -849,47 +849,59 @@ class ConvoReader(BaseConvoReader):
         if os.path.isfile(self._word_cloud.get_preference('input_name')):
             print("Your word cloud should be in  !")
 
-    def _get_word_cloud_preferences(self, values: dict, current_choices=None):
+    def _get_word_cloud_preferences(self, attributes_to_fns: dict, previous_choices=None):
         """Returns a dictionary mapping preference type strings to their values"""
         # colors
         # dimensions
 
-        choices = sorted(values.keys())
-        res = current_choices if current_choices is not None else dict()
+        attribute_choices = sorted(attributes_to_fns.keys())
+        res = previous_choices.copy() if previous_choices is not None else dict()
 
+        default_value_color = Fore.LIGHTGREEN_EX + Back.BLACK
+        edited_value_color = Fore.LIGHTMAGENTA_EX + Back.BLACK
         while True:
             print("Now selecting more specific features. Below are your preferences:\n")
-            num_choices_max_length = len(str(len(choices)))
+            num_choices_max_length = len(str(len(attribute_choices)))
             print(Fore.LIGHTRED_EX + Back.BLACK + "{0}){1}Exit".format(0, ' ' * num_choices_max_length))
-            for i in range(1, len(choices) + 1):
+            for i in range(1, len(attribute_choices) + 1):
+                # print("{index}{spaces}{attribute} = {current_value}")
+
                 print(Fore.LIGHTCYAN_EX + Back.BLACK + "{0})".format(i) + Style.RESET_ALL, end="")
-                print("{0}{1} = {2}".format(' ' * (num_choices_max_length + 1 - len(str(i))),
-                                            choices[i - 1], res[choices[i - 1]]
-                                            if choices[i - 1] in res else 'DEFAULT SETTINGS'))
+                print(' ' * (num_choices_max_length + 1 - len(str(i))), end="")
+                print(attribute_choices[i - 1], end=" = ")
+
+                current_value = res.get(attribute_choices[i - 1], 'does not exist')
+                if current_value != 'does not exist' and current_value != previous_choices.get(attribute_choices[i - 1]):
+                    print(edited_value_color +
+                          str(res[attribute_choices[i - 1]]) if attribute_choices[i - 1] in res else 'DEFAULT SETTINGS' + Style.RESET_ALL)
+                else:
+                    print(default_value_color +
+                          str(res[attribute_choices[i - 1]]) if attribute_choices[i - 1] in res else 'DEFAULT SETTINGS' + Style.RESET_ALL)
             # Prints out the list of preferences the user currently has
 
             print()
+
             print("Choose which feature you would like to specify:")
-            choice_range = [str(i) for i in range(len(choices) + 1)]
+            choice_range = [str(i) for i in range(len(attribute_choices) + 1)]
             while True:
-                choice = input('> ')
-                if choice in choice_range:
-                    choice = int(choice) - 1
+                feature_index = input('> ')
+                if feature_index in choice_range:
+                    feature_index = int(feature_index) - 1
                     print()
                     break
             # Selecting the user's choice
 
-            if choice == -1:  # User wants to exit
+            if feature_index == -1:  # User wants to exit
                 print("Are you sure you would like to exit?")
                 if user_says_yes():
                     clear_screen()
                     return res
-            # The user wants to exit
-
             else:  # continue selecting preferences
-                # create an element in the dictiaonry equal to the preference the user selected,
+                print(one_line() + '\n')
+                # create an element in the dictionary equal to the preference the user selected,
                 # and set it equal to the result of calling the function associated with that preference
-                res[choices[choice]] = values[choices[choice]]()
+                res[attribute_choices[feature_index]] = attributes_to_fns[attribute_choices[feature_index]]()
+                print()
 
             print("Would you like to continue choosing preferences? [Y/n]")
             if not user_says_yes():  # Does the user want to quit?
@@ -931,15 +943,18 @@ class ConvoReader(BaseConvoReader):
         result = []
 
         max_colors = 5
-        print("How many colors would you like to choose? [1-{0}]".format(max_colors))
+        print("How many colors would you like to choose?" + Fore.LIGHTGREEN_EX + Back.BLACK +
+              "[1-{0}]".format(max_colors) + Style.RESET_ALL)
         while True:
             num_colors = input("> ")
             if num_colors in [str(i) for i in range(1, max_colors + 1)]:
                 num_colors = int(num_colors)
+                print()
                 break
         # Get the number of colors the user would like
 
-        print("Specify your colors below, they must be in the form of three comma and space separated numbers.")
+        print("Specify your colors below as rgb values. They must be in the "
+              "form of three comma and space separated numbers.")
         print(Fore.GREEN + Back.BLACK + "for example: 255, 0, 255")
         i = 0
         while i < num_colors:
@@ -989,16 +1004,19 @@ class ConvoReader(BaseConvoReader):
         num_choices_max_length = len(str(len(lst_of_choices)))
         choice_range = [str(i) for i in range(1, len(lst_of_choices) + 1)]
         selected = []
+        selected_color = Fore.LIGHTBLUE_EX + Back.BLACK
+        exit_color = Fore.LIGHTRED_EX + Back.BLACK
         while True:
+            clear_screen()
             print("Which file(s) would you like to use as excluded words? Select an option to "
                   "toggle it selected / not selected")
-            print(Fore.LIGHTBLUE_EX + Back.BLACK + "blue text" + Style.RESET_ALL +
+            print(selected_color + "blue text" + Style.RESET_ALL +
                   " means this choice is already selected, and choosing it will unselect it\n")
 
-            print(Fore.LIGHTRED_EX + Back.BLACK + "0) Exit" + Style.RESET_ALL)
+            print(exit_color + "0) Exit" + Style.RESET_ALL)
             for i in range(1, len(lst_of_choices) + 1):
                 if full_paths[i - 1] in selected:
-                    print(Fore.LIGHTBLUE_EX + Back.BLACK + "{0}){1}{2}"
+                    print(selected_color + "{0}){1}{2}"
                           .format(i, ' ' * (num_choices_max_length + 1 - len(str(i))), lst_of_choices[i - 1]) +
                           Style.RESET_ALL)
                 else:
@@ -1022,8 +1040,9 @@ class ConvoReader(BaseConvoReader):
                     return selected
 
     def _get_image_name(self):
-        intro = "Which image would you like to use as a background? Note this will the program to fail " \
-                "if your shape attribute is not \"image\""
+        intro = "Which image would you like to use as a background?" + \
+                Fore.LIGHTRED_EX + Back.BLACK + "\nNote this will the program to fail if your shape attribute is not " \
+                                                "\"image\"\n" + Style.RESET_ALL
         lst_of_choices = [f for f in os.listdir(WordCloud.WORD_CLOUD_IMAGE_PATH)
                           if os.path.isfile(os.path.join(WordCloud.WORD_CLOUD_IMAGE_PATH, f)) and
                           WordCloud.valid_picture(f)]
@@ -1032,49 +1051,54 @@ class ConvoReader(BaseConvoReader):
         print(intro)
         # length of the string for the highest choice number
         num_choices_max_length = len(str(len(lst_of_choices)))
+        print("0) None (no image, for use with non 'image' word clouds)")
         for i in range(1, len(lst_of_choices) + 1):
             print("{0}){1}{2}".format(i, ' ' * (num_choices_max_length + 1 - len(str(i))),
                                       lst_of_choices[i - 1]))
         print()
-        print("Choose which number you would like (between 1 and {0})".format(len(lst_of_choices)))
-        choice_range = [str(i) for i in range(1, len(lst_of_choices) + 1)]
+        print("Choose which number you would like (between 0 and {0})".format(len(lst_of_choices)))
+        choice_range = [str(i) for i in range(0, len(lst_of_choices) + 1)]
         while True:
             choice = input('> ')
             if choice in choice_range:
+                if choice == '0':
+                    return WordCloud.get_default_preferences('default')['image_name']
                 return os.path.join(WordCloud.WORD_CLOUD_IMAGE_PATH, lst_of_choices[int(choice) - 1])
-
 
     def _word_cloud_get_one_liner(self, attribute):
         if attribute == 'output_name':
-            intro = "What name would you like for the output wordcloud file? It must end in '.png' and can't have spaces"
+            intro = "What name would you like for the output " \
+                    "wordcloud file? It must end in '.png' and can't have spaces"
             assertion = WordCloud.assert_output_name_for_wc
             assertion_failure_string = '\nplease try again. Remember to end the name in \".png\", for example ' \
                                        '\"example.png\"'
+
         elif attribute == 'num_words_to_include':
-            intro = "How many words would you like to include (at maximum) in your word cloud? Type an integer"
+            intro = "How many words would you like to include (at maximum) in your word cloud? Type an integer. " \
+                    "The default value is 1,000"
             assertion = lambda x: WordCloud.assert_num_words_to_include(int(x))
             assertion_failure_string = "Please try again, type an integer"
+
         elif attribute == 'min_word_length':
             intro = "What's the length of the smallest word you would like to include in the wordcloud?"
-
             def assertion(x):
                 assert int(x) > 0, "X must be an integer greater than 0"
-
             assertion_failure_string = "Please try again, type an integer"
+
         elif attribute == 'max_word_length':
-            intro = "What's the length of the largets word you would like to include in the wordcloud?"
-
+            intro = "What's the length of the largest word you would like to include in the wordcloud?"
             def assertion(x):
                 assert int(x) > 0, "X must be an integer greater than 0"
-
             assertion_failure_string = "Please try again, type an integer"
+
         elif attribute == 'min_font_size':
-            intro = "What would you like for the min font size?"
+            intro = "What would you like to set the minimum font size to? The default value is 10"
             def assertion(x):
                 assert int(x) > 0, "must be an integer greater than 0"
             assertion_failure_string = "Please Try again, type an integer between 0 and max_font_size"
+
         elif attribute == 'max_font_size':
-            intro = "What would you like for the max font size?"
+            intro = "What would you like to set the maximum font size to? The default value is 40"
             def assertion(x):
                 assert int(x) > 0, "must be an integer greater than 0"
             assertion_failure_string = "Please Try again, type an integer above the min_font_size"

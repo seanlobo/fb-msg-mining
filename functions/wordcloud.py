@@ -27,7 +27,7 @@ class WordCloud:
     _DEFAULT_MAX_FONT_SIZE = 40
     _DEFAULT_FONT_TYPE = 'linear'
     _DEFAULT_EXCLUDED_WORDS = []
-    _DEFAULT_IMAGE_NAME = None
+    _DEFAULT_IMAGE_NAME = "None"
 
     def __init__(self, wc_type='default', preferences=None):
         if preferences is None:
@@ -83,7 +83,7 @@ class WordCloud:
                                    'min_font_size': lambda x: self.assert_font_size(x, 'min'),
                                    'excluded_words': lambda x: map(WordCloud.assert_excluded_words_for_wc, x),
                                    'output_name': WordCloud.assert_output_name_for_wc,
-                                   'image_name': self.asssert_image_name_for_wc,
+                                   'image_name': self.assert_image_name_for_wc,
                                    'dimensions': WordCloud.assert_dimensions_for_wc,
                                    'input_name': self.assert_input_name_for_wc,
                                    'font_type': WordCloud.assert_font_type_for_wc,
@@ -239,13 +239,12 @@ class WordCloud:
         assert isinstance(file_path, str), "file_path must be a string"
         assert os.path.isfile(file_path), "the specified file_path does not exist"
 
-    def asssert_image_name_for_wc(self, img_name):
-        if isinstance(img_name, str):
-            assert self.__preferences['shape'] == 'image', \
-                'Only word clouds of shape "image" can have a background image'
+    def assert_image_name_for_wc(self, img_name):
+        isinstance(img_name, str), "image_name should be of type string"
+        if self.__preferences['shape'] == 'image':
             assert os.path.isfile(img_name), "the specified image file_path does not exist"
         else:
-            assert img_name is None, 'For word clouds that are not shape "image" the image_name should be None'
+            assert img_name == 'None', 'Only word clouds of shape "image" can have a background image'
 
     @staticmethod
     def valid_picture(picture_name):
