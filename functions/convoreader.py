@@ -211,45 +211,78 @@ class ConvoReader(BaseConvoReader):
         word_cloud_preferences = WordCloud.get_default_preferences(wc_type)
         word_cloud_preferences['type'] = wc_type
 
+        # Filter user preferences by valid responses, adding them to word_cloud_preferences
         if word_cloud_preferences['type'] == 'default':
-            # Filter user preferences by valid responses, adding them to word_cloud_preferences
-            options = {'num_words_to_include': WordCloud.assert_num_words_to_include,
-                       'output_name': WordCloud.assert_output_name_for_wc,
-                       'dimensions': WordCloud.assert_dimensions_for_wc,
-                       'colors': lambda x: all(WordCloud.assert_color_for_wc(color) for color in x),
-                       'shape': WordCloud.assert_shape_for_wc
-                       }
-            for custom_preference in options.keys():
-                if custom_preference in preferences:
-                    # if the user specified a preference, we run it through the appropriate assertion
-                    try:
-                        options[custom_preference](preferences[custom_preference])
-                    except AssertionError as e:
-                        pass
-                    else:
-                        word_cloud_preferences[custom_preference] = preferences[custom_preference]
-
-            # The choices a user can specify
-            preference_choices = {'num_words_to_include': self._get_num_words_to_include,
-                                  'min_word_length': self._get_min_word_length,
-                                  'max_word_length': self._get_max_word_length,
-                                  'min_font_size': self._get_min_font_size,
-                                  'excluded_words': self._get_excluded_words,
-                                  'max_font_size': self._get_max_font_size,
-                                  'output_name': self._get_output_name,
-                                  'image_name': self._get_image_name,
-                                  'input_name': self._get_input_name,
-                                  'dimensions': self._get_dimensions,
-                                  'font_type': self._get_font_type,
-                                  'colors': self._get_colors,
-                                  'shape': self._get_shape,
-                                  }
-            word_cloud_preferences.update(self._get_word_cloud_preferences(preference_choices,
-                                                                           previous_choices=word_cloud_preferences))
-
-            ready = self._setup_new_word_cloud(word_cloud_preferences)
+            options = {
+                'num_words_to_include': WordCloud.assert_num_words_to_include,
+                'output_name': WordCloud.assert_output_name_for_wc,
+                'dimensions': WordCloud.assert_dimensions_for_wc,
+                'colors': WordCloud.assert_colors_for_wc,
+                'shape': WordCloud.assert_shape_for_wc
+            }
+        elif word_cloud_preferences['type'] == 'polarity':
+            options = {
+                'num_words_to_include': WordCloud.assert_num_words_to_include,
+                'output_name': WordCloud.assert_output_name_for_wc,
+                'dimensions': WordCloud.assert_dimensions_for_wc,
+                'color_set_1': WordCloud.assert_colors_for_wc,
+                'color_set_2': WordCloud.assert_colors_for_wc,
+                'shape': WordCloud.assert_shape_for_wc
+            }
         else:
             raise Exception("Invalid shape for wordcloud specified")
+
+        for custom_preference in options.keys():
+            if custom_preference in preferences:
+                # if the user specified a preference, we run it through the appropriate assertion
+                try:
+                    options[custom_preference](preferences[custom_preference])
+                except AssertionError as e:
+                    pass
+                else:
+                    word_cloud_preferences[custom_preference] = preferences[custom_preference]
+
+        if word_cloud_preferences['type'] == 'default':
+            # The choices a user can specify
+            preference_choices = {
+                'num_words_to_include': self._get_num_words_to_include,
+                'min_word_length': self._get_min_word_length,
+                'max_word_length': self._get_max_word_length,
+                'min_font_size': self._get_min_font_size,
+                'excluded_words': self._get_excluded_words,
+                'max_font_size': self._get_max_font_size,
+                'output_name': self._get_output_name,
+                'image_name': self._get_image_name,
+                'input_name': self._get_input_name,
+                'dimensions': self._get_dimensions,
+                'font_type': self._get_font_type,
+                'colors': self._get_colors,
+                'shape': self._get_shape,
+            }
+        elif word_cloud_preferences['type'] == 'polarity':
+            preference_choices = {
+                'num_words_to_include': self._get_num_words_to_include,
+                'min_word_length': self._get_min_word_length,
+                'max_word_length': self._get_max_word_length,
+                'min_font_size': self._get_min_font_size,
+                'excluded_words': self._get_excluded_words,
+                'max_font_size': self._get_max_font_size,
+                'output_name': self._get_output_name,
+                'color_set_1': self._get_colors,
+                'color_set_2': self._get_colors,
+                'text_set_1': self._get_input_name,
+                'text_set_2': self._get_input_name,
+                'dimensions': self._get_dimensions,
+                'image_name': self._get_image_name,
+                'font_type': self._get_font_type,
+                'shape': self._get_shape,
+            }
+        else:
+            raise Exception("Invalid shape for wordcloud specified")
+
+        word_cloud_preferences.update(self._get_word_cloud_preferences(preference_choices,
+                                                                           previous_choices=word_cloud_preferences))
+        ready = self._setup_new_word_cloud(word_cloud_preferences)
 
         if len(ready) == 0:
             # ready is a dictionary that contains mappings of preference types ('type', 'output_name' etc.) mapped
@@ -264,6 +297,24 @@ class ConvoReader(BaseConvoReader):
             for key, val in key_vals:
                 print(key + ' ' * (max_len - len(key)), end=": ")
                 print(val)
+
+    def duplicate_word_cloud(self, output_name=None):
+        """Creates a new word cloud using the settings of the previous word cloud. Aborts if a previous word
+        cloud's settings cannot be found
+        Parameters:
+            output_name (optional): The output name for the new word cloud
+        """
+        if output_name is not None:
+            try:
+                self._word_cloud.set_output_name(output_name)
+            except AssertionError as e:
+                print(e)
+                return
+
+        self.save_word_freq(path=WordCloud.WORD_CLOUD_INPUT_PATH)
+        if len(self._word_cloud.verify_word_cloud_setup()) == 0:
+            self.__start_kumo()
+
 
     def prettify(self, mode=None, **kwargs):
         """Prettily prints messages to the screen in 3 different modes
@@ -846,8 +897,6 @@ class ConvoReader(BaseConvoReader):
         p = subprocess.Popen("java -jar data/word_clouds/wordclouds.jar", shell=True)
         sts = os.waitpid(p.pid, 0)
 
-        if os.path.isfile(self._word_cloud.get_preference('input_name')):
-            print("Your word cloud should be in  !")
 
     def _get_word_cloud_preferences(self, attributes_to_fns: dict, previous_choices=None):
         """Returns a dictionary mapping preference type strings to their values"""

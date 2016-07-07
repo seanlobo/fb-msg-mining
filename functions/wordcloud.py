@@ -11,6 +11,8 @@ class WordCloud:
 
     WORD_CLOUD_TYPES = {'default': ['output_name', 'dimensions', 'colors', 'input_name', 'num_words_to_include',
                                     'min_word_length', 'image_name'],
+                        'polarity': ['output_name', 'dimensions', 'color_set_1', 'color_set_2', 'text_set_1',
+                                     'text_set_2', 'num_words_to_include', 'min_word_length', 'image_name']
                         }
     WORD_CLOUD_SHAPES = ['circular', 'rectangular', 'image']
     WORD_CLOUD_FONT_TYPES = ['linear', 'square_root']
@@ -22,6 +24,8 @@ class WordCloud:
     _DEFAULT_INPUT_NAME = 'total.txt'
     _DEFAULT_DIMENSIONS = [1000, 1000]
     _DEFAULT_COLORS = [[255, 255, 255]]
+    _DEFAULT_POLAR_COLOR_1 = [[255, 0, 0]]
+    _DEFAULT_POLAR_COLOR_2 = [[0, 255, 0]]
     _DEFAULT_SHAPE = 'circular'
     _DEFAULT_MIN_FONT_SIZE = 10
     _DEFAULT_MAX_FONT_SIZE = 40
@@ -52,20 +56,39 @@ class WordCloud:
     @staticmethod
     def get_default_preferences(wc_type):
         if wc_type == 'default':
-            return {'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
-                    'min_word_length': WordCloud._DEFAULT_MIN_WORD_LENGTH,
-                    'max_word_length': WordCloud._DEFAULT_MAX_WORD_LENGTH,
-                    'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS,
-                    'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
-                    'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
-                    'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
-                    'dimensions': WordCloud._DEFAULT_DIMENSIONS,
-                    'input_name': WordCloud._DEFAULT_INPUT_NAME,
-                    'image_name': WordCloud._DEFAULT_IMAGE_NAME,
-                    'font_type': WordCloud._DEFAULT_FONT_TYPE,
-                    'colors': WordCloud._DEFAULT_COLORS,
-                    'shape': WordCloud._DEFAULT_SHAPE,
-                    }
+            return {
+                'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
+                'min_word_length': WordCloud._DEFAULT_MIN_WORD_LENGTH,
+                'max_word_length': WordCloud._DEFAULT_MAX_WORD_LENGTH,
+                'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS,
+                'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
+                'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
+                'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
+                'dimensions': WordCloud._DEFAULT_DIMENSIONS,
+                'input_name': WordCloud._DEFAULT_INPUT_NAME,
+                'image_name': WordCloud._DEFAULT_IMAGE_NAME,
+                'font_type': WordCloud._DEFAULT_FONT_TYPE,
+                'colors': WordCloud._DEFAULT_COLORS,
+                'shape': WordCloud._DEFAULT_SHAPE,
+            }
+        elif wc_type == 'polarity':
+            return {
+                'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
+                'min_word_length': WordCloud._DEFAULT_MIN_WORD_LENGTH,
+                'max_word_length': WordCloud._DEFAULT_MAX_WORD_LENGTH,
+                'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS,
+                'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
+                'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
+                'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
+                'color_set_1': WordCloud._DEFAULT_POLAR_COLOR_1,
+                'color_set_2': WordCloud._DEFAULT_POLAR_COLOR_2,
+                'dimensions': WordCloud._DEFAULT_DIMENSIONS,
+                'text_set_1': WordCloud._DEFAULT_INPUT_NAME,
+                'text_set_2': WordCloud._DEFAULT_INPUT_NAME,
+                'image_name': WordCloud._DEFAULT_IMAGE_NAME,
+                'font_type': WordCloud._DEFAULT_FONT_TYPE,
+                'shape': WordCloud._DEFAULT_SHAPE,
+            }
 
     def verify_word_cloud_setup(self) -> dict:
         """Verifies that all the settings for a word cloud are met
@@ -76,20 +99,39 @@ class WordCloud:
         """
         verification = dict()
         if self.wc_type == 'default':
-            attributes_to_check = {'num_words_to_include': WordCloud.assert_num_words_to_include,
-                                   'min_word_length': lambda x: self.assert_word_length(x, 'min'),
-                                   'max_word_length': lambda x: self.assert_word_length(x, 'max'),
-                                   'max_font_size': lambda x: self.assert_font_size(x, 'max'),
-                                   'min_font_size': lambda x: self.assert_font_size(x, 'min'),
-                                   'excluded_words': lambda x: map(WordCloud.assert_excluded_words_for_wc, x),
-                                   'output_name': WordCloud.assert_output_name_for_wc,
-                                   'image_name': self.assert_image_name_for_wc,
-                                   'dimensions': WordCloud.assert_dimensions_for_wc,
-                                   'input_name': self.assert_input_name_for_wc,
-                                   'font_type': WordCloud.assert_font_type_for_wc,
-                                   'colors': WordCloud.assert_colors_for_wc,
-                                   'shape': WordCloud.assert_shape_for_wc
-                                   }
+            attributes_to_check = {
+                'num_words_to_include': self.assert_num_words_to_include,
+                'min_word_length': lambda x: self.assert_word_length(x, 'min'),
+                'max_word_length': lambda x: self.assert_word_length(x, 'max'),
+                'excluded_words': lambda x: map(self.assert_excluded_words_for_wc, x),
+                'max_font_size': lambda x: self.assert_font_size(x, 'max'),
+                'min_font_size': lambda x: self.assert_font_size(x, 'min'),
+                'output_name': self.assert_output_name_for_wc,
+                'image_name': self.assert_image_name_for_wc,
+                'dimensions': self.assert_dimensions_for_wc,
+                'input_name': self.assert_input_name_for_wc,
+                'font_type': self.assert_font_type_for_wc,
+                'colors': self.assert_colors_for_wc,
+                'shape': self.assert_shape_for_wc
+            }
+        elif self.wc_type == 'polarity':
+            attributes_to_check = {
+                'num_words_to_include': self.assert_num_words_to_include,
+                'min_word_length': lambda x: self.assert_word_length(x, 'min'),
+                'max_word_length': lambda x: self.assert_word_length(x, 'max'),
+                'excluded_words': lambda x: map(self.assert_excluded_words_for_wc, x),
+                'max_font_size': lambda x: self.assert_font_size(x, 'max'),
+                'min_font_size': lambda x: self.assert_font_size(x, 'min'),
+                'output_name': self.assert_output_name_for_wc,
+                'color_set_1': self.assert_colors_for_wc,
+                'color_set_2': self.assert_colors_for_wc,
+                'dimensions': self.assert_dimensions_for_wc,
+                'text_set_1': lambda name: self.assert_text_set(name, 1),
+                'text_set_2': lambda name: self.assert_text_set(name, 2),
+                'image_name': self.assert_image_name_for_wc,
+                'font_type': self.assert_font_type_for_wc,
+                'shape': self.assert_shape_for_wc,
+            }
         else:
             raise ValueError("Invalid word cloud type: {0}".format(self.wc_type))
 
@@ -143,11 +185,19 @@ class WordCloud:
 
         with open(WordCloud.WORD_CLOUD_INPUT_PATH + 'word_cloud_data.txt', mode='w', encoding='utf-8') as file:
             preferences_copy = self.__preferences.copy()
-            preferences_copy['input_name'] = 'text.txt'
+            if preferences_copy['type'] == 'default':
+                preferences_copy['input_name'] = 'text.txt'
+            elif preferences_copy['type'] == 'polarity':
+                preferences_copy['text_set_1'] = 'text_set1.txt'
+                preferences_copy['text_set_2'] = 'text_set2.txt'
             json.dump(preferences_copy, file)
 
     def get_preference(self, preference_name):
         return self.__preferences[preference_name] if preference_name in self.__preferences else None
+
+    def set_output_name(self, output_name):
+        self.assert_output_name_for_wc(output_name)
+        self.__preferences['output_name'] = output_name
 
 
     ######################################## ASSERTING VALUES ARE VALID ########################################
@@ -223,6 +273,12 @@ class WordCloud:
         if not os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + 'text.txt'):
             assert os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + name), "{0} does not exist".format(name)
             self.freq_to_raw(WordCloud.WORD_CLOUD_INPUT_PATH + name, WordCloud.WORD_CLOUD_INPUT_PATH + 'text.txt')
+
+    def assert_text_set(self, name, set_num):
+        if not os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + 'text_set{0}.txt'.format(set_num)):
+            assert os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + name), "{0} does not exist".format(name)
+            self.freq_to_raw(WordCloud.WORD_CLOUD_INPUT_PATH + name, WordCloud.WORD_CLOUD_INPUT_PATH +
+                             'text_set{0}.txt'.format(set_num))
 
     def assert_font_size(self, value, min_or_max):
         assert min_or_max in ['min', 'max'], "Must pass a min_or_max in ['min', 'max']"
