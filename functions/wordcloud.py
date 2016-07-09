@@ -13,21 +13,21 @@ class WordCloud:
     WORD_CLOUD_SHAPES = ['circular', 'rectangular', 'image']
     WORD_CLOUD_FONT_TYPES = ['linear', 'square_root']
 
-    _DEFAULT_NUM_WORDS_TO_INCLUDE = 1000
-    _DEFAULT_MIN_WORD_LENGTH = 3
-    _DEFAULT_MAX_WORD_LENGTH = 100
-    _DEFAULT_OUTPUT_NAME = 'TIME_OF_CREATION.png'
-    _DEFAULT_INPUT_NAME = 'total.txt'
-    _DEFAULT_DIMENSIONS = [1000, 1000]
-    _DEFAULT_COLORS = [[255, 255, 255]]
-    _DEFAULT_POLAR_COLOR_1 = [[255, 0, 0]]
-    _DEFAULT_POLAR_COLOR_2 = [[0, 255, 0]]
-    _DEFAULT_SHAPE = 'circular'
-    _DEFAULT_MIN_FONT_SIZE = 10
-    _DEFAULT_MAX_FONT_SIZE = 40
-    _DEFAULT_FONT_TYPE = 'linear'
-    _DEFAULT_EXCLUDED_WORDS = []
-    _DEFAULT_IMAGE_NAME = "None"
+    DEFAULT_NUM_WORDS_TO_INCLUDE = 1000
+    DEFAULT_MIN_WORD_LENGTH = 3
+    DEFAULT_MAX_WORD_LENGTH = 100
+    DEFAULT_OUTPUT_NAME = 'TIME_OF_CREATION.png'
+    DEFAULT_INPUT_NAME = 'total.txt'
+    DEFAULT_DIMENSIONS = [1000, 1000]
+    DEFAULT_COLORS = [[255, 255, 255]]
+    DEFAULT_POLAR_COLOR_1 = [[255, 0, 0]]
+    DEFAULT_POLAR_COLOR_2 = [[0, 255, 0]]
+    DEFAULT_SHAPE = 'circular'
+    DEFAULT_MIN_FONT_SIZE = 10
+    DEFAULT_MAX_FONT_SIZE = 40
+    DEFAULT_FONT_TYPE = 'linear'
+    DEFAULT_EXCLUDED_WORDS = []
+    DEFAULT_IMAGE_NAME = "None"
 
     def __init__(self, wc_type='default', preferences=None):
         if preferences is None:
@@ -53,49 +53,49 @@ class WordCloud:
     def get_default_preferences(wc_type):
         if wc_type == 'default':
             return {
-                'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
-                'min_word_length': WordCloud._DEFAULT_MIN_WORD_LENGTH,
-                'max_word_length': WordCloud._DEFAULT_MAX_WORD_LENGTH,
-                'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS,
-                'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
-                'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
-                'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
-                'dimensions': WordCloud._DEFAULT_DIMENSIONS,
-                'input_name': WordCloud._DEFAULT_INPUT_NAME,
-                'image_name': WordCloud._DEFAULT_IMAGE_NAME,
-                'font_type': WordCloud._DEFAULT_FONT_TYPE,
-                'colors': WordCloud._DEFAULT_COLORS,
-                'shape': WordCloud._DEFAULT_SHAPE,
+                'num_words_to_include': WordCloud.DEFAULT_NUM_WORDS_TO_INCLUDE,
+                'min_word_length': WordCloud.DEFAULT_MIN_WORD_LENGTH,
+                'max_word_length': WordCloud.DEFAULT_MAX_WORD_LENGTH,
+                'excluded_words': WordCloud.DEFAULT_EXCLUDED_WORDS,
+                'max_font_size': WordCloud.DEFAULT_MAX_FONT_SIZE,
+                'min_font_size': WordCloud.DEFAULT_MIN_FONT_SIZE,
+                'output_name': WordCloud.DEFAULT_OUTPUT_NAME,
+                'dimensions': WordCloud.DEFAULT_DIMENSIONS,
+                'input_name': WordCloud.DEFAULT_INPUT_NAME,
+                'image_name': WordCloud.DEFAULT_IMAGE_NAME,
+                'font_type': WordCloud.DEFAULT_FONT_TYPE,
+                'colors': WordCloud.DEFAULT_COLORS,
+                'shape': WordCloud.DEFAULT_SHAPE,
             }
         elif wc_type == 'polarity':
             return {
-                'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
-                'min_word_length': WordCloud._DEFAULT_MIN_WORD_LENGTH,
-                'max_word_length': WordCloud._DEFAULT_MAX_WORD_LENGTH,
-                'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS,
-                'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
-                'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
-                'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
-                'color_set_1': WordCloud._DEFAULT_POLAR_COLOR_1,
-                'color_set_2': WordCloud._DEFAULT_POLAR_COLOR_2,
-                'dimensions': WordCloud._DEFAULT_DIMENSIONS,
-                'text_set_1': WordCloud._DEFAULT_INPUT_NAME,
-                'text_set_2': WordCloud._DEFAULT_INPUT_NAME,
-                'image_name': WordCloud._DEFAULT_IMAGE_NAME,
-                'font_type': WordCloud._DEFAULT_FONT_TYPE,
-                'shape': WordCloud._DEFAULT_SHAPE,
+                'num_words_to_include': WordCloud.DEFAULT_NUM_WORDS_TO_INCLUDE,
+                'min_word_length': WordCloud.DEFAULT_MIN_WORD_LENGTH,
+                'max_word_length': WordCloud.DEFAULT_MAX_WORD_LENGTH,
+                'excluded_words': WordCloud.DEFAULT_EXCLUDED_WORDS,
+                'max_font_size': WordCloud.DEFAULT_MAX_FONT_SIZE,
+                'min_font_size': WordCloud.DEFAULT_MIN_FONT_SIZE,
+                'output_name': WordCloud.DEFAULT_OUTPUT_NAME,
+                'color_set_1': WordCloud.DEFAULT_POLAR_COLOR_1,
+                'color_set_2': WordCloud.DEFAULT_POLAR_COLOR_2,
+                'dimensions': WordCloud.DEFAULT_DIMENSIONS,
+                'text_set_1': WordCloud.DEFAULT_INPUT_NAME,
+                'text_set_2': WordCloud.DEFAULT_INPUT_NAME,
+                'image_name': WordCloud.DEFAULT_IMAGE_NAME,
+                'font_type': WordCloud.DEFAULT_FONT_TYPE,
+                'shape': WordCloud.DEFAULT_SHAPE,
             }
         elif wc_type == 'layered':
             return {
-                'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
-                'min_word_length': WordCloud._DEFAULT_MIN_WORD_LENGTH,
-                'max_word_length': WordCloud._DEFAULT_MAX_WORD_LENGTH,
-                'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS,
-                'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
-                'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
-                'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
-                'dimensions': WordCloud._DEFAULT_DIMENSIONS,
-                'font_type': WordCloud._DEFAULT_FONT_TYPE,
+                'num_words_to_include': WordCloud.DEFAULT_NUM_WORDS_TO_INCLUDE,
+                'min_word_length': WordCloud.DEFAULT_MIN_WORD_LENGTH,
+                'max_word_length': WordCloud.DEFAULT_MAX_WORD_LENGTH,
+                'excluded_words': WordCloud.DEFAULT_EXCLUDED_WORDS,
+                'max_font_size': WordCloud.DEFAULT_MAX_FONT_SIZE,
+                'min_font_size': WordCloud.DEFAULT_MIN_FONT_SIZE,
+                'output_name': WordCloud.DEFAULT_OUTPUT_NAME,
+                'dimensions': WordCloud.DEFAULT_DIMENSIONS,
+                'font_type': WordCloud.DEFAULT_FONT_TYPE,
 
                 'num_text_sets': None,
                 'text_sets': [],
@@ -229,8 +229,7 @@ class WordCloud:
         self.assert_output_name_for_wc(output_name)
         self.__preferences['output_name'] = output_name
 
-
-    ######################################## ASSERTING VALUES ARE VALID ########################################
+    # -------------------------------------   ASSERTING VALUES ARE VALID ----------------------------------- #
 
     def assert_word_length(self, length, min_or_max):
         assert min_or_max in ['min', 'max'], "must pass in argument 'min' or 'max'"
@@ -250,10 +249,10 @@ class WordCloud:
     def assert_dimensions_for_wc(dimensions):
         assert isinstance(dimensions, list) or isinstance(dimensions, tuple), "Dimensions is an invalid type"
         x, y = dimensions
-        assert isinstance(x, int), "X needs to be an integer"
-        assert isinstance(y, int), "Y needs to be an integer"
-        assert 0 < x, "X must be greater than 0"
-        assert 0 < y, "Y must be greater than 0"
+        assert isinstance(x, int), "width needs to be an integer"
+        assert isinstance(y, int), "height needs to be an integer"
+        assert 0 < x, "width must be greater than 0"
+        assert 0 < y, "height must be greater than 0"
 
     @staticmethod
     def assert_colors_for_wc(colors):
@@ -266,7 +265,7 @@ class WordCloud:
         assert len(split) == 3, "color is invalid "
         try:
             split = list(map(int, split))
-        except ValueError as e:
+        except ValueError:
             raise AssertionError("color should be made of integers separated by commas and spaces, e.g. 0, 255, 255")
         WordCloud._assert_color_for_wc(split)
         return split
