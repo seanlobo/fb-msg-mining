@@ -3,6 +3,7 @@ import inspect
 import os
 import re
 import subprocess
+import copy
 from colorama import init, Fore, Back, Style
 
 
@@ -202,11 +203,10 @@ class ConvoReader(BaseConvoReader):
         clear_screen()
         WordCloud.setup_word_cloud_starter_files()
 
-        if 'type' in preferences and preferences['type'] in WordCloud.WORD_CLOUD_TYPES.keys():
+        if 'type' in preferences and preferences['type'] in WordCloud.WORD_CLOUD_TYPES:
             wc_type = preferences['type']
         else:
             wc_type = self._get_type()
-            clear_screen()
 
         word_cloud_preferences = WordCloud.get_default_preferences(wc_type)
         word_cloud_preferences['type'] = wc_type
@@ -228,6 +228,12 @@ class ConvoReader(BaseConvoReader):
                 'color_set_1': WordCloud.assert_colors_for_wc,
                 'color_set_2': WordCloud.assert_colors_for_wc,
                 'shape': WordCloud.assert_shape_for_wc
+            }
+        elif word_cloud_preferences['type'] == 'layered':
+            options = {
+                'num_words_to_include': WordCloud.assert_num_words_to_include,
+                'output_name': WordCloud.assert_output_name_for_wc,
+                'dimensions': WordCloud.assert_dimensions_for_wc,
             }
         else:
             raise Exception("Invalid shape for wordcloud specified")
@@ -277,11 +283,35 @@ class ConvoReader(BaseConvoReader):
                 'font_type': self._get_font_type,
                 'shape': self._get_shape,
             }
+        elif word_cloud_preferences['type'] == 'layered':
+            print('\n' + one_line() + '\n')
+
+            num_layers = self._get_num_layers()
+            text_sets, image_sets, color_sets = self._get_layered_text_image_colors(num_layers)
+            word_cloud_preferences['text_sets'] = text_sets
+            word_cloud_preferences['image_sets'] = image_sets
+            word_cloud_preferences['color_sets'] = color_sets
+            preference_choices = {
+                'num_words_to_include': self._get_num_words_to_include,
+                'min_word_length': self._get_min_word_length,
+                'max_word_length': self._get_max_word_length,
+                'min_font_size': self._get_min_font_size,
+                'excluded_words': self._get_excluded_words,
+                'max_font_size': self._get_max_font_size,
+                'output_name': self._get_output_name,
+                'dimensions': self._get_dimensions,
+                'font_type': self._get_font_type,
+                'text_sets': lambda previous: self._get_sets(previous, 'text_sets', self._get_input_name),
+                'image_sets': lambda previous: self._get_sets(previous, 'image_sets', self._get_image_name),
+                'color_sets': lambda previous: self._get_sets(previous, 'color_sets', self._get_colors),
+            }
         else:
             raise Exception("Invalid shape for wordcloud specified")
 
+        clear_screen()
         word_cloud_preferences.update(self._get_word_cloud_preferences(preference_choices,
-                                                                           previous_choices=word_cloud_preferences))
+                                                                       previous_choices=word_cloud_preferences))
+
         ready = self._setup_new_word_cloud(word_cloud_preferences)
 
         if len(ready) == 0:
@@ -314,7 +344,6 @@ class ConvoReader(BaseConvoReader):
         self.save_word_freq(path=WordCloud.WORD_CLOUD_INPUT_PATH)
         if len(self._word_cloud.verify_word_cloud_setup()) == 0:
             self.__start_kumo()
-
 
     def prettify(self, mode=None, **kwargs):
         """Prettily prints messages to the screen in 3 different modes
@@ -911,7 +940,7 @@ class ConvoReader(BaseConvoReader):
         while True:
             print("Now selecting more specific features. Below are your preferences:\n")
             num_choices_max_length = len(str(len(attribute_choices)))
-            print(Fore.LIGHTRED_EX + Back.BLACK + "{0}){1}Exit".format(0, ' ' * num_choices_max_length))
+            print(Fore.LIGHTRED_EX + Back.BLACK + "{0}){1}Create Word Cloud".format(0, ' ' * num_choices_max_length))
             for i in range(1, len(attribute_choices) + 1):
                 # print("{index}{spaces}{attribute} = {current_value}")
 
@@ -931,25 +960,23 @@ class ConvoReader(BaseConvoReader):
             print()
 
             print("Choose which feature you would like to specify:")
-            choice_range = [str(i) for i in range(len(attribute_choices) + 1)]
-            while True:
-                feature_index = input('> ')
-                if feature_index in choice_range:
-                    feature_index = int(feature_index) - 1
-                    print()
-                    break
-            # Selecting the user's choice
+            feature_index = get_user_choice_from_range(0, len(attribute_choices) + 1) - 1  # Selects the user's choice
 
             if feature_index == -1:  # User wants to exit
-                print("Are you sure you would like to exit?")
+                print("Are you sure you are done selecting preferences? [Y/n]")
                 if user_says_yes():
                     clear_screen()
                     return res
             else:  # continue selecting preferences
                 print(one_line() + '\n')
-                # create an element in the dictionary equal to the preference the user selected,
-                # and set it equal to the result of calling the function associated with that preference
-                res[attribute_choices[feature_index]] = attributes_to_fns[attribute_choices[feature_index]]()
+                feature = attribute_choices[feature_index]
+
+                if feature in ['text_sets', 'image_sets', 'color_sets']:
+                    res[feature] = attributes_to_fns[feature](res[feature])
+                else:
+                    # create an element in the dictionary equal to the preference the user selected,
+                    # and set it equal to the result of calling the function associated with that preference
+                    res[feature] = attributes_to_fns[feature]()
                 print()
 
             print("Would you like to continue choosing preferences? [Y/n]")
@@ -987,6 +1014,23 @@ class ConvoReader(BaseConvoReader):
 
     def _get_font_type(self):
         return self._word_cloud_get_from_list('font_type')
+
+    def _get_num_layers(self):
+        max_layers = 5
+        print("Please type the number of layers you would like to use for your word cloud. " +
+              Fore.LIGHTRED_EX + Back.BLACK + "Type an integer between 2 and {0}".format(max_layers) + Style.RESET_ALL)
+        while True:
+            try:
+                value = int(input("> "))
+                if value < 2:
+                    print("You need to have at least 2 layers")
+                elif value > max_layers:
+                    print("You can't have more than {0} layers".format(max_layers))
+                else:
+                    clear_screen()
+                    return value
+            except ValueError:
+                print("Please type an integer")
 
     def _get_colors(self):
         result = []
@@ -1090,8 +1134,9 @@ class ConvoReader(BaseConvoReader):
 
     def _get_image_name(self):
         intro = "Which image would you like to use as a background?" + \
-                Fore.LIGHTRED_EX + Back.BLACK + "\nNote this will the program to fail if your shape attribute is not " \
-                                                "\"image\"\n" + Style.RESET_ALL
+                Fore.LIGHTRED_EX + Back.BLACK + "\nNote this will cause the program to fail if your shape attribute " \
+                                                "is not \"image\", or you aren't creating a layered word cloud\n" + \
+                Style.RESET_ALL
         lst_of_choices = [f for f in os.listdir(WordCloud.WORD_CLOUD_IMAGE_PATH)
                           if os.path.isfile(os.path.join(WordCloud.WORD_CLOUD_IMAGE_PATH, f)) and
                           WordCloud.valid_picture(f)]
@@ -1178,7 +1223,7 @@ class ConvoReader(BaseConvoReader):
             lst_of_choices = sorted(WordCloud.WORD_CLOUD_SHAPES)
         elif attribute == 'type':
             intro = "What type of word cloud would you like? Chose one from the following"
-            lst_of_choices = sorted(WordCloud.WORD_CLOUD_TYPES.keys())
+            lst_of_choices = sorted(WordCloud.WORD_CLOUD_TYPES)
         elif attribute == 'input_name':
             intro = "Which of the following files would you like to use as input for the word cloud?"
 
@@ -1209,6 +1254,111 @@ class ConvoReader(BaseConvoReader):
             choice = input('> ')
             if choice in choice_range:
                 return lst_of_choices[int(choice) - 1]
+
+    def _get_sets(self, previous, mode, fn):
+        """Uses user input to grab either text_sets, image_sets or color_sets, depending on mode and fn
+        Should only ever be used in word_clouds and resulting _get_word_cloud_preferences
+        """
+        same_color = Fore.LIGHTGREEN_EX + Back.BLACK
+        diff_color = Fore.LIGHTMAGENTA_EX + Back.BLACK
+
+        current = copy.copy(previous)
+        longest_number = len(str(previous)) + 1
+        while True:
+            print("0) Exit {0} selection".format(mode))
+            for i in range(1, len(previous) + 1):
+                print("{0}){1}".format(i, ' ' * (longest_number - len(str(i)))), end="")
+                print(current[i], end=" = ")
+
+                if current[i] != previous[i]:
+                    print(diff_color + current[i])
+                else:
+                    print(same_color + current[i])
+
+            user_choice = get_user_choice_from_range(0, len(current))
+
+            if user_choice == 0:
+                if user_says_yes():
+                    return current
+                else:
+                    continue
+
+            current[user_choice] = fn()
+
+    def _get_layered_text_image_colors(self, num_layers, previous=None):
+        def is_duplicate(preference_type, index, grid):
+            for i in range(len(grid[preference_type])):
+                if grid[preference_type][i] == grid[preference_type][index] and i != index:
+                    return True
+            return False
+
+        same_color = Fore.LIGHTGREEN_EX + Back.BLACK
+        diff_color = Fore.LIGHTMAGENTA_EX + Back.BLACK
+        duplicate_color = Fore.LIGHTBLUE_EX + Back.BLACK
+
+        # a 2D list containing inner lists of string, string then a list for the colors
+        if previous is None:
+            text_image_colors = [[WordCloud._DEFAULT_INPUT_NAME for i in range(num_layers)],
+                                 ['' for i in range(num_layers)],
+                                 [WordCloud._DEFAULT_COLORS for i in range(num_layers)]]
+        else:
+            text_image_colors = copy.deepcopy(previous)
+
+        clear_screen()
+        longest_num = len(str(num_layers * 3 + 1))
+        while True:
+            print("Select values for each of the {0} options below. A " + duplicate_color + "blue" + Style.RESET_ALL +
+                  " value represents values that are duplicated across layers, a " + diff_color + "magenta" +
+                  Style.RESET_ALL + " value represents a unique edited value, and a " + same_color + "green" +
+                  Style.RESET_ALL + " value represents a unique default value" + Style.RESET_ALL +
+                  "\n".format(num_layers * 3))
+
+            print(Fore.LIGHTRED_EX + Back.BLACK + "0) Continue" + Style.RESET_ALL)
+            for i in range(1, num_layers * 3 + 1):
+                if i - 1 > 0 and (i - 1) % 3 == 0:
+                    print()
+
+                print("{0})".format(i), end="")
+                print(' ' * (longest_num - len(str(i)) + 1), end="")
+                if i % 3 == 1:
+                    print("text_set{0} = ".format((i - 1) // 3 + 1), end="")
+                elif i % 3 == 2:
+                    print("image_name{0} = ".format((i - 1) // 3 + 1), end="")
+                else:
+                    print("color_set{0} = ".format((i - 1) // 3 + 1), end="")
+
+                cur_val = text_image_colors[(i - 1) % 3][(i - 1) // 3]
+                prev_val = previous[(i - 1) % 3][(i - 1) // 3] if previous is not None else None
+                if is_duplicate((i - 1) % 3, (i - 1) // 3, text_image_colors):
+                    print(duplicate_color + str(cur_val) + Style.RESET_ALL)
+                elif cur_val != prev_val:
+                    print(diff_color + str(cur_val) + Style.RESET_ALL)
+                else:
+                    print(same_color + str(cur_val) + Style.RESET_ALL)
+
+            print('\nSelect your choice (between 0 and {0})'.format(num_layers * 3))
+            user_choice = get_user_choice_from_range(0, num_layers * 3)
+
+            if user_choice == 0:
+                print('\nAre you sure you would like to continue? [Y/n]')
+                if user_says_yes():
+                    break
+                else:
+                    continue
+
+            print('\n' + one_line() + '\n')
+
+            if user_choice % 3 == 1:
+                text_image_colors[0][(user_choice - 1) // 3] = self._get_input_name()
+            elif user_choice % 3 == 2:
+                text_image_colors[1][(user_choice - 1) // 3] = self._get_image_name()
+            else:
+                text_image_colors[2][(user_choice - 1) // 3] = self._get_colors()
+
+            clear_screen()
+
+        return text_image_colors
+
 
     ######################################## WORD CLOUD PRIVATE METHODS ########################################
 
@@ -1260,3 +1410,13 @@ def user_says_yes():
             return True
         elif choice in ['no', 'n']:
             return False
+
+
+def get_user_choice_from_range(start, end):
+    """Returns the integer corresponding to the user's choice"""
+    choice_range = [str(i) for i in range(start, end + 1)]
+    user_choice = None
+    while user_choice not in choice_range:
+        user_choice = input("> ")
+
+    return int(user_choice)

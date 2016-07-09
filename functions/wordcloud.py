@@ -9,11 +9,7 @@ class WordCloud:
     WORD_CLOUD_EXCLUDED_WORDS_PATH = 'data/word_clouds/excluded_words/'
     WORD_CLOUD_IMAGE_PATH = 'data/word_clouds/background_images/'
 
-    WORD_CLOUD_TYPES = {'default': ['output_name', 'dimensions', 'colors', 'input_name', 'num_words_to_include',
-                                    'min_word_length', 'image_name'],
-                        'polarity': ['output_name', 'dimensions', 'color_set_1', 'color_set_2', 'text_set_1',
-                                     'text_set_2', 'num_words_to_include', 'min_word_length', 'image_name']
-                        }
+    WORD_CLOUD_TYPES = ['default', 'polarity', 'layered']
     WORD_CLOUD_SHAPES = ['circular', 'rectangular', 'image']
     WORD_CLOUD_FONT_TYPES = ['linear', 'square_root']
 
@@ -38,7 +34,7 @@ class WordCloud:
             preferences = dict()
         assert isinstance(wc_type, str), "wc_type must be a string"
         assert wc_type in WordCloud.WORD_CLOUD_TYPES, "wc_type must be in WordCloud.WORD_CLOUD_TYPES: {0}"\
-            .format(str(WordCloud.WORD_CLOUD_TYPES.keys()))
+            .format(str(WordCloud.WORD_CLOUD_TYPES))
         assert isinstance(preferences, dict), "Preferences must be a dictionary, not a {0}".format(type(preferences))
 
         self.wc_type = wc_type
@@ -89,6 +85,22 @@ class WordCloud:
                 'font_type': WordCloud._DEFAULT_FONT_TYPE,
                 'shape': WordCloud._DEFAULT_SHAPE,
             }
+        elif wc_type == 'layered':
+            return {
+                'num_words_to_include': WordCloud._DEFAULT_NUM_WORDS_TO_INCLUDE,
+                'min_word_length': WordCloud._DEFAULT_MIN_WORD_LENGTH,
+                'max_word_length': WordCloud._DEFAULT_MAX_WORD_LENGTH,
+                'excluded_words': WordCloud._DEFAULT_EXCLUDED_WORDS,
+                'max_font_size': WordCloud._DEFAULT_MAX_FONT_SIZE,
+                'min_font_size': WordCloud._DEFAULT_MIN_FONT_SIZE,
+                'output_name': WordCloud._DEFAULT_OUTPUT_NAME,
+                'dimensions': WordCloud._DEFAULT_DIMENSIONS,
+                'font_type': WordCloud._DEFAULT_FONT_TYPE,
+
+                'num_text_sets': None,
+                'text_sets': [],
+                'image_names': []
+            }
 
     def verify_word_cloud_setup(self) -> dict:
         """Verifies that all the settings for a word cloud are met
@@ -131,6 +143,21 @@ class WordCloud:
                 'image_name': self.assert_image_name_for_wc,
                 'font_type': self.assert_font_type_for_wc,
                 'shape': self.assert_shape_for_wc,
+            }
+        elif self.wc_type == 'layered':
+            attributes_to_check = {
+                'num_words_to_include': self.assert_num_words_to_include,
+                'min_word_length': lambda x: self.assert_word_length(x, 'min'),
+                'max_word_length': lambda x: self.assert_word_length(x, 'max'),
+                'excluded_words': lambda x: map(self.assert_excluded_words_for_wc, x),
+                'max_font_size': lambda x: self.assert_font_size(x, 'max'),
+                'min_font_size': lambda x: self.assert_font_size(x, 'min'),
+                'output_name': self.assert_output_name_for_wc,
+                'dimensions': self.assert_dimensions_for_wc,
+                'color_sets': lambda x: map(self._assert_color_for_wc, x),
+                'image_sets': lambda x: map(self.assert_image_name_for_wc, x),
+                'text_sets': self.assert_text_set,
+                'font_type': self.assert_font_type_for_wc,
             }
         else:
             raise ValueError("Invalid word cloud type: {0}".format(self.wc_type))
@@ -190,6 +217,9 @@ class WordCloud:
             elif preferences_copy['type'] == 'polarity':
                 preferences_copy['text_set_1'] = 'text_set1.txt'
                 preferences_copy['text_set_2'] = 'text_set2.txt'
+            elif preferences_copy['type'] == 'layered':
+                for i in range(len(preferences_copy['text_sets'])):
+                    preferences_copy['text_sets'][i] = 'text_set{0}.txt'.format(i + 1)
             json.dump(preferences_copy, file)
 
     def get_preference(self, preference_name):
@@ -274,7 +304,11 @@ class WordCloud:
             assert os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + name), "{0} does not exist".format(name)
             self.freq_to_raw(WordCloud.WORD_CLOUD_INPUT_PATH + name, WordCloud.WORD_CLOUD_INPUT_PATH + 'text.txt')
 
-    def assert_text_set(self, name, set_num):
+    def assert_text_set(self, name, set_num=None):
+        if set_num is None:
+            for i in range(1, len(name) + 1):
+                self.assert_text_set(name[i - 1], i)
+            return
         if not os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + 'text_set{0}.txt'.format(set_num)):
             assert os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + name), "{0} does not exist".format(name)
             self.freq_to_raw(WordCloud.WORD_CLOUD_INPUT_PATH + name, WordCloud.WORD_CLOUD_INPUT_PATH +
