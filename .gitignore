@@ -131,6 +131,13 @@ output
 wordClouds
 data.txt
 
+# Word Cloud stuff
+*.bmp
+*.png
+!cloud_bg.bmp
+!cloud_fg.bmp
+!whale.png
+
 
 # License
 !LICENSE.txt

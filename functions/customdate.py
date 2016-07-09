@@ -103,6 +103,11 @@ class CustomDate():
             mins = '0' + mins
         return "{0}:{1}{2}".format(hours, mins, 'pm' if minutes >= 12 * 60 else 'am')
 
+    def plus_x_days(self, days):
+        assert isinstance(days, int), "days must be an integer"
+        return CustomDate.from_date(self + days)
+
+
     @staticmethod
     def bsearch_index(lst, date, low=0, high=None, key=lambda x: x) -> int:
         if high is None:

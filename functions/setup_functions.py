@@ -1,4 +1,5 @@
 import os
+import shutil
 from bs4 import BeautifulSoup
 from colorama import init, Fore,Back, Style
 
@@ -229,3 +230,10 @@ def clear_screen():
     #  http://stackoverflow.com/questions/2084508/clear-terminal-in-python
     os.system('cls' if os.name == 'nt' else 'clear')
 
+
+def one_line(pattern='-'):
+    """Fills one line of the user's screen with pattern"""
+    # http://stackoverflow.com/questions/566746/how-to-get-console-window-width-in-python/6550596#6550596
+    console_length = shutil.get_terminal_size().columns
+    pattern_string = pattern * (console_length // len(pattern)) + pattern[console_length % len(pattern)]
+    return pattern_string[:-1]
