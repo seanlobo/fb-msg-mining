@@ -39,6 +39,8 @@ class ConvoReader(BaseConvoReader):
                                "LIGHTBLACK_EX", "LIGHTBLUE_EX", "LIGHTCYAN_EX", "LIGHTGREEN_EX",
                                "LIGHTMAGENTA_EX", "LIGHTRED_EX", "LIGHTWHITE_EX", "LIGHTYELLOW_EX"]
 
+    # -----------------------------------------------   PUBLIC METHODS ---------------------------------------------- #
+
     def print_people(self):
         """Prints to the screen an alphabetically sorted list of people
         in the conversation
@@ -178,6 +180,27 @@ class ConvoReader(BaseConvoReader):
                     i += 1
                 print(string)
                 print()
+
+    def conversation_starters(self, threshold=240):
+        """Prints to to console the frequency that all members of this conversation start conversations, where starting
+        a conversation is defined as being the first to send a message after at least {threshold} minutes
+        Parameter:
+            threshold (optional): the number of minutes of inactivity that signal the start of a new conversation.
+                                  defaults to 240 minutes, or 4 hours.
+        """
+        frequencies = self.raw_convo_starter_freqs(threshold)
+        self.print_counter(frequencies)
+
+    def conversation_killers(self, threshold=240):
+        """Prints to to console the frequency that all members of this conversation kill conversations, where killing
+        a conversation is defined as being the last to send a message for at least {threshold} minutes after
+        Parameter:
+            threshold (optional): the number of minutes of inactivity that signal the start of a new conversation.
+                                  defaults to 240 minutes, or 4 hours.
+        """
+        frequencies = self.raw_convo_killer_freqs(threshold)
+        self.print_counter(frequencies)
+
 
     def word_clouds(self, **preferences):
         """Interactive method for users to set preferences for word cloud generation. Utilizes the java library Kumo
@@ -632,7 +655,9 @@ class ConvoReader(BaseConvoReader):
             else self._find_indexes(query, ignore_case=ignore_case)
         return len(indexes)
 
-    # -------------------------------------------   HELP   ------------------------------------------- #
+    # ----------------------------------------------   PUBLIC METHODS ---------------------------------------------- #
+
+    # --------------------------------------------------   HELP   -------------------------------------------------- #
 
     @staticmethod
     def help():
@@ -712,7 +737,9 @@ class ConvoReader(BaseConvoReader):
 
             clear_screen()
 
-    # -------------------------------------------   HELP   ------------------------------------------- #
+    # --------------------------------------------------   HELP   -------------------------------------------------- #
+
+    # ------------------------------------------   PUBLIC STATIC METHODS   ------------------------------------------- #
 
     @staticmethod
     def get_emoji(text: str) -> str:
@@ -739,7 +766,9 @@ class ConvoReader(BaseConvoReader):
                                                 values[i - 1][0],
                                                 values[i - 1][1]))
 
-    # -------------------------------------------   PREFERENCES   ------------------------------------------- #
+    # ------------------------------------------   PUBLIC STATIC METHODS   ------------------------------------------- #
+
+    # -----------------------------------------------   PREFERENCES   ------------------------------------------------ #
 
     def _pick_color(self, person: int) -> int:
         """Helper method to get user input for picking a color of text
@@ -794,9 +823,9 @@ class ConvoReader(BaseConvoReader):
         preferences['global'] = dict(threshold=240)
         return preferences
 
-    # -------------------------------------------   PREFERENCES   ------------------------------------------- #
+    # ------------------------------------------   PUBLIC STATIC METHODS   ------------------------------------------- #
 
-    # ---------------------------------   PRINTING CONVERSATION TO CONSOLE   --------------------------------- #
+    # -------------------------------------   PRINTING CONVERSATION TO CONSOLE   ------------------------------------- #
 
     def _print_message(self, number: int):
         """Helper method used to prettily print to the screen the person, message and date
@@ -918,9 +947,9 @@ class ConvoReader(BaseConvoReader):
 
         self._print_messages(start=start, end=end)
 
-    # -------------------------------------   PRINTING CONVERSATION TO CONSOLE   ----------------------------------- #
+    # --------------------------------------   PRINTING CONVERSATION TO CONSOLE   ------------------------------------ #
 
-    # ----------------------------------------   WORD CLOUD PRIVATE METHODS   -------------------------------------- #
+    # -----------------------------------------   WORD CLOUD PRIVATE METHODS   --------------------------------------- #
 
     @staticmethod
     def __start_kumo():
@@ -1400,7 +1429,9 @@ class ConvoReader(BaseConvoReader):
 
         return text_image_colors
 
-    # -------------------------------------   WORD CLOUD PRIVATE METHODS   ----------------------------------- #
+    # -----------------------------------------   WORD CLOUD PRIVATE METHODS   --------------------------------------- #
+
+    # ----------------------------------------------   BUILT IN METHODS   -------------------------------------------- #
 
     def __getitem__(self, index):
         """Returns the tuple (person, message, datetime) for the corresponding index"""
@@ -1424,6 +1455,8 @@ class ConvoReader(BaseConvoReader):
     def __repr__(self):
         """Returns a valid constructor for this object"""
         return "ConvoReader({0}, {1})".format(repr(self._name), repr(self._convo))
+
+    # ----------------------------------------------   BUILT IN METHODS   -------------------------------------------- #
 
 
 def color_method(string: str) -> str:
