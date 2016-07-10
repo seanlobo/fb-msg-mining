@@ -301,7 +301,7 @@ class BaseConvoReader:
             prev_date = self._convo[i - 1][2]
             if curr_date.distance_from(prev_date) >= threshold:
                 convo_start_freq[self._convo[i][0]].append(i)
-        return convo_start_freq
+        return Counter(dict((key.title(), val) for key, val in convo_start_freq.items()))
 
     def _raw_convo_killer(self, threshold, start=None, end=None):
         """Returns a Counter"""
@@ -322,7 +322,7 @@ class BaseConvoReader:
             next_date = self._convo[i + 1][2]
             if next_date.distance_from(curr_date) >= threshold:
                 convo_start_freq[self._convo[i][0]].append(i)
-        return convo_start_freq
+        return Counter(dict((key.title(), val) for key, val in convo_start_freq.items()))
 
     def raw_convo_starter_freqs(self, threshold):
         """Returns the frequency that each participant begins conversations, as percents, stored in a Counter object
