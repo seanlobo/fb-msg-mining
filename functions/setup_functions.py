@@ -1,13 +1,15 @@
 import os
 import shutil
+import time
 from bs4 import BeautifulSoup
-from colorama import init, Fore,Back, Style
+from colorama import init, Fore, Back, Style
 
 
 from functions.customdate import CustomDate
 
 
 init(autoreset=True)
+
 
 def get_all_thread_containers(msg_html_path):
     """Returns a list of list of divs. Contains all information
@@ -110,8 +112,13 @@ def get_messages_readable(thread, previous=None):
     return previous
 
 
-def get_all_msgs_dict(msg_html_path='./messages.htm'):
+def get_all_msgs_dict(msg_html_path, unordered_threads=None, footer=None, times=None):
     """Returns the dictionary uesd by MessageReader"""
+    conversation_color = Fore.LIGHTYELLOW_EX + Back.LIGHTBLACK_EX
+    previous_color = Fore.LIGHTCYAN_EX + Back.BLACK
+    current_color = Fore.LIGHTGREEN_EX + Back.BLACK
+    are_same_color = Fore.LIGHTRED_EX + Back.BLACK
+
     def add_to_duplicate():
         """Helper method to add a message group to a DUPLICATE conversation"""
         nonlocal msgs, cur_thread, convo_name, next_time
@@ -131,25 +138,28 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
 
             if prev_time.distance_from(next_time) <= 0:
                 # if our current conversation was during or after the last message in the new_name convo
+                clear_screen()
 
-                print('# previous convo end for {0}'.format(convo_name))
-                for i in range(- min(5, len(msgs[new_name]), 0)):
-                    print(msgs[new_name][i])
-                print("\n# next convo start")
-                for i in range(0, min(6, len(cur_thread))):
-                    print(cur_thread[i])
                 # prints last and first 5 messages of previous and current message groups, respectively
+                print(conversation_color + convo_name + Style.RESET_ALL)
+                print(one_line() + "\n")
+                print('# previous conversation end')
+                for j in range(- min(5, len(msgs[new_name]), 0)):
+                    print(msgs[new_name][j])
+                print("\n# next conversation start")
+                for j in range(0, min(6, len(cur_thread))):
+                    print(cur_thread[j])
+                print("\n" + one_line())
 
-                are_same = input(Fore.MAGENTA + Back.BLACK + "\nAre these two chunks from "
-                                                             "the same conversation? [Y/n]\n You might "
-                                                             "have to look this up on facebook.com\n> " + Style.RESET_ALL)
-                while are_same.lower() not in ['y', 'yes', 'n', 'no']:
-                    are_same = input(Style.RESET_ALL + "[Y/n] > ")
+                print(are_same_color + "\nAre these two chunks from the same conversation? You might have "
+                                       "to look this up on facebook.com. [Y/n]" + Style.RESET_ALL)
+
+                are_same = user_says_yes()
                 # User input for whether the two message groups are in the same conversation
 
-                if are_same.lower() in ['no', 'n']:
+                if are_same:
                     duplicate_num += 1  # if they aren't the same, increment duplicate_num and try again
-                elif not added:
+                else:
                     # check to make sure the current message group hasn't already been added, otherwise add it
                     msgs[new_name].extend(cur_thread)
                     added = True
@@ -157,15 +167,39 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
                 # this conversation existed but was after our current one, so increment the number and try again
                 duplicate_num += 1
 
-            clear_screen()
-
         if not added:
             # if the current message group hasn't been added, add with a new duplicate #
             msgs[convo_name + ', DUPLICATE #{0}'.format(duplicate_num)] = cur_thread
         return
 
-    all_thread_containers = get_all_thread_containers(msg_html_path)
-    unordered_threads, footer = get_all_threads_unordered(all_thread_containers)
+    def print_thread(thread, start=False, end=False, padding=5):
+        """Prettily prints the thread passed from start to start + padding or end - padding to end"""
+        if start:
+            assert not end, "Either start or end can be True, not both"
+        else:
+            assert end, "Exactly one value from start and end must be true"
+        assert isinstance(padding, int), "padding must be an integer"
+        assert padding > 0, "padding must be greater than 0"
+
+        if start:
+            start = 0
+            end = min(start + padding, len(thread))
+            date_color = Fore.GREEN + Back.BLACK
+        else:
+            end = len(thread)
+            start = max(0, end - padding)
+            date_color = Fore.CYAN + Back.BLACK
+
+        max_name_length = max(len(name) for name, _, _ in thread[start:end]) + 1
+        for person, msg, date in thread[start:end]:
+
+            print("{0:{align}{width}}: {1} | {2}"
+                  .format(person, msg, date_color + date, align='<', width=max_name_length))
+        return
+
+    if unordered_threads is None or footer is None:
+        all_thread_containers = get_all_thread_containers(msg_html_path)
+        unordered_threads, footer = get_all_threads_unordered(all_thread_containers)
 
     # The end result
     msgs = dict()
@@ -187,27 +221,39 @@ def get_all_msgs_dict(msg_html_path='./messages.htm'):
                 # if the new message group is after the new message group it but not within 3 minutes
                 # we need user input to see if the two belong to the same chat
 
-                print(Fore.RED + Back.BLACK + '# previous convo end for {0}'.format(convo_name) + Style.RESET_ALL)
-                for i in range(- min(5, len(msgs[convo_name])), 0):
-                    print(msgs[convo_name][i])
-                print(Fore.RED + Back.BLACK + "\n# next convo start" + Style.RESET_ALL)
-                for i in range(0, min(6, len(cur_thread))):
-                    print(cur_thread[i])
+                # The following is used in setup to time how long it takes various processes
+                # This timing counts the time that user input starts, as there can be a lag before
+                if times is not None:
+                    times.append(time.time())
+                    times = None
+
+                clear_screen()
+
+                print(conversation_color + convo_name)
+                print(one_line() + "\n")
+                print(previous_color + '# previous conversation end' + Style.RESET_ALL)
+
+                print_thread(msgs[convo_name], end=True, padding=5)
+                # for i in range(- min(5, len(msgs[convo_name])), 0):
+                #     print(msgs[convo_name][i])
+                print(current_color + "\n# next conversation start" + Style.RESET_ALL)
+
+                print_thread(cur_thread, start=True, padding=5)
+                # for i in range(0, min(6, len(cur_thread))):
+                #     print(cur_thread[i])
+                print('\n' + one_line())
                 # Prints the last 5 messages of the previous message group and the first 5 message of
                 # the current message group, both in RED with a BLACK background
 
-                print(Fore.MAGENTA + Back.BLACK + "\nAre these two chunks from the same conversation? "
-                                                  "[Y/n]\nYou might have to look this up on facebook.com" +
-                      Style.RESET_ALL)
-                are_same = input("> ").lower()
-                while are_same not in ['y', 'yes', 'n', 'no']:
-                    are_same = input("[Y/n] > ").lower()
+                print(are_same_color + "\nAre these two chunks from the same conversation? You might have "
+                                       "to look this up on facebook.com. [Y/n]" + Style.RESET_ALL)
+
+                are_same = user_says_yes()
                 clear_screen()
                 # user input to decide if the above two message groups are the same conversation
 
-                if are_same.lower() in ['y', 'yes']: # if part of same convo append the new to the old
+                if are_same:
                     msgs[convo_name].extend(cur_thread)
-
                 else:
                     # the two conversations are NOT the same (because of user input)
                     #  so we need to add the new one to an appropriate duplicate
@@ -237,3 +283,15 @@ def one_line(pattern='-'):
     console_length = shutil.get_terminal_size().columns
     pattern_string = pattern * (console_length // len(pattern)) + pattern[console_length % len(pattern)]
     return pattern_string[:-1]
+
+    # Alternatively https://docs.python.org/3/library/string.html#formatstrings
+    # return '{:{fill}{align}{width}}'.format('', fill=pattern, width=console_length, align='^')
+
+def user_says_yes():
+    """Returns True if the user types 'y' or 'yes' and False for 'no', 'n (ignoring case)'"""
+    while True:
+        choice = input('> ').lower()
+        if choice in ['y', 'yes']:
+            return True
+        elif choice in ['no', 'n']:
+            return False

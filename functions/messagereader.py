@@ -2,11 +2,12 @@ from collections import Counter
 import shutil
 import os
 import random
+import ast
 from colorama import Fore, Back, Style, init
 
 
-from functions.setup_functions import clear_screen
-from functions.convoreader import ConvoReader, user_says_yes, color_method
+from functions.setup_functions import clear_screen, user_says_yes
+from functions.convoreader import ConvoReader, color_method
 from functions.customdate import CustomDate
 
 init(autoreset=True)
@@ -17,7 +18,7 @@ class MessageReader:
     def __init__(self):
         with open('data/data.txt', mode='r', encoding='UTF8') as f:
             try:
-                self.data = eval(f.readline())
+                self.data = ast.literal_eval(f.readline())
                 self.download = f.readline()
             except Exception as e:
                 print(Fore.LIGHTRED_EX + Back.BLACK + "An error occured when reading in your data file. Please make "
