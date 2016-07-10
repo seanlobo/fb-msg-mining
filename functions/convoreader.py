@@ -11,7 +11,7 @@ from functions.baseconvoreader import BaseConvoReader
 from functions.wordcloud import WordCloud
 from functions.customdate import CustomDate
 import functions.emojis as emojis
-from functions.setup_functions import clear_screen, one_line
+from functions.setup_functions import clear_screen, one_line, user_says_yes
 
 
 init(autoreset=True)
@@ -1482,16 +1482,6 @@ def color_method(string: str) -> str:
     else:
         result += inner_code_color + string + Style.RESET_ALL
     return result
-
-
-def user_says_yes():
-    """Returns True if the user types 'y' or 'yes' and False for 'no', 'n (ignoring case)'"""
-    while True:
-        choice = input('> ').lower()
-        if choice in ['y', 'yes']:
-            return True
-        elif choice in ['no', 'n']:
-            return False
 
 
 def get_user_choice_from_range(start, end):
