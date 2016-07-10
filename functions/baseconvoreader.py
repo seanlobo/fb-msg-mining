@@ -282,40 +282,75 @@ class BaseConvoReader:
             else:
                 return self._individual_words
 
-    def _raw_convo_starter(self, threshold=240, start=None, end=None):
-        """Returns a Cou"""
+    def _raw_convo_starter(self, threshold, start=None, end=None):
+        """Returns a Counter"""
         CustomDate.assert_dates(start, end)
 
         # Sets the start and end dates, finds the appropriate
         #  message number if start/ end are not None, else index 1 for start and len(convo) for end
-        start_date = CustomDate.bsearch_index(self._convo, start, key=lambda x: x[2]) if start is not None else 1
-        end_date = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2]) if start is not None else self._len
+        start_date_index = CustomDate.bsearch_index(self._convo, start, key=lambda x: x[2]) if start is not None else 1
+        end_date_index = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2]) \
+            if start is not None else self._len
 
         convo_start_freq = dict()
         for person in self._people:
             convo_start_freq[person] = []
-        convo_start_freq[self._convo[start_date - 1][0]].append(start_date - 1)
-        for i in range(start_date, end_date):
+        convo_start_freq[self._convo[start_date_index - 1][0]].append(start_date_index - 1)
+        for i in range(start_date_index, end_date_index):
             curr_date = self._convo[i][2]
             prev_date = self._convo[i - 1][2]
-            if curr_date.distance_from(prev_date) > threshold:
+            if curr_date.distance_from(prev_date) >= threshold:
                 convo_start_freq[self._convo[i][0]].append(i)
         return convo_start_freq
 
-    def _convo_starter_freqs(self, threshold=240):
+    def _raw_convo_killer(self, threshold, start=None, end=None):
+        """Returns a Counter"""
+        CustomDate.assert_dates(start, end)
+
+        # Sets the start and end dates, finds the appropriate
+        #  message number if start/ end are not None, else index 1 for start and len(convo) for end
+        start_date_index = CustomDate.bsearch_index(self._convo, start, key=lambda x: x[2]) if start is not None else 0
+        end_date_index = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2]) \
+            if start is not None else self._len - 1
+
+        convo_start_freq = dict()
+        for person in self._people:
+            convo_start_freq[person] = []
+        convo_start_freq[self._convo[start_date_index - 1][0]].append(start_date_index - 1)
+        for i in range(start_date_index, end_date_index):
+            curr_date = self._convo[i][2]
+            next_date = self._convo[i + 1][2]
+            if next_date.distance_from(curr_date) >= threshold:
+                convo_start_freq[self._convo[i][0]].append(i)
+        return convo_start_freq
+
+    def raw_convo_starter_freqs(self, threshold):
         """Returns the frequency that each participant begins conversations, as percents, stored in a Counter object
         Parameter:
-            threshold (optional): the number of minutes lag that counts as
-                the threshold for starting a new conversation. Defaults to 240
-                 minutes, or 4 hours
+            threshold: the number of minutes lag that counts as the threshold for starting a new conversation.
         """
-        raw_freqs = self._raw_convo_starter(threshold=threshold)
+        raw_freqs = self._raw_convo_starter(threshold)
         total = sum(len(freq) for _, freq in raw_freqs.items())
         if total == 0:
             return raw_freqs
         res = Counter()
         for key, freq in raw_freqs.items():
-            res[key] = len(freq) / total
+            res[key] = len(freq) / total * 100
+        return res
+
+    def raw_convo_killer_freqs(self, threshold):
+        """Returns the frequency (as percents) that each participant 'kills' conversations, where killing is defined as
+        being the last person to send a message with no replies for at least threshold minutes
+        Parameters:
+            threshold: the number of minutes lag that counts as the threshold for starting a new conversation.
+        """
+        raw_freqs = self._raw_convo_killer(threshold)
+        total = sum(len(freq) for _, freq in raw_freqs.items())
+        if total == 0:
+            return raw_freqs
+        res = Counter()
+        for key, freq in raw_freqs.items():
+            res[key] = len(freq) / total * 100
         return res
 
     def _raw_msgs_by_weekday(self):
