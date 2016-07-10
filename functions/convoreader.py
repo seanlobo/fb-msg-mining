@@ -181,26 +181,27 @@ class ConvoReader(BaseConvoReader):
                 print(string)
                 print()
 
-    def conversation_starters(self, threshold=240):
+    def conversation_starters(self, threshold=240, max_decimal_places=2):
         """Prints to to console the frequency that all members of this conversation start conversations, where starting
         a conversation is defined as being the first to send a message after at least {threshold} minutes
         Parameter:
             threshold (optional): the number of minutes of inactivity that signal the start of a new conversation.
                                   defaults to 240 minutes, or 4 hours.
+            max_decimal_places (optional): the number of decimal places to print out (at maximum). Default is 2
         """
         frequencies = self.raw_convo_starter_freqs(threshold)
-        self.print_counter(frequencies)
+        self.print_counter(frequencies, mode='freq', percent_length= max_decimal_places + 3)
 
-    def conversation_killers(self, threshold=240):
+    def conversation_killers(self, threshold=240, max_decimal_places=2):
         """Prints to to console the frequency that all members of this conversation kill conversations, where killing
         a conversation is defined as being the last to send a message for at least {threshold} minutes after
         Parameter:
             threshold (optional): the number of minutes of inactivity that signal the start of a new conversation.
                                   defaults to 240 minutes, or 4 hours.
+            max_decimal_places (optional): the number of decimal places to print out (at maximum). Default is 2
         """
         frequencies = self.raw_convo_killer_freqs(threshold)
-        self.print_counter(frequencies)
-
+        self.print_counter(frequencies, mode='freq', percent_length=max_decimal_places + 3)
 
     def word_clouds(self, **preferences):
         """Interactive method for users to set preferences for word cloud generation. Utilizes the java library Kumo
@@ -749,7 +750,7 @@ class ConvoReader(BaseConvoReader):
         return emojis.src_to_emoiji(text)
 
     @staticmethod
-    def print_counter(counter, limit=None):
+    def print_counter(counter, limit=None, mode='raw', percent_length=5):
         """Prints the ranking of a counter object to the console, stopping at limit if it is an integer.
         """
         if limit is not None:
@@ -758,13 +759,21 @@ class ConvoReader(BaseConvoReader):
                               "(limit must be > 0)"
         else:
             limit = len(counter)
+
+        assert mode in ['freq', 'raw'], "mode must either be 'raw' or 'freq'"
+
         values = counter.most_common()
-        max_length = len(str(limit)) + 1
-        for i in range(1, limit + 1):
-            print("{0}){1}{2}   - ({3})".format(i,
-                                                ' ' * (max_length - len(str(i))),
-                                                values[i - 1][0],
-                                                values[i - 1][1]))
+        max_index_length = len(str(limit)) + 1
+        lines = [("{0}){1}{2}".format(i, ' ' * (max_index_length - len(str(i))), values[i - 1][0]), values[i - 1][1])
+                 for i in range(1, limit + 1)]
+        max_line_length = len(max(lines, key=lambda x: len(x[0]))[0]) + 1
+
+        for line in lines:
+            print(line[0] + ' ' * (max_line_length - len(line[0])), end='- ')
+            if mode == 'raw':
+                print("({0})".format(line[1]))
+            else:
+                print("{0}%".format(str(round(line[1], ndigits=percent_length))[:percent_length]))
 
     # ------------------------------------------   PUBLIC STATIC METHODS   ------------------------------------------- #
 
@@ -823,7 +832,7 @@ class ConvoReader(BaseConvoReader):
         preferences['global'] = dict(threshold=240)
         return preferences
 
-    # ------------------------------------------   PUBLIC STATIC METHODS   ------------------------------------------- #
+    # -----------------------------------------------   PREFERENCES   ------------------------------------------------ #
 
     # -------------------------------------   PRINTING CONVERSATION TO CONSOLE   ------------------------------------- #
 
