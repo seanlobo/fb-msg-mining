@@ -214,6 +214,27 @@ class BaseConvoReader:
 
         return msg_freq
 
+    def _raw_msgs_by_weekday(self, contact=None):
+        """Returns a list containing frequency of chatting by days
+        of week, ordered by index, with 0 being Monday and 6 Sunday
+        """
+        contact = self._assert_contact(contact)
+
+        if contact is None:
+            key = lambda x: True
+        else:
+            key = lambda x: x in contact
+
+        weekday_freq = [0 for _ in range(7)]
+        for p, m, d in self._convo:
+            if key(p):
+                weekday_freq[d.weekday()] += 1
+
+        weekday_total = sum(weekday_freq)
+        if weekday_total == 0:  # If this conversation has no messages
+            return [0 for _ in weekday_freq]
+        return [day / weekday_total for day in weekday_freq]
+
     def _raw_msgs_by_time(self, window=60, contact=None):
         """The percent of conversation by time of day
         Parameters:
@@ -352,25 +373,6 @@ class BaseConvoReader:
         for key, freq in raw_freqs.items():
             res[key] = len(freq) / total * 100
         return res
-
-    def _raw_msgs_by_weekday(self):
-        """Returns a list containing frequency of chatting by days
-        of week, ordered by index, with 0 being Monday and 6 Sunday
-        """
-        weekday_freq = [0 for i in range(7)]
-        check = self._convo[0][2]
-        msgs = 0
-        for person, msg, date in self._convo:
-            if check - date == 0:
-                msgs += 1
-            else:
-                weekday_freq[date.weekday()] += msgs
-                msgs = 1
-
-        weekday_total = sum(weekday_freq)
-        if weekday_total == 0:  # If this conversation has no messages
-            return [0 for day in weekday_freq]
-        return [day / weekday_total for day in weekday_freq]
 
     def _raw_word_freqs(self):
         """Returns a dictionary that maps names of people in the conversation
