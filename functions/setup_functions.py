@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+from collections import Counter
 from bs4 import BeautifulSoup
 from colorama import init, Fore, Back, Style
 
@@ -112,7 +113,8 @@ def get_messages_readable(thread, previous=None):
     return previous
 
 
-def get_all_msgs_dict(msg_html_path, unordered_threads=None, footer=None, times=None):
+
+def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
     """Returns the dictionary uesd by MessageReader"""
     conversation_color = Fore.LIGHTYELLOW_EX + Back.LIGHTBLACK_EX
     previous_color = Fore.LIGHTCYAN_EX + Back.BLACK
@@ -200,11 +202,11 @@ def get_all_msgs_dict(msg_html_path, unordered_threads=None, footer=None, times=
     if unordered_threads is None or footer is None:
         all_thread_containers = get_all_thread_containers(msg_html_path)
         unordered_threads, footer = get_all_threads_unordered(all_thread_containers)
-
+    user_input_time = False
     # The end result
     msgs = dict()
     for thread in unordered_threads:
-        convo_name = thread.contents[0]
+        convo_name = clean_convo_name(thread.contents[0])
         cur_thread = get_messages_readable(thread)
         if convo_name in msgs: # Another conversation with this name been seen before
             previous = msgs[convo_name][-1]
@@ -223,9 +225,15 @@ def get_all_msgs_dict(msg_html_path, unordered_threads=None, footer=None, times=
 
                 # The following is used in setup to time how long it takes various processes
                 # This timing counts the time that user input starts, as there can be a lag before
-                if times is not None:
-                    times.append(time.time())
-                    times = None
+
+                if not user_input_time:
+                    times.append(time.time())  # Background setup done
+                    print('\n' + one_line() + '\n')
+                    input("Press enter when you're ready to continue to user input: \n")
+                    # this time is user input prompt time
+
+                    times.append(time.time())  # User selection is starting
+                    user_input_time = True
 
                 clear_screen()
 
@@ -267,8 +275,84 @@ def get_all_msgs_dict(msg_html_path, unordered_threads=None, footer=None, times=
             # A conversation with the name of current message group does not exist, so it is added with no issues :D
             msgs[convo_name] = cur_thread
 
-    print('\a', '')
-    return (msgs, str(footer))
+    times.append(time.time())
+    quick_preferences = PreferencesSearcher.from_msgs_dict(msgs)
+    times.append(time.time())
+
+    return msgs, str(footer), quick_preferences.preferences
+
+
+def clean_convo_name(name, split_factor=', ') -> str:
+    return split_factor.join(sorted(name.split(split_factor)))
+
+
+class PreferencesSearcher:
+    QUALITIES = ['alpha', 'length', 'contacted']
+
+    def __init__(self, preferences):
+        self.preferences = preferences
+        self.bounds = range(1, len(preferences['alpha']) + 1)
+
+    @classmethod
+    def from_msgs_dict(cls, msgs_dict: dict):
+        preferences = dict()
+
+        alphabetical = [name for name, _ in sorted(msgs_dict.items(), key=lambda x: x[0])]
+        alpha_dict = dict()
+        for i, name in enumerate(alphabetical):
+            alpha_dict[i + 1] = (name, None)
+            alpha_dict[name] = (i + 1, name)
+        preferences['alpha'] = alpha_dict
+
+        by_num = sorted([(name, len(convo)) for name, convo in msgs_dict.items()], key=lambda x: x[1])
+        by_num_dict = dict()
+        for i, entry in enumerate(by_num):
+            name, convo_length = entry
+            by_num_dict[i + 1] = tuple(entry)
+            by_num_dict[name] = (i + 1, convo_length)
+        preferences['length'] = by_num_dict
+
+        by_recently_contacted = sorted([(name, convo) for name, convo in msgs_dict.items()],
+                                       key=lambda val: CustomDate(val[1][-1][2]), reverse=True)
+        by_recent_dict = dict()
+        for i, entry in enumerate(by_recently_contacted):
+            date = entry[1][-1][2]
+            name = entry[0]
+            by_recent_dict[i + 1] = (name, date)
+            by_recent_dict[name] = (i + 1, date)
+        preferences['contacted'] = by_recent_dict
+
+        return cls(preferences)
+
+    def get_name(self, index, quality, value=False):
+        assert isinstance(index, int), "index must be an integer"
+        assert index in self.bounds, "index must be in {0}".format(str(self.bounds))
+        assert quality in PreferencesSearcher.qualities, "quality must be in: "\
+            .format(str(PreferencesSearcher.qualities))
+        assert isinstance(value, False) or isinstance(value, True), "value must be a boolean"
+
+        data = self.preferences[quality][index]
+        if value:
+            return data[1]
+        else:
+            return data[0]
+
+    def get_index(self, name, quality, value=False):
+        assert isinstance(name, str), "index must be an integer"
+        assert quality in PreferencesSearcher.qualities, "quality must be in: "\
+            .format(str(PreferencesSearcher.qualities))
+        assert isinstance(value, False) or isinstance(value, True), "value must be a boolean"
+
+        if name not in self.preferences[quality]:
+            return None
+        data = self.preferences[quality][name]
+        return data[1] if value else data[0]
+
+    def __repr__(self):
+        return "PreferenceSearcher({0})".format(repr(self.preferences))
+
+    def __str__(self):
+        return repr(self)
 
 
 def clear_screen():
@@ -287,6 +371,7 @@ def one_line(pattern='-'):
     # Alternatively https://docs.python.org/3/library/string.html#formatstrings
     # return '{:{fill}{align}{width}}'.format('', fill=pattern, width=console_length, align='^')
 
+
 def user_says_yes():
     """Returns True if the user types 'y' or 'yes' and False for 'no', 'n (ignoring case)'"""
     while True:
@@ -295,3 +380,20 @@ def user_says_yes():
             return True
         elif choice in ['no', 'n']:
             return False
+
+
+def color_method(string: str) -> str:
+    """Colors a function call passed with one color, making the arguments / parameters another"""
+    outer_code_color = Fore.LIGHTGREEN_EX
+    inner_code_color = Fore.CYAN
+
+    result = "" + Back.BLACK
+
+    if '(' in string:
+        result += outer_code_color + string[:string.find('(') + 1]
+        result += inner_code_color + string[string.find('(') + 1:-1]
+        result += outer_code_color + ')' + Style.RESET_ALL
+    else:
+        result += inner_code_color + string + Style.RESET_ALL
+    return result
+

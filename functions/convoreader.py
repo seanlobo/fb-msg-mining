@@ -11,7 +11,7 @@ from functions.baseconvoreader import BaseConvoReader
 from functions.wordcloud import WordCloud
 from functions.customdate import CustomDate
 import functions.emojis as emojis
-from functions.setup_functions import clear_screen, one_line, user_says_yes
+from functions.setup_functions import clear_screen, one_line, user_says_yes, color_method
 
 
 init(autoreset=True)
@@ -777,6 +777,7 @@ class ConvoReader(BaseConvoReader):
 
     # ------------------------------------------   PUBLIC STATIC METHODS   ------------------------------------------- #
 
+
     # -----------------------------------------------   PREFERENCES   ------------------------------------------------ #
 
     def _pick_color(self, person: int) -> int:
@@ -1466,22 +1467,6 @@ class ConvoReader(BaseConvoReader):
         return "ConvoReader({0}, {1})".format(repr(self._name), repr(self._convo))
 
     # ----------------------------------------------   BUILT IN METHODS   -------------------------------------------- #
-
-
-def color_method(string: str) -> str:
-    """Colors a function call passed with one color, making the arguments / parameters another"""
-    outer_code_color = Fore.LIGHTGREEN_EX
-    inner_code_color = Fore.CYAN
-
-    result = "" + Back.BLACK
-
-    if '(' in string:
-        result += outer_code_color + string[:string.find('(') + 1]
-        result += inner_code_color + string[string.find('(') + 1:-1]
-        result += outer_code_color + ')' + Style.RESET_ALL
-    else:
-        result += inner_code_color + string + Style.RESET_ALL
-    return result
 
 
 def get_user_choice_from_range(start, end):
