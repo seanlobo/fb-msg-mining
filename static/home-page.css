@@ -23,6 +23,13 @@ body {
     opacity: 0.8;
 }
 
+/* Custom styles */
+
+.hide {
+    visibility: hidden;
+    display: none;
+}
+
 /* Home Page Carousel */
 
 header.carousel {
@@ -40,31 +47,6 @@ header.carousel .fill {
     height: 100%;
     background-position: center;
     background-size: cover;
-}
-
-/* 404 Page Styles */
-
-.error-404 {
-    font-size: 100px;
-}
-
-/* Pricing Page Styles */
-
-.price {
-    display: block;
-    font-size: 50px;
-    line-height: 50px;
-}
-
-.price sup {
-    top: -20px;
-    left: 2px;
-    font-size: 20px;
-}
-
-.period {
-    display: block;
-    font-style: italic;
 }
 
 /* Footer Styles */

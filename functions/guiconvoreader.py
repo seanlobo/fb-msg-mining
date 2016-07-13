@@ -10,12 +10,15 @@ import functions.emojis as emojis
 
 
 class GUIConvoReader(BaseConvoReader):
-    def __init__(self, convo_name, convo_list):
+    def __init__(self, convo_name, convo_list, download_date):
         BaseConvoReader.__init__(self, convo_name, convo_list)
+        self._last_day = download_date
 
     # -----------------------------------------------   PUBLIC METHODS   --------------------------------------------- #
     def data_for_total_graph(self, contact=None, cumulative=False, forward_shift=0):
         data = self.msgs_graph(contact, cumulative, forward_shift)
+        while data[-1][0].date != self._last_day.date:
+            data.append([data[-1][0].plus_x_days(1), 0])
 
         json = '[\n'
         for day, frequency in data:

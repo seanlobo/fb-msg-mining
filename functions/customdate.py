@@ -176,7 +176,7 @@ class CustomDate():
         return "CustomDate({0})".format(repr(self.full_date))
 
     def __eq__(self, other):
-        if isinstance(other, CustomDate):
+        if not isinstance(other, CustomDate):
             return False
         return self.date == other.date and self.minutes() == other.minutes()
 

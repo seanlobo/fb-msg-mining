@@ -31,11 +31,12 @@ class MessageReader:
 
                 self.quick_stats = PreferencesSearcher(tmp_preference)
             except Exception as e:
-                print(Fore.LIGHTRED_EX + Back.BLACK + "An error occured when reading in your data file. Please make "
+                print(Fore.LIGHTRED_EX + Back.BLACK + "An error occurred when reading in your data file. Please make "
                                                       "sure setup.py finished properly")
                 raise e
         self.names = self._get_convo_names_freq()
         self.person = join(self.download.split(' ')[2:-8], split=" ")
+        self.download_date = CustomDate(" ".join(self.download.split()[-7:]))
 
         self._edits = dict()
         self._spacer = ' ---> '
@@ -80,9 +81,9 @@ class MessageReader:
             print_names(), the name of the conversation you want (e.g. 'sean lobo, jason perrin')
             or a list of names (e.g. ['jason perrin', 'sean lobo'])
         """
-        assert type(people) in [str, list, int], (""
-                                                  "Invalid argument: must pass"
-                                                  "a list of names (as strings), string, or int")
+        assert type(people) in [str, list, int], (
+            "Invalid argument: must pass a list of names (as strings), string, or int"
+        )
 
         if type(people) is int:
             if people > 0:
@@ -99,12 +100,12 @@ class MessageReader:
         print("You haven't talked with {0} before".format(people))
         return None
 
-    def get_gui_convo(self, index):
+    def get_convo_gui(self, index):
         """Returns the GUIConvoReader object corresponding to index"""
         assert isinstance(index, int), "index needs to be an integer"
         assert 0 < index <= len(self), "Index out of bounds, index must be between 1 and {0}".format(len(self))
 
-        return GUIConvoReader(self.names[index - 1], self.data[self.names[index - 1]])
+        return GUIConvoReader(self.names[index - 1], self.data[self.names[index - 1]], self.download_date)
 
     def edit_convo_participants(self, convo_num, old_name, new_name):
         """Updates the specified conversation number by replacing all instances of old_name in the person
