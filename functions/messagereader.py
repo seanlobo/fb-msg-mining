@@ -6,7 +6,7 @@ import ast
 from colorama import Fore, Back, Style, init
 
 
-from functions.setup_functions import clear_screen, user_says_yes
+from functions.setup_functions import PreferencesSearcher, clear_screen, user_says_yes
 from functions.convoreader import ConvoReader, color_method
 from functions.customdate import CustomDate
 
@@ -20,11 +20,19 @@ class MessageReader:
             try:
                 self.data = ast.literal_eval(f.readline())
                 self.download = f.readline()
+
+                tmp_preference = ast.literal_eval(f.readline())
+                tmp_contacted = tmp_preference['contacted']
+                new_contacted = dict()
+                for key, val in tmp_contacted.items():
+                    new_contacted[key] = (val[0], CustomDate(val[1]))
+                tmp_preference['contacted'] = new_contacted
+
+                self.quick_stats = PreferencesSearcher(tmp_preference)
             except Exception as e:
                 print(Fore.LIGHTRED_EX + Back.BLACK + "An error occured when reading in your data file. Please make "
                                                       "sure setup.py finished properly")
-                print(e)
-                exit()
+                raise e
         self.names = self._get_convo_names_freq()
         self.person = join(self.download.split(' ')[2:-8], split=" ")
 

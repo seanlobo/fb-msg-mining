@@ -69,11 +69,7 @@ unordered_threads, footer = setup_functions.get_all_threads_unordered(
 
 times.append(time.time())
 
-print('\n' + setup_functions.one_line() + '\n')
-input("Press enter when you're ready to continue to user input: \n")
-print("(it could take a little bit longer to get there)")
-
-times.append(time.time())
+msgs, footer, preferences = setup_functions.get_all_msgs_dict('html/messages.html', unordered_threads, footer, times)
 # ------------------------------------  BACKGROUND SETUP AND INFORMATION FOR USER  ---------------------------------- #
 
 
@@ -81,12 +77,10 @@ times.append(time.time())
 
 
 # -------------------------------------------------  WRITING TO FILES  ----------------------------------------------- #
-msgs, footer = setup_functions.get_all_msgs_dict('html/messages.html', unordered_threads=unordered_threads,
-                                                 footer=footer, times=times)
-
 with open('data/data.txt', mode='w', encoding='utf-8') as f:
     f.write(str(msgs) + '\n')
-    f.write(footer)
+    f.write(footer + '\n')
+    f.write(str(preferences))
 os.makedirs('data/conversation_data', exist_ok=True)
 print('Setup will finish shortly\n')
 # -------------------------------------------------  WRITING TO FILES  ----------------------------------------------- #
@@ -96,9 +90,9 @@ print('Setup will finish shortly\n')
 
 
 # -------------------------------------------------  PRINTING TIMES  ------------------------------------------------- #
-times.append(time.time())
 # times should be in the following format:
-# [{start_time}, {after_background_setup}, {after_user_says_continue}, {begin_user_input}, {end}]
+# [{start_time}, {after_background_setup}, {after_user_says_continue}, {begin_user_input},
+#   {final_analysis_start}, {final_analysis_end}]
 
 
 def time_string(time_as_seconds):
@@ -115,7 +109,8 @@ real_times = [
     "Background setup time: {0}".format(time_string(times[1] - times[0])),
     "User information prompt time: {0}".format(time_string(times[2] - times[1])),
     "Background setup for user prompting: {0}".format(time_string(times[3] - times[2])),
-    "User input time: {0}".format(time_string(times[4] - times[3]))
+    "User input time: {0}".format(time_string(times[4] - times[3])),
+    "Final data analysis: {0}".format(times[5] - times[4]),
 ]
 
 for ele in real_times:
@@ -124,6 +119,8 @@ print("\nTotal setup time: {0}".format(time_string(times[-1] - times[0])))
 
 print()
 print("If you've made it this far then you should be good to start analyzing your conversations!\n"
-      "run `python3 playground.py` to start up the terminal version, or `python3 fancy_ground.py` for a gui")
+      "run `{0}` to start up the terminal version, or `{1}` for a gui"
+      .format(setup_functions.color_method('python3 playground.py'),
+              setup_functions.color_method('python3 fancy_ground.py')))
 print()
 # -------------------------------------------------  PRINTING TIMES  ------------------------------------------------- #

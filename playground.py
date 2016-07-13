@@ -1,13 +1,17 @@
 # Place to run all commands
 
 from functions.messagereader import MessageReader
-from functions.setup_functions import clear_screen
+from functions.setup_functions import clear_screen, color_method
 from functions.wordcloud import WordCloud
-from functions.convoreader import ConvoReader, color_method
+from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
 from functions import emojis
 
-m = MessageReader()
+try:
+    m = MessageReader()
+except Exception as e:
+    print(e)
+    exit()
 
 clear_screen()
 print("\nWelcome to the python3 terminal version of fb-msg-mining!\n\n")
