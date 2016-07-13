@@ -113,7 +113,6 @@ def get_messages_readable(thread, previous=None):
     return previous
 
 
-
 def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
     """Returns the dictionary uesd by MessageReader"""
     conversation_color = Fore.LIGHTYELLOW_EX + Back.LIGHTBLACK_EX
@@ -396,4 +395,3 @@ def color_method(string: str) -> str:
     else:
         result += inner_code_color + string + Style.RESET_ALL
     return result
-
