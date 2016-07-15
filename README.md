@@ -48,3 +48,9 @@ If you have errors at this step and can't figure out why, email me at `seanlobo2
 ## Using the program
 
 run `python3 -i playground.py` to get an interactive session and analyze data.
+
+# Libraries used
+While original aspects of this project are open source under the MIT License, various libraries are utilized that are subject to their own
+terms and conditions, and are documented to the best of my knowledge. Licenses can be found in this project, with more information in credit.txt.
+In particular, the graphing functionality of highcharts is used in this project, but that is by no means central to the project.
+Note that HighCharts and its software is not free for commercial and Governmental use. More information can be found at highcharts.com

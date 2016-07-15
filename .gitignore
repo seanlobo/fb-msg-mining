@@ -125,7 +125,6 @@ testing
 !msgs_over_time.html
 tmp.py
 
-
 conversation_data
 output
 wordClouds
@@ -138,9 +137,6 @@ data.txt
 !cloud_fg.bmp
 !whale.png
 
-# License
-!LICENSE.txt
-
 # Template html files
 !convo.html
 !graphs.html
@@ -151,3 +147,7 @@ data.txt
 !convo.css
 !bootstrap.min.css
 !home-page.css
+
+# License
+!LICENSE.txt
+!credit.txt

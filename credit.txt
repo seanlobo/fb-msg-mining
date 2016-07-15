@@ -1,0 +1,39 @@
+The following libraries are used in one way or another throughout this project, all credit for those features go to their
+respective authors/ owners. Licenses for most of the below can be found in the project, with exceptions for HighCharts
+(see README.md), jQuery (comments can be found in the minified file) and BeautifulSoup (I couldn't find a license online,
+see the url below)
+
+# Java - Kumo
+https://github.com/kennycason/kumo
+
+# Java - Minimal_JSON
+https://github.com/ralfstx/minimal-json
+
+# JavaScript - jQuery
+/*! jQuery v1.11.1 | (c) 2005, 2014 jQuery Foundation, Inc. | jquery.org/license */
+https://github.com/jquery/jquery
+
+# JavaScript - HighCharts
+(See README.md)
+http://www.highcharts.com/
+
+# CSS - Bootstrap
+http://getbootstrap.com/
+
+# Python - BeautifulSoup
+"Copyright (c) 2004-2015 Leonard Richardson"
+License - "MIT"
+Author - "Leonard Richardson (leonardr@segfault.org)"
+http://www.crummy.com/software/BeautifulSoup/bs4/doc/
+
+# Python - Colorama
+https://github.com/tartley/colorama
+
+# Python - Flask
+http://flask.pocoo.org/
+
+# Python - Emoji
+https://github.com/carpedm20/emoji.git
+
+# Python - Emojicodecs
+https://github.com/suzukitakafumi/emojicodecs.git
