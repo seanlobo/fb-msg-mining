@@ -40,11 +40,11 @@ def graphs_choose_conversation():
 def graphs(convo_num):
     current_convo = load_all_gui(convo_num)
 
-    return render_template('graphs.html', convo=current_convo)
+    return render_template('graphs.html', convo=current_convo, convo_num=convo_num)
 
 
 @app.route('/graphs/conversation/<int:convo_num>/total_messages/<contact>/'
-           '<int:cumulative>/<int:forward_shift>/<int:negative>')
+           '<int:cumulative>/<int:forward_shift>/<int:negative>/')
 def total_messages_data(convo_num, contact, cumulative, forward_shift, negative):
     current_convo = load_all_gui(convo_num)
     contact = current_convo.to_contact_string(contact)
@@ -57,8 +57,9 @@ def total_messages_data(convo_num, contact, cumulative, forward_shift, negative)
 
     if negative == 1:
         forward_shift *= -1
+    cumulative = cumulative == 1
     try:
-        return current_convo.data_for_total_graph(contact=contact, cumulative=(current_convo == 1),
+        return current_convo.data_for_total_graph(contact=contact, cumulative=cumulative,
                                                   forward_shift=forward_shift)
     except AssertionError:
         abort(404)
@@ -69,7 +70,7 @@ def messages_by_day_data(convo_num, contact):
     current_convo = load_all_gui(convo_num)
     contact = current_convo.to_contact_string(contact)
 
-    if not current_convo.contains_contact(contact) or contact is None:
+    if not current_convo.contains_contact(contact) and contact is not None:
         abort(404)
 
     return current_convo.data_for_msgs_by_day(contact=contact)

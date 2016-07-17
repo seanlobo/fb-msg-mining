@@ -9,6 +9,7 @@ from functions import emojis
 
 try:
     m = MessageReader()
+    p = m.quick_stats
 except Exception as e:
     print(e)
     exit()

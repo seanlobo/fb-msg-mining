@@ -274,7 +274,6 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
             # A conversation with the name of current message group does not exist, so it is added with no issues :D
             msgs[convo_name] = cur_thread
 
-    times.append(time.time())
     quick_preferences = PreferencesSearcher.from_msgs_dict(msgs)
     times.append(time.time())
 
@@ -303,7 +302,7 @@ class PreferencesSearcher:
             alpha_dict[name] = (i + 1, name)
         preferences['alpha'] = alpha_dict
 
-        by_num = sorted([(name, len(convo)) for name, convo in msgs_dict.items()], key=lambda x: x[1])
+        by_num = sorted([(name, len(convo)) for name, convo in msgs_dict.items()], key=lambda x: x[1], reverse=True)
         by_num_dict = dict()
         for i, entry in enumerate(by_num):
             name, convo_length = entry
@@ -326,9 +325,9 @@ class PreferencesSearcher:
     def get_name(self, index, quality, value=False):
         assert isinstance(index, int), "index must be an integer"
         assert index in self.bounds, "index must be in {0}".format(str(self.bounds))
-        assert quality in PreferencesSearcher.qualities, "quality must be in: "\
-            .format(str(PreferencesSearcher.qualities))
-        assert isinstance(value, False) or isinstance(value, True), "value must be a boolean"
+        assert quality in PreferencesSearcher.QUALITIES, "quality must be in: "\
+            .format(str(PreferencesSearcher.QUALITIES))
+        assert value in [True, False], "value must be a boolean"
 
         data = self.preferences[quality][index]
         if value:
@@ -338,8 +337,8 @@ class PreferencesSearcher:
 
     def get_index(self, name, quality, value=False):
         assert isinstance(name, str), "index must be an integer"
-        assert quality in PreferencesSearcher.qualities, "quality must be in: "\
-            .format(str(PreferencesSearcher.qualities))
+        assert quality in PreferencesSearcher.QUALITIES, "quality must be in: "\
+            .format(str(PreferencesSearcher.QUALITIES))
         assert isinstance(value, False) or isinstance(value, True), "value must be a boolean"
 
         if name not in self.preferences[quality]:

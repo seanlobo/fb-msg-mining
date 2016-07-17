@@ -61,7 +61,11 @@ example_text = ("Let's assume Sally makes a group chat with her friends Susie an
                 "belong to the same chat. If you aren't sure at any point, or can't figure out their identities, "
                 + Fore.LIGHTRED_EX + Back.BLACK + "default to NO" + Style.RESET_ALL)
 print(textwrap.fill(example_text, width=console_width))
-print()
+print('\n' * 2)
+
+time_text = ("Now waiting for background setup. This process has been known to take up to 10 minutes, depending "
+             "on the speed of your processor and the size of your archive\n")
+print(textwrap.fill(time_text, width=console_width))
 
 os.makedirs('data', exist_ok=True)
 unordered_threads, footer = setup_functions.get_all_threads_unordered(
@@ -111,7 +115,6 @@ real_times = [
     "User information prompt time: {0}".format(time_string(times[2] - times[1])),
     "Background setup for user prompting: {0}".format(time_string(times[3] - times[2])),
     "User input time: {0}".format(time_string(times[4] - times[3])),
-    "Final data analysis: {0}".format(times[5] - times[4]),
 ]
 
 for ele in real_times:
@@ -121,7 +124,7 @@ print("\nTotal setup time: {0}".format(time_string(times[-1] - times[0])))
 print()
 print("If you've made it this far then you should be good to start analyzing your conversations!\n"
       "run `{0}` to start up the terminal version, or `{1}` for a gui"
-      .format(setup_functions.color_method('python3 playground.py'),
-              setup_functions.color_method('python3 fancy_ground.py')))
+      .format(Fore.LIGHTGREEN_EX + Back.BLACK + 'python3 -i playground.py' + Style.RESET_ALL,
+              Fore.LIGHTCYAN_EX + Back.BLACK + 'python3 fancy_ground.py' + Style.RESET_ALL))
 print()
 # -------------------------------------------------  PRINTING TIMES  ------------------------------------------------- #
