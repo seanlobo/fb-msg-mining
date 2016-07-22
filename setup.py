@@ -47,7 +47,7 @@ user_prompting_info = ("For the most part, setup can figure things out for itsel
                        "be confused for each other, in particular group chats. When this happens, setup will "
                        "prompt users to specify whether two confusing conversations are the same, or if "
                        "they both belong to separate chats that happen to share participants. It's likely that "
-                       "you will have to go to facebook.com to see whether the two conversations are the same.")
+                       "you will have to go to Facebook.com to see whether the two conversations are the same.")
 print(textwrap.fill(user_prompting_info, width=console_width))
 print()
 
@@ -70,8 +70,6 @@ print(textwrap.fill(time_text, width=console_width))
 os.makedirs('data', exist_ok=True)
 unordered_threads, footer = setup_functions.get_all_threads_unordered(
     setup_functions.get_all_thread_containers('html/messages.htm'))
-
-times.append(time.time())
 
 msgs, footer, preferences = setup_functions.get_all_msgs_dict('html/messages.html', unordered_threads, footer, times)
 # ------------------------------------  BACKGROUND SETUP AND INFORMATION FOR USER  ---------------------------------- #
@@ -96,8 +94,7 @@ print('Setup will finish shortly\n')
 
 # -------------------------------------------------  PRINTING TIMES  ------------------------------------------------- #
 # times should be in the following format:
-# [{start_time}, {after_background_setup}, {after_user_says_continue}, {begin_user_input},
-#   {final_analysis_start}, {final_analysis_end}]
+# [{start_time}, {after_user_says_continue}, {begin_user_input}, {final_analysis_end}]
 
 
 def time_string(time_as_seconds):
@@ -112,9 +109,8 @@ def time_string(time_as_seconds):
 
 real_times = [
     "Background setup time: {0}".format(time_string(times[1] - times[0])),
-    "User information prompt time: {0}".format(time_string(times[2] - times[1])),
-    "Background setup for user prompting: {0}".format(time_string(times[3] - times[2])),
-    "User input time: {0}".format(time_string(times[4] - times[3])),
+    "User instruction time, prior to user input: {0}".format(time_string(times[2] - times[1])),
+    "User input time: {0}".format(time_string(times[3] - times[2])),
 ]
 
 for ele in real_times:

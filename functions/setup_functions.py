@@ -122,17 +122,17 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
 
     def add_to_duplicate():
         """Helper method to add a message group to a DUPLICATE conversation"""
-        nonlocal msgs, cur_thread, convo_name, next_time
+        nonlocal msgs, cur_thread, key, next_time, duplicate_index
         duplicate_num = 1  # the number of duplicate message groups (have the same people, aka name)
         # but in reality belong to different conversations
 
-        added = False # used so that we don't accidentally add something twice
+        added = False  # used so that we don't accidentally add something twice
 
         # while there exists another duplicate conversation in our list keep checking if the current
         # message group belongs to it. If we exit the while loop a new conversation is created with
         # "DUPLICATE #X appended to distinguish it, with X being the xth new duplicate conversation
-        while (convo_name + ', DUPLICATE #{0}'.format(duplicate_num)) in msgs and not added:
-            new_name = convo_name + ', DUPLICATE #{0}'.format(duplicate_num)
+        while (key + ', DUPLICATE #{0}'.format(duplicate_num)) in msgs and not added:
+            new_name = key + ', DUPLICATE #{0}'.format(duplicate_num)
 
             # The time of the last message in the conversation for new_name
             prev_time = CustomDate(msgs[new_name][-1][2])
@@ -141,16 +141,20 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                 # if our current conversation was during or after the last message in the new_name convo
                 clear_screen()
 
-                # prints last and first 5 messages of previous and current message groups, respectively
-                print(conversation_color + convo_name + Style.RESET_ALL)
+                print("#{0} of {1} (at maximum) duplicate conversations. Some might be done for you behind the scenes."
+                      .format(duplicate_index, num_duplicates))
+                print(conversation_color + key)
                 print(one_line() + "\n")
-                print('# previous conversation end')
-                for j in range(- min(5, len(msgs[new_name]), 0)):
-                    print(msgs[new_name][j])
-                print("\n# next conversation start")
-                for j in range(0, min(6, len(cur_thread))):
-                    print(cur_thread[j])
-                print("\n" + one_line())
+
+                print(previous_color + '# previous conversation end' + Style.RESET_ALL)
+                print_thread(msgs[key], end=True, padding=5)
+
+                print(current_color + "\n# next conversation start" + Style.RESET_ALL)
+                print_thread(cur_thread, start=True, padding=5)
+
+                print('\n' + one_line())
+                # Prints the last 5 messages of the previous message group and the first 5 message of
+                # the current message group, both in RED with a BLACK background
 
                 print(are_same_color + "\nAre these two chunks from the same conversation? You might have "
                                        "to look this up on facebook.com. [Y/n]" + Style.RESET_ALL)
@@ -170,7 +174,8 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
 
         if not added:
             # if the current message group hasn't been added, add with a new duplicate #
-            msgs[convo_name + ', DUPLICATE #{0}'.format(duplicate_num)] = cur_thread
+            msgs[key + ', DUPLICATE #{0}'.format(duplicate_num)] = cur_thread
+        duplicate_index += 1
         return
 
     def print_thread(thread, start=False, end=False, padding=5):
@@ -198,17 +203,64 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                   .format(person, msg, date_color + date, align='<', width=max_name_length))
         return
 
+    # Geting values if default arguments were left as default
     if unordered_threads is None or footer is None:
         all_thread_containers = get_all_thread_containers(msg_html_path)
         unordered_threads, footer = get_all_threads_unordered(all_thread_containers)
-    user_input_time = False
-    # The end result
-    msgs = dict()
+
+    msgs = dict()  # result we return
+    duplicate_bucket = dict()  # temporarily holds duplicate conversations
+    num_duplicates = 0
     for thread in unordered_threads:
         convo_name = clean_convo_name(thread.contents[0])
         cur_thread = get_messages_readable(thread)
-        if convo_name in msgs: # Another conversation with this name been seen before
-            previous = msgs[convo_name][-1]
+        if convo_name not in msgs:
+            # A conversation with the name of current message group does not exist, so it is added with no issues :D
+            msgs[convo_name] = cur_thread
+
+        else:  # Another conversation with this name been seen before, add to duplicate bucket if appropriate
+            cur_time = CustomDate(cur_thread[0][2])
+
+            if convo_name not in duplicate_bucket:  # This is a new duplicate
+                prev_time = CustomDate(msgs[convo_name][-1][2])
+                if -3 <= prev_time.distance_from(cur_time) <= 0:
+                    # If this conversation is within 3 minutes just add it to our msgs dict
+                    msgs[convo_name].extend(cur_thread)
+
+                else:
+                    # if the conversation isn't within 3 minutes, add it to our duplicate bucket
+                    num_duplicates += 1
+                    duplicate_bucket[convo_name] = [cur_thread]
+            else:
+                prev_time = CustomDate(duplicate_bucket[convo_name][-1][-1][2])
+                if -3 <= prev_time.distance_from(cur_time) <= 0:
+                    # If this conversation is within 3 minutes of the previous duplicate in the bucket,
+                    # combine this element with that element
+                    duplicate_bucket[convo_name][-1].extend(cur_thread)
+
+                elif -3 <= CustomDate(msgs[convo_name][-1][2]).distance_from(cur_time) <= 0:
+                    # If this conversation is within 3 minutes of the msgs dict, add it there
+                    msgs[convo_name].extend(cur_time)
+
+                else:
+                    # add a new element to our conversation bucket to be placed later
+                    duplicate_bucket[convo_name].append(cur_thread)
+                    num_duplicates += 1
+
+    # The following is used in setup to time how long it takes various processes
+    # This timing counts the time that user input starts, as there can be a lag before
+    times.append(time.time())  # Background setup done
+    print('\n' + one_line() + '\n')
+    input("Press enter when you're ready to continue to user input: \n")
+    # this time is user input prompt time
+    times.append(time.time())  # User selection is starting
+
+    # Lets finish up this setup boys, place all elements in the conversation bucket
+    duplicate_index = 1
+    for key in sorted(duplicate_bucket.keys()):
+        for cur_thread in duplicate_bucket[key]:
+
+            previous = msgs[key][-1]
             next = cur_thread[0]
             prev_time, next_time = CustomDate(previous[2]), CustomDate(next[2])
             # prev_time and next_time are used to calculate the time difference between the previous
@@ -217,7 +269,7 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
 
             if -3 <= prev_time.distance_from(next_time) <= 0:
                 # the previous conversation chunk is before the new one and within 3 minutes
-                msgs[convo_name].extend(cur_thread)
+                msgs[key].extend(cur_thread)
             elif prev_time.distance_from(next_time) < -3:
                 # if the new message group is after the new message group it but not within 3 minutes
                 # we need user input to see if the two belong to the same chat
@@ -236,18 +288,17 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
 
                 clear_screen()
 
-                print(conversation_color + convo_name)
+                print("#{0} of {1} (at maximum) duplicate conversations. Some might be done for you behind the scenes."
+                      .format(duplicate_index, num_duplicates))
+                print(conversation_color + key)
                 print(one_line() + "\n")
+
                 print(previous_color + '# previous conversation end' + Style.RESET_ALL)
+                print_thread(msgs[key], end=True, padding=5)
 
-                print_thread(msgs[convo_name], end=True, padding=5)
-                # for i in range(- min(5, len(msgs[convo_name])), 0):
-                #     print(msgs[convo_name][i])
                 print(current_color + "\n# next conversation start" + Style.RESET_ALL)
-
                 print_thread(cur_thread, start=True, padding=5)
-                # for i in range(0, min(6, len(cur_thread))):
-                #     print(cur_thread[i])
+
                 print('\n' + one_line())
                 # Prints the last 5 messages of the previous message group and the first 5 message of
                 # the current message group, both in RED with a BLACK background
@@ -260,7 +311,8 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                 # user input to decide if the above two message groups are the same conversation
 
                 if are_same:
-                    msgs[convo_name].extend(cur_thread)
+                    msgs[key].extend(cur_thread)
+                    duplicate_index += 1
                 else:
                     # the two conversations are NOT the same (because of user input)
                     #  so we need to add the new one to an appropriate duplicate
@@ -270,12 +322,8 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                 # so we need t add the new one to an appropriate duplicate
                 add_to_duplicate()
 
-        else:
-            # A conversation with the name of current message group does not exist, so it is added with no issues :D
-            msgs[convo_name] = cur_thread
-
     quick_preferences = PreferencesSearcher.from_msgs_dict(msgs)
-    times.append(time.time())
+    times.append(time.time())  # The end of setup
 
     return msgs, str(footer), quick_preferences.preferences
 
@@ -295,14 +343,17 @@ class PreferencesSearcher:
     def from_msgs_dict(cls, msgs_dict: dict):
         preferences = dict()
 
-        alphabetical = [name for name, _ in sorted(msgs_dict.items(), key=lambda x: x[0])]
+        # a list of names sorted first alphabetically and second by reversed number of messages (largest first)
+        alphabetical = [name for name, _ in sorted(msgs_dict.items(), key=lambda x: (x[0], -len(x[1])))]
         alpha_dict = dict()
         for i, name in enumerate(alphabetical):
             alpha_dict[i + 1] = (name, None)
             alpha_dict[name] = (i + 1, name)
         preferences['alpha'] = alpha_dict
 
-        by_num = sorted([(name, len(convo)) for name, convo in msgs_dict.items()], key=lambda x: x[1], reverse=True)
+        # a list of names and conversations lengths sorted first by
+        # reverse number of messages (largest first) and then alphabetically
+        by_num = sorted([(name, len(convo)) for name, convo in msgs_dict.items()], key=lambda x: (-x[1], x[0]))
         by_num_dict = dict()
         for i, entry in enumerate(by_num):
             name, convo_length = entry
@@ -310,6 +361,8 @@ class PreferencesSearcher:
             by_num_dict[name] = (i + 1, convo_length)
         preferences['length'] = by_num_dict
 
+        # a list of conversation names and conversations sorted first by date values
+        # (more recent dates first - None should be after the current date, or date of download)
         by_recently_contacted = sorted([(name, convo) for name, convo in msgs_dict.items()],
                                        key=lambda val: CustomDate(val[1][-1][2]), reverse=True)
         by_recent_dict = dict()
@@ -339,7 +392,7 @@ class PreferencesSearcher:
         assert isinstance(name, str), "index must be an integer"
         assert quality in PreferencesSearcher.QUALITIES, "quality must be in: "\
             .format(str(PreferencesSearcher.QUALITIES))
-        assert isinstance(value, False) or isinstance(value, True), "value must be a boolean"
+        assert value in [True, False], "value must be a boolean"
 
         if name not in self.preferences[quality]:
             return None
