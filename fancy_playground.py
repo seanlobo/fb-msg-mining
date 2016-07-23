@@ -6,7 +6,7 @@ from functions.guiconvoreader import GUIConvoReader
 
 app = Flask(__name__)
 m = MessageReader()
-all_gui_convo_readers = [None for _ in range(len(m) + 1)]
+all_gui_convo_readers = [m.get_convo_gui(i) for i in range(1, len(m) + 1)]
 
 
 # ---------------------------------------------------   HOME PAGE   -------------------------------------------------- #
@@ -28,12 +28,24 @@ def graphs_home():
     return redirect('/graphs/conversation/', code=302)
 
 
-@app.route('/graphs/conversation/', methods=['GET', 'POST'])
-def graphs_choose_conversation():
-    if request.method == 'POST':
-        return redirect("/graphs/conversation/{0}/".format(request.form['convo_num']), code=302)
-    else:  # request.method == 'GET'
-        return render_template('convo.html', text="Choose a conversation to analyze", m=m)
+@app.route('/graphs/conversation/')
+def table():
+    sort = 'length'
+    mode = 'down'
+    if 'sort' in request.args:
+        sort = request.args['sort']
+    if 'mode' in request.args:
+        mode = request.args['mode']
+
+    if sort == 'length':
+        sort = ['length', 'alpha', 'contacted']
+    elif sort == 'alpha':
+        sort = ['alpha', 'length', 'contacted']
+    else:  # sort == 'contacted'
+        sort = ['contacted', 'alpha', 'length']
+
+    reverse = mode == 'down'
+    return render_template('table.html', m=m, p=m.quick_stats, sort=sort, mode=mode, reverse=reverse)
 
 
 @app.route('/graphs/conversation/<int:convo_num>/')
@@ -49,7 +61,7 @@ def total_messages_data(convo_num, contact, cumulative, forward_shift, negative)
     current_convo = load_all_gui(convo_num)
     contact = current_convo.to_contact_string(contact)
 
-    valid_url = (contact is None or current_convo.contains_contact(contact)) and (cumulative == 0 or cumulative == 1) \
+    valid_url = (contact is None or current_convo.contains_contact(contact)) and (cumulative in [0, 1]) \
                                                                              and (negative in [0, 1])
     if not valid_url:
         print("invalid contact or cumulative value")
@@ -76,7 +88,7 @@ def messages_by_day_data(convo_num, contact):
     return current_convo.data_for_msgs_by_day(contact=contact)
 
 
-@app.route('/graphs/conversation/<int:convo_num>/messages_by_time/<contact>/<int:window>')
+@app.route('/graphs/conversation/<int:convo_num>/messages_by_time/<contact>/<int:window>/')
 def messages_by_time_data(convo_num, contact, window):
     current_convo = load_all_gui(convo_num)
 
@@ -86,16 +98,14 @@ def messages_by_time_data(convo_num, contact, window):
     except AssertionError:
         abort(404)
 
+
 # ----------------------------------------------------   GRAPHS   ---------------------------------------------------- #
 
 
 def load_all_gui(convo_num) -> GUIConvoReader:
     if convo_num > len(m) + 1:
         abort(404)
-    global all_gui_convo_readers
-    if all_gui_convo_readers[convo_num] is None:
-        all_gui_convo_readers[convo_num] = m.get_convo_gui(convo_num)
-    return all_gui_convo_readers[convo_num]
+    return all_gui_convo_readers[convo_num - 1]
 
 
 if __name__ == '__main__':

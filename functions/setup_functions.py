@@ -347,7 +347,7 @@ class PreferencesSearcher:
         alphabetical = [name for name, _ in sorted(msgs_dict.items(), key=lambda x: (x[0], -len(x[1])))]
         alpha_dict = dict()
         for i, name in enumerate(alphabetical):
-            alpha_dict[i + 1] = (name, None)
+            alpha_dict[i + 1] = (name, name)
             alpha_dict[name] = (i + 1, name)
         preferences['alpha'] = alpha_dict
 
@@ -398,6 +398,22 @@ class PreferencesSearcher:
             return None
         data = self.preferences[quality][name]
         return data[1] if value else data[0]
+
+    def ordered_values(self, sort, reverse=False):
+        assert isinstance(sort, list), "sort must be a list of sorting preferences"
+        for ele in sort:
+            assert ele in self.QUALITIES, "sort must contain only values from self.QUALITIES: {0}"\
+                .format(self.QUALITIES)
+        assert reverse in [True, False], "reverse must be a boolean"
+        values = []
+        for i in range(self.bounds.start, self.bounds.stop // 2):
+            tmp = []
+            name = self.get_name(i, 'alpha')
+            for quality in sort:
+                tmp.append(self.get_index(name, quality, value=True))
+            values.append(tmp)
+
+        return [dict(zip(sort, value)) for value in sorted(values, reverse=reverse)]
 
     def __repr__(self):
         return "PreferenceSearcher({0})".format(repr(self.preferences))

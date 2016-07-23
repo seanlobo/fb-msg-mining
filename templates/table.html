@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<head>
+    <title>FMM - Conversations</title>
+    <link href="{{ url_for('static', filename='table.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="page-contents">
+
+        <!-- Header of page -->
+        <div class="title">
+            <h1>Choose or search for a conversation to begin analyzing!<h1>
+        </div>
+
+
+        <!-- Search Bar -->
+        <div class="search-area">
+            <div class="search-bar">
+                <div class="container">
+                    <span class="icon"><img src="/static/resources/Search-icon.svg" /></span>
+                    <input type="search" id="search" placeholder="Search..." />
+                </div>
+            </div>
+            <button type="submit" class="search-submit"></button>
+        </div>
+
+
+        <!-- Data table -->
+        <div class="table-background">
+            <table>
+
+                <!-- Table column names -->
+                <thead>
+                    <tr class="column-names">
+                        <th class="th-name">
+                            <button class="th-button" data-row-name="alpha">Conversation Name 
+                                <div>
+                                    {% if sort[0] == 'alpha' %}
+                                        <img data-name="alpha" data-mode="{{ mode }}" class="image-active">
+                                    {% else %}
+                                        <img data-name="alpha">
+                                    {% endif %}
+                                </div>
+                            </button> 
+                        </th>
+                        <th class="th-length">
+                            <button class="th-button" data-row-name="length"># Messages
+                                <div>
+                                    {% if sort[0] == 'length' %}
+                                        <img data-name="length" data-mode="{{ mode }}" class="image-active">
+                                    {% else %}
+                                        <img data-name="length">
+                                    {% endif %}
+                                </div>
+                            </button>
+                        </th>
+                        <th class="th-date">
+                            <button class="th-button" data-row-name="contacted">Recently Contacted 
+                                <div>
+                                    {% if sort[0] == 'contacted' %}
+                                        <img data-name="contacted" data-mode="{{ mode }}" class="image-active">
+                                    {% else %}
+                                        <img data-name="contacted">
+                                    {% endif %}
+                                </div>
+                            </button>
+                        </th>
+                    </tr>
+                </thead>
+
+                <!-- Actual table data -->
+                {% for data_ele in p.ordered_values(sort, reverse=reverse) %}
+                    <tbody>
+                        <tr>
+                            <td><div><a class="graph-link" href="{{ p.get_index(data_ele['alpha'], 'length') }}">{{ data_ele['alpha'] }}</a></div></td>
+                            <td><div>{{ '{:,}'.format(data_ele['length']) }}</div></td>
+                            <td><div>{{ data_ele['contacted'] }}</div></td>
+                        </tr>
+                    </tbody>
+                {% endfor %}
+
+            </table>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.floatThead.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='table.js') }}"></script>
+</body>

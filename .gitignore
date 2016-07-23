@@ -138,15 +138,19 @@ data.txt
 !whale.png
 
 # Template html files
-!convo.html
 !graphs.html
 !index.html
+!table.html
 
 # static css files
 !graphs.css
-!convo.css
 !bootstrap.min.css
 !home-page.css
+!table.css
+
+# Resources for web pages
+!down_arrow.png
+!up_arrow.png
 
 # License
 !LICENSE.txt

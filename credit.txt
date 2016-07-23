@@ -17,6 +17,9 @@ https://github.com/jquery/jquery
 (See README.md)
 http://www.highcharts.com/
 
+# JavaScript - FloatThead
+https://github.com/mkoryak/floatThead/
+
 # CSS - Bootstrap
 http://getbootstrap.com/
 
