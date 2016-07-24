@@ -1,19 +1,74 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Graphs for {{convo._name.title() }}</title>
+        <title>Graphs for {{ ', '.join(convo.get_people()) }}</title>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='graphs.css') }}">
     </head>
     <body>
-        <div id="graph_over_time"></div>
+        <div class="page_contents">
+            
+            <div class="header-section">
+                <div class="header-btn prev">
+                    <button></button>
+                </div>
+                <div class="header">
+                    <h1>{{ convo._name.title() }}</h1>
+                </div>
+                <div class="header-btn next">
+                    <button></button>
+                </div>
+            </div>
 
+            <!-- Graph container -->
+            <div class="graph_body_settings">
+                <div class="graph_body">
+                    <!-- Graphs -->
+                    <div id="graph_over_time" class="graph" data-graph="0"></div>
+                    <div id="cumulative_over_time" class="graph" data-graph="1"></div>
+                    <div id="days_of_week" class="graph" data-graph="2"></div>
+                    <div id="time_of_day" class="graph" data-graph="3"></div>
+                    
+                    <!-- Buttons -->
+                    <div class="button_box">
+                        <button type="button" class="graph_type_button" data-graph-type="0" autofocus>Message frequency</button>
+                        <button type="button" class="graph_type_button" data-graph-type="1">Cumulative messages</button>
+                        <button type="button" class="graph_type_button" data-graph-type="2">Messages by day of week</button>
+                        <button type="button" class="graph_type_button" data-graph-type="3">Messages by time of day</button>
+                    </div>
+                </div>
 
-        <!-- Data for use in javascript -->
-        <div class="hide" data-graph-type="total"> {{ convo.data_for_total_graph() }} </div>
-        <div class="hide" id="name"> {{ convo._name.title() }} </div>
+                <!-- Settings -->
+                <div class="settings-container">
+                    <div class="settings-header">
+                        Maybe some sort of title here?
+                    </div>
+                    <div class="settings-body hide" data-settings-num="0">
+                        maybe some sort of settings in here? Try clicking the buttons on the right in order.
+                    </div>
+                    <div class="settings-body hide" data-settings-num="1">
+                        Add the buttons and settings for each graph in the appropriate div in the "settings" section.
+                    </div>
+                    <div class="settings-body hide" data-settings-num="2">
+                        The data-settings-num corresponds to the button and graph data elements. 
+                        Each of these different colored settings sections only appear for their specific graph
+                    </div>
+                    <div class="settings-body hide" data-settings-num="3">
+                        Delete this text and modify the css at the bottom of the css file.
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Name of this conversation -->
+        <div class="hide" id="name"> {{ convo.get_people() }} </div>
+        <div class="hide" id="convo_num">{{ convo_num }}</div>
+
     </body>
 
     <script src="{{ url_for('static', filename='jquery.js') }}"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <!-- <script src="{{ url_for('static', filename='graphs_over_time.js') }}"></script>
+    <script src="{{ url_for('static', filename='days_of_week.js') }}"></script> -->
     <script src="{{ url_for('static', filename='graphs.js') }}"></script>
 </html>

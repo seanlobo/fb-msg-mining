@@ -473,7 +473,7 @@ class ConvoReader(BaseConvoReader):
 
         max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
         value = max_msgs / 50
-        print("\nEach \"#\" referes to ~{0} messages".format(value))
+        print("\nEach \"#\" refers to ~{0} messages".format(value))
         print()
 
         max_date_len = 12

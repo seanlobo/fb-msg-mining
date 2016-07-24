@@ -10,9 +10,12 @@ from functions.wordcloud import WordCloud
 
 
 class BaseConvoReader:
-    def __init__(self, convo_name, convo_list):
+    def __init__(self, convo_name, convo_list, emojify=True):
         self._name = convo_name.lower()
-        self._convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
+        if emojify:
+            self._convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
+        else:
+            self._convo = [[name.lower(), msg, CustomDate(date)] for name, msg, date in convo_list]
         self._people = self.get_people()
         self._kicked_or_left = [person for person in self._people if person not in self._name.split(', ')]
         self._individual_words = self._cleaned_word_freqs()

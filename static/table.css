@@ -66,9 +66,9 @@ body {
 	color: red;
 	padding-left: 45px;
 	-webkit-border-radius: 5px;
-  	-moz-border-radius: 5px;
-  	border-radius: 5px;
-  	-webkit-transition: background .55s ease;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	-webkit-transition: background .55s ease;
 	-moz-transition: background .55s ease;
 	-ms-transition: background .55s ease;
 	-o-transition: background .55s ease;

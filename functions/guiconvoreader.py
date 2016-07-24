@@ -6,8 +6,8 @@ from functions.baseconvoreader import BaseConvoReader
 
 
 class GUIConvoReader(BaseConvoReader):
-    def __init__(self, convo_name, convo_list, download_date):
-        BaseConvoReader.__init__(self, convo_name, convo_list)
+    def __init__(self, convo_name, convo_list, download_date, emojify=False):
+        BaseConvoReader.__init__(self, convo_name, convo_list, emojify=emojify)
         self._last_day = download_date
 
     # -----------------------------------------------   PUBLIC METHODS   --------------------------------------------- #
@@ -29,8 +29,17 @@ class GUIConvoReader(BaseConvoReader):
         return json.dumps(dict(data=data))
 
     def data_for_msgs_by_time(self, window=60, contact=None):
-        data = self._raw_msgs_by_time(window=window, contact=contact)
-        return json.dumps(dict(data=data))
+        raw_data = self._raw_msgs_by_time(window=window, contact=contact)
+
+        categories = []
+        for i in range(len(raw_data)):
+            categories.append(raw_data[i][0] + "-" + raw_data[(i + 1) % len(raw_data)][0])
+        data = [freq for _, freq in raw_data]
+        if contact is None:
+            contact = "total"
+        final_data = [dict(name=contact, data=data)]
+
+        return json.dumps(dict(categories=categories, data=final_data))
 
     def contains_contact(self, contact):
         if not isinstance(contact, str):
@@ -43,6 +52,14 @@ class GUIConvoReader(BaseConvoReader):
         if contact.lower() == 'none':
             return None
         return ' '.join(contact.split('_')).lower()
+
+    @staticmethod
+    def data_for_all_messages(raw_data):
+        data = []
+        for day, frequency in raw_data:
+            data.append('[Date.UTC({0},{1},{2}),{3}]'.format(day.year(), day.month() - 1, day.day(), frequency))
+
+        return json.dumps(dict(data=data))
     # -----------------------------------------------   PUBLIC METHODS   --------------------------------------------- #
 
     #

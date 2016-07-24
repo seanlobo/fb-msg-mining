@@ -1,3 +1,4 @@
+import time
 from flask import Flask, redirect, render_template, request, abort
 
 from functions.messagereader import MessageReader
@@ -5,6 +6,9 @@ from functions.guiconvoreader import GUIConvoReader
 
 
 app = Flask(__name__)
+
+print("Setting up could take a few moments ", end="")
+initial_time = time.time()
 m = MessageReader()
 all_gui_convo_readers = [m.get_convo_gui(i) for i in range(1, len(m) + 1)]
 
@@ -55,6 +59,16 @@ def graphs(convo_num):
     return render_template('graphs.html', convo=current_convo, convo_num=convo_num)
 
 
+@app.route('/graphs/conversation/<int:convo_num>/next/')
+def next_page(convo_num):
+    return redirect('/graphs/conversation/{0}/'.format(convo_num + 1), code=302)
+
+
+@app.route('/graphs/conversation/<int:convo_num>/prev/')
+def prev_page(convo_num):
+    return redirect('/graphs/conversation/{0}/'.format(convo_num - 1), code=302)
+
+
 @app.route('/graphs/conversation/<int:convo_num>/total_messages/<contact>/'
            '<int:cumulative>/<int:forward_shift>/<int:negative>/')
 def total_messages_data(convo_num, contact, cumulative, forward_shift, negative):
@@ -103,10 +117,10 @@ def messages_by_time_data(convo_num, contact, window):
 
 
 def load_all_gui(convo_num) -> GUIConvoReader:
-    if convo_num > len(m) + 1:
+    if convo_num < 1 or len(m) + 1 < convo_num:
         abort(404)
     return all_gui_convo_readers[convo_num - 1]
 
-
+print("(took {0:.2f} seconds to load)".format(time.time() - initial_time))
 if __name__ == '__main__':
     app.run()
