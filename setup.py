@@ -61,7 +61,20 @@ example_text = ("Let's assume Sally makes a group chat with her friends Susie an
                 "belong to the same chat. If you aren't sure at any point, or can't figure out their identities, "
                 + Fore.LIGHTRED_EX + Back.BLACK + "default to NO" + Style.RESET_ALL)
 print(textwrap.fill(example_text, width=console_width))
+print()
+
+# Tips
+print(Fore.LIGHTRED_EX + Back.BLACK + "Tips:" + Style.RESET_ALL)
+tips_text = ("When two duplicate conversations are encountered, setup prints the last 10 messages from the previous "
+             "conversation, as well as the first 10 from the next conversation. Based on these 20 messages, the user's "
+             "job is to specify whether the second conversation comes right after the first one. A good way to do this "
+             "is to go to www.facebook.com/messages and search for one of the longer messages that appear. When you "
+             "find the conversation that has this messages, see if all 20 messages can be found consecutively. Only "
+             "if you find them all should you specify \"yes\", that the two conversations are the same. Otherwise "
+             "specify no")
+print(textwrap.fill(tips_text, width=console_width))
 print('\n' * 2)
+
 
 time_text = ("Now waiting for background setup. This process has been known to take up to 10 minutes, depending "
              "on the speed of your processor and the size of your archive\n")
@@ -121,6 +134,6 @@ print()
 print("If you've made it this far then you should be good to start analyzing your conversations!\n"
       "run `{0}` to start up the terminal version, or `{1}` for a gui"
       .format(Fore.LIGHTGREEN_EX + Back.BLACK + 'python3 -i playground.py' + Style.RESET_ALL,
-              Fore.LIGHTCYAN_EX + Back.BLACK + 'python3 fancy_ground.py' + Style.RESET_ALL))
+              Fore.LIGHTCYAN_EX + Back.BLACK + 'python3 fancy_playground.py' + Style.RESET_ALL))
 print()
 # -------------------------------------------------  PRINTING TIMES  ------------------------------------------------- #

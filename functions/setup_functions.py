@@ -139,18 +139,22 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
 
             if prev_time.distance_from(next_time) <= 0:
                 # if our current conversation was during or after the last message in the new_name convo
-                clear_screen()
+                print(one_line())
+                print()
+                print(one_line())
 
                 print("#{0} of {1} (at maximum) duplicate conversations. Some might be done for you behind the scenes."
                       .format(duplicate_index, num_duplicates))
                 print(conversation_color + key)
                 print(one_line() + "\n")
 
-                print(previous_color + '# previous conversation end' + Style.RESET_ALL)
-                print_thread(msgs[key], end=True, padding=5)
+                print(previous_color + '# previous conversation end - length = {0:,}'.format(len(msgs[new_name]))
+                      + Style.RESET_ALL)
+                print_thread(msgs[new_name], end=True, padding=10)
 
-                print(current_color + "\n# next conversation start" + Style.RESET_ALL)
-                print_thread(cur_thread, start=True, padding=5)
+                print(current_color + "\n# next conversation start - length = {0:,} (maximum possible length is 10,000)"
+                      .format(len(cur_thread)) + Style.RESET_ALL)
+                print_thread(cur_thread, start=True, padding=10)
 
                 print('\n' + one_line())
                 # Prints the last 5 messages of the previous message group and the first 5 message of
@@ -162,7 +166,7 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                 are_same = user_says_yes()
                 # User input for whether the two message groups are in the same conversation
 
-                if are_same:
+                if not are_same:
                     duplicate_num += 1  # if they aren't the same, increment duplicate_num and try again
                 else:
                     # check to make sure the current message group hasn't already been added, otherwise add it
@@ -203,7 +207,7 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                   .format(person, msg, date_color + date, align='<', width=max_name_length))
         return
 
-    # Geting values if default arguments were left as default
+    # Getting values if default arguments were left as default
     if unordered_threads is None or footer is None:
         all_thread_containers = get_all_thread_containers(msg_html_path)
         unordered_threads, footer = get_all_threads_unordered(all_thread_containers)
@@ -219,33 +223,11 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
             msgs[convo_name] = cur_thread
 
         else:  # Another conversation with this name been seen before, add to duplicate bucket if appropriate
-            cur_time = CustomDate(cur_thread[0][2])
-
-            if convo_name not in duplicate_bucket:  # This is a new duplicate
-                prev_time = CustomDate(msgs[convo_name][-1][2])
-                if -3 <= prev_time.distance_from(cur_time) <= 0:
-                    # If this conversation is within 3 minutes just add it to our msgs dict
-                    msgs[convo_name].extend(cur_thread)
-
-                else:
-                    # if the conversation isn't within 3 minutes, add it to our duplicate bucket
-                    num_duplicates += 1
-                    duplicate_bucket[convo_name] = [cur_thread]
+            num_duplicates += 1
+            if convo_name in duplicate_bucket:
+                duplicate_bucket[convo_name].append(cur_thread)
             else:
-                prev_time = CustomDate(duplicate_bucket[convo_name][-1][-1][2])
-                if -3 <= prev_time.distance_from(cur_time) <= 0:
-                    # If this conversation is within 3 minutes of the previous duplicate in the bucket,
-                    # combine this element with that element
-                    duplicate_bucket[convo_name][-1].extend(cur_thread)
-
-                elif -3 <= CustomDate(msgs[convo_name][-1][2]).distance_from(cur_time) <= 0:
-                    # If this conversation is within 3 minutes of the msgs dict, add it there
-                    msgs[convo_name].extend(cur_time)
-
-                else:
-                    # add a new element to our conversation bucket to be placed later
-                    duplicate_bucket[convo_name].append(cur_thread)
-                    num_duplicates += 1
+                duplicate_bucket[convo_name] = [cur_thread]
 
     # The following is used in setup to time how long it takes various processes
     # This timing counts the time that user input starts, as there can be a lag before
@@ -267,12 +249,10 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
             # message group's last message and this message group's first message. This time helps
             # determine whether both message groups belong to the same conversation
 
-            if -3 <= prev_time.distance_from(next_time) <= 0:
-                # the previous conversation chunk is before the new one and within 3 minutes
+            if -3 <= prev_time.distance_from(next_time) <= 0 and len(msgs[key]) > 10000 and len(cur_thread) == 10000:
                 msgs[key].extend(cur_thread)
-            elif prev_time.distance_from(next_time) < -3:
-                # if the new message group is after the new message group it but not within 3 minutes
-                # we need user input to see if the two belong to the same chat
+                duplicate_index += 1
+            elif prev_time.distance_from(next_time) <= 0:
 
                 # The following is used in setup to time how long it takes various processes
                 # This timing counts the time that user input starts, as there can be a lag before
@@ -293,11 +273,13 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                 print(conversation_color + key)
                 print(one_line() + "\n")
 
-                print(previous_color + '# previous conversation end' + Style.RESET_ALL)
-                print_thread(msgs[key], end=True, padding=5)
+                print(previous_color + '# previous conversation end - length = {0:,}'.format(len(msgs[key]))
+                      + Style.RESET_ALL)
+                print_thread(msgs[key], end=True, padding=10)
 
-                print(current_color + "\n# next conversation start" + Style.RESET_ALL)
-                print_thread(cur_thread, start=True, padding=5)
+                print(current_color + "\n# next conversation start - length = {0:,} (maximum possible length is 10,000)"
+                      .format(len(cur_thread)) + Style.RESET_ALL)
+                print_thread(cur_thread, start=True, padding=10)
 
                 print('\n' + one_line())
                 # Prints the last 5 messages of the previous message group and the first 5 message of
@@ -307,21 +289,25 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                                        "to look this up on facebook.com. [Y/n]" + Style.RESET_ALL)
 
                 are_same = user_says_yes()
-                clear_screen()
                 # user input to decide if the above two message groups are the same conversation
 
                 if are_same:
                     msgs[key].extend(cur_thread)
                     duplicate_index += 1
+
+                    clear_screen()
                 else:
                     # the two conversations are NOT the same (because of user input)
                     #  so we need to add the new one to an appropriate duplicate
+
                     add_to_duplicate()
             else:
                 # The two conversations are not the same (since the previous is after the new one)
                 # so we need t add the new one to an appropriate duplicate
+
                 add_to_duplicate()
 
+    clear_screen()
     quick_preferences = PreferencesSearcher.from_msgs_dict(msgs)
     times.append(time.time())  # The end of setup
 
