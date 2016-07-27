@@ -57,12 +57,12 @@ class ConvoReader(BaseConvoReader):
         """
         value = self._raw_messages(name)
         if type(value) is int:
-            print(value)
+            print('{:,}'.format(value))
             return
         else:
             title_case_values = Counter({key.title(): val for key, val in value.items()})
             self.print_counter(title_case_values)
-            print('Total: {0}'.format(sum(val for key, val in value.items())))
+            print('Total: {0:,}'.format(sum(val for key, val in value.items())))
             return
 
     def words(self, name=None):
@@ -72,12 +72,12 @@ class ConvoReader(BaseConvoReader):
         """
         value = self._raw_words(name)
         if type(value) is int:
-            print(value)
+            print('{:,}'.format(value))
             return
         else:
             title_case_values = Counter({key.title(): val for key, val in value.items()})
             self.print_counter(title_case_values)
-            print('Total: {0}'.format(sum(val for key, val in value.items())))
+            print('Total: {0:,}'.format(sum(val for key, val in value.items())))
             return
 
     def ave_words(self, name=None):
@@ -87,7 +87,7 @@ class ConvoReader(BaseConvoReader):
         """
         value = self._raw_ave_words(name)
         if isinstance(value, int) or isinstance(value, float):
-            print(value)
+            print('{:,}'.format(value))
         else:
             for person, msgs in value.most_common():
                 print("{0}: {1}".format(person, msgs))
@@ -771,7 +771,7 @@ class ConvoReader(BaseConvoReader):
         for line in lines:
             print(line[0] + ' ' * (max_line_length - len(line[0])), end='- ')
             if mode == 'raw':
-                print("({0})".format(line[1]))
+                print("({0:,})".format(line[1]))
             else:
                 print("{0}%".format(str(round(line[1], ndigits=percent_length))[:percent_length]))
 

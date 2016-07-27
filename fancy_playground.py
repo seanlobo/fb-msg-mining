@@ -7,6 +7,7 @@ from functions.guiconvoreader import GUIConvoReader
 
 app = Flask(__name__)
 
+print("For the time being please use Chrome")
 print("Setting up could take a few moments ", end="")
 initial_time = time.time()
 m = MessageReader()

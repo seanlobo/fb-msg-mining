@@ -93,7 +93,7 @@ class MessageReader:
         if type(people) is str:
             people = people.title().split(', ')
         else:
-            people = [name.title() for name in people]
+            people = list(map(lambda x: x.title() if 'facebook' not in x else x, people))
         for name in self.data.keys():
             if contents_equal(name.split(', '), people):
                 return ConvoReader(name, self.data[name])
@@ -143,7 +143,7 @@ class MessageReader:
                 return
             print()
 
-        occurrences = 0  # number of occurances that are being swapped. Just so the user knows
+        occurrences = 0  # number of occurrences that are being swapped. Just so the user knows
         for person, msg, date in convo:
             if person == old_name:
                 occurrences += 1
@@ -183,7 +183,6 @@ class MessageReader:
         print("The specified changes have been made. Please note that these changes will only last the "
               "duration of this python session. If you would like to make the changes permanent, call ", end="")
         print(Fore.LIGHTGREEN_EX + "m.save_convo_edits()")
-
 
     def save_convo_edits(self):
         """Saves changes made to conversation names with edit_convo_participants"""
@@ -269,8 +268,8 @@ class MessageReader:
             print("{0}{1} - {2}".format(' ' * (MAX_INT_LEN - len(str(i))), convo, freq))
             i += 1
 
-    def total_emojis(self, only_me=True):
-        """Returns the total raw_emojis in an aggragate sum of all your conversations
+    def total_emojis(self, only_me=False):
+        """Returns the total raw_emojis in an aggregate sum of all your conversations
             Parameters:
                 only_me (optional): Considers only your sent messages if True, otherwise both your sent and received
             Return:
@@ -280,12 +279,30 @@ class MessageReader:
         for i in range(1, len(self) + 1):
             try:
                 if only_me:
-                    res += self.get_convo(i).raw_emojis(person=self.person)
+                    res += self.get_convo_gui(i).raw_emojis(person=self.person)
                 else:
-                    res += self.get_convo(i).raw_emojis()
+                    res += self.get_convo_gui(i).raw_emojis()
             except AssertionError:
                 pass
         return res
+
+    def total_messages(self, only_me=False, forward_shift=0):
+        total = Counter()
+
+        if only_me:
+            contact = self.person.lower()
+        else:
+            contact = None
+
+        for i in range(1, len(self) + 1):
+            try:
+                messages_data = self.get_convo_gui(i)._raw_msgs_graph(contact=contact, forward_shift=forward_shift)
+                total += Counter({key: val for key, val in messages_data})
+            except AssertionError:
+                pass
+
+        result = sorted(total.most_common(), key=lambda x: x[0])
+        return result
 
     @staticmethod
     def help():

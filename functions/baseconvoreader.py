@@ -28,8 +28,8 @@ class BaseConvoReader:
         if person is not None:
             assert type(person) is str, "Optional parameter person must be a string"
             person = person.lower()
-            assert person in self._people, "The person you said isn't in this conversation; this conversatin is for" \
-                                           " {0}".format(str(self._people))
+            assert person in self._people, "{0} isn't in this conversation; this conversation is for" \
+                                           " {1}".format(person, str(self._people))
         res = Counter()
         for pers, msg, date in self._convo:
             if person is None or pers == person:
@@ -44,7 +44,7 @@ class BaseConvoReader:
         Return:
             Counter
         """
-        chars = self.raw_characters(person)
+        chars = self.raw_characters(person=person)
         res = Counter()
         for key, val in chars.most_common():
             if '\\U000' in repr(key) and key is not None:
