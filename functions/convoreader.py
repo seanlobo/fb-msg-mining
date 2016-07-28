@@ -18,6 +18,7 @@ init(autoreset=True)
 
 
 class ConvoReader(BaseConvoReader):
+    """Extends the functionality of BaseConvoReader, prints stats to console and handles wordcloud creation"""
     _CANCEL_WC_PREFERENCE = 'cancel'
 
     def __init__(self, convo_name: str, convo_list: list):
@@ -42,9 +43,7 @@ class ConvoReader(BaseConvoReader):
     # -----------------------------------------------   PUBLIC METHODS ---------------------------------------------- #
 
     def print_people(self):
-        """Prints to the screen an alphabetically sorted list of people
-        in the conversation
-        """
+        """Prints to the screen an alphabetically sorted list of people in the conversation"""
         res = ""
         for i, pers in enumerate(self._people):
             res += "{0}) {1}\n".format(i + 1, pers.title())
@@ -55,7 +54,7 @@ class ConvoReader(BaseConvoReader):
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
         """
-        value = self._raw_messages(name)
+        value = self.raw_messages(name)
         if type(value) is int:
             print('{:,}'.format(value))
             return
@@ -70,7 +69,7 @@ class ConvoReader(BaseConvoReader):
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
         """
-        value = self._raw_words(name)
+        value = self.raw_words(name)
         if type(value) is int:
             print('{:,}'.format(value))
             return
@@ -85,7 +84,7 @@ class ConvoReader(BaseConvoReader):
         Parameters:
             name (optional): The name (as a string) of the person you are interested in
         """
-        value = self._raw_ave_words(name)
+        value = self.raw_ave_words(name)
         if isinstance(value, int) or isinstance(value, float):
             print('{:,}'.format(value))
         else:
@@ -93,11 +92,11 @@ class ConvoReader(BaseConvoReader):
                 print("{0}: {1}".format(person, msgs))
         print()
 
-    def emojis(self, person=None, limit=None):
-        """Prints the rankings of emojis for this conversation. Can specify a limit for number of emojis to print, and
-        a single individual to count emojis for (default is everyone's aggregate total)
+    def emoji(self, person=None, limit=None):
+        """Prints the rankings of emoji for this conversation. Can specify a limit for number of emoji to print, and
+        a single individual to count emoji for (default is everyone's aggregate total)
         Parameters:
-            person (optional): A string representing the person whose emojis you would like to analyze
+            person (optional): A string representing the person whose emoji you would like to analyze
             limit (optional): an integer representing the number of entries to print
         """
         ranking = self.raw_emojis(person=person)
@@ -109,7 +108,7 @@ class ConvoReader(BaseConvoReader):
 
     def characters(self, person=None, limit=None):
         """Prints the rankings of characters for this conversation. Can specify a limit for number of characters
-         to print, and a single individual to count charactesr for (default is everyone's aggregate total)
+         to print, and a single individual to count character for (default is everyone's aggregate total)
             Parameters:
                 person (optional): A string representing the person whose characters you would like to analyze
                 limit (optional): an integer representing the number of entries to print
@@ -127,13 +126,13 @@ class ConvoReader(BaseConvoReader):
         Parameters:
             person (optional): The name (as a string) of the person you are interested in
             word (optional): The word (as a string) you are interested in
-            limit (optional): bool or int. If int desplays maximum that many words,
-                if false desplays all words, if true desplays top 10. Should only be used
+            limit (optional): bool or int. If int displays maximum that many words,
+                if false displays all words, if true displays top 10. Should only be used
                 if word is left out, and is ignored if a value for word is given
         """
         try:
             assert type(limit) in [type(True), type(False), int], "limit must be an int or boolean"
-            value = self._raw_frequency(person=person, word=word)
+            value = self.raw_frequency(person=person, word=word)
         except AssertionError as e:
             print(e)
             return
@@ -394,8 +393,8 @@ class ConvoReader(BaseConvoReader):
             prettify(mode="num", start=15000, end=16500) # print messages 15,000 through 16,500
             prettify(mode="date", start='2/24/16', end='3/16/16') # prints messages between February 24th, 2016
                                                                   # and March 16th, 2016
-            prettify(mode="clusters", centers=[100, 17690, 100031], padding=300)
-                        # prints messages 0-400, 17,390-17,990 and 99,731-100,331
+            prettify(mode="clusters", centers=[100, 18000, 100000], padding=300)
+                        # prints messages 0-400, 17,700-18,300 and 99,700-100,300
         """
         if mode == "num":
             start = kwargs['start'] if 'start' in kwargs else None
@@ -442,7 +441,7 @@ class ConvoReader(BaseConvoReader):
             forward_shift (optional): The number of minutes past 12:00am that are counted as part of the previous day
         """
         try:
-            msgs_freq = self._raw_msgs_graph(contact, forward_shift)
+            msgs_freq = self.raw_msgs_graph(contact, forward_shift)
             CustomDate.assert_dates(start, end)
         except AssertionError as e:
             print(e)
@@ -503,7 +502,7 @@ class ConvoReader(BaseConvoReader):
 
     def msgs_by_weekday(self):
         """Prints out chat frequency by day of week"""
-        by_weekday = self._raw_msgs_by_weekday()
+        by_weekday = self.raw_msgs_by_weekday()
         for day, freq in enumerate(by_weekday):
             print("{0}: {1}%".format(CustomDate.WEEK_INDEXES_TO_DAY_OF_WEEK[day], str(freq * 100)[:5]))
         print()
@@ -517,7 +516,7 @@ class ConvoReader(BaseConvoReader):
             threshold (optional): The minimum threshold needed to print one '#'
         """
         try:
-            frequencies = self._raw_msgs_by_time(window, contact)
+            frequencies = self.raw_msgs_by_time(window, contact)
         except AssertionError as e:
             print(e)
             return
@@ -631,8 +630,8 @@ class ConvoReader(BaseConvoReader):
         # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
 
         try:
-            indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
-                else self._find_indexes(query, ignore_case=ignore_case)
+            indexes = self.raw_match_indexes(query, ignore_case=ignore_case) if regex \
+                else self.raw_find_indexes(query, ignore_case=ignore_case)
         except re.error as e:
             print(e)
             return
@@ -652,8 +651,8 @@ class ConvoReader(BaseConvoReader):
                 regex (optional): Whether the query is a regular expression to be fully matched
         """
 
-        indexes = self._match_indexes(query, ignore_case=ignore_case) if regex \
-            else self._find_indexes(query, ignore_case=ignore_case)
+        indexes = self.raw_match_indexes(query, ignore_case=ignore_case) if regex \
+            else self.raw_find_indexes(query, ignore_case=ignore_case)
         return len(indexes)
 
     # ----------------------------------------------   PUBLIC METHODS ---------------------------------------------- #
@@ -674,7 +673,7 @@ class ConvoReader(BaseConvoReader):
                           ConvoReader.msgs_graph, ConvoReader.save_word_freq, ConvoReader.set_preferences,
                           ConvoReader.word_clouds]
 
-        secondary = [ConvoReader.ave_words, ConvoReader.emojis, ConvoReader.messages,
+        secondary = [ConvoReader.ave_words, ConvoReader.emoji, ConvoReader.messages,
                      ConvoReader.msgs_by_time, ConvoReader.msgs_by_weekday, ConvoReader.times, ConvoReader.words]
         while True:
             print()
@@ -745,7 +744,7 @@ class ConvoReader(BaseConvoReader):
     @staticmethod
     def get_emoji(text: str) -> str:
         """Returns the emoji corresponding to the src value passed,
-        or the string passed if appropriate emojis isn't found
+        or the string passed if appropriate emoji isn't found
         """
         return emojis.src_to_emoiji(text)
 
@@ -802,23 +801,19 @@ class ConvoReader(BaseConvoReader):
         try:
             with open(self._path + 'preferences.txt', mode='r', encoding='utf-8') as f:
                 preferences = eval(f.read())
-                good = False  # Are the preferences good
                 try:
                     assert isinstance(preferences, dict), "Please don\'t modify any files in /data/"
                     for person in self._people:
                         assert person in preferences, "{0} is missing from preferences".format(person)
                     assert 'global' in preferences and 'threshold' in preferences['global'],\
                         "You are missing global parameters in preferences"
-                    good = True
                 except AssertionError as e:
                     print(e)
-                # Clean data, making sure loaded preferences are actually in the format we expect
-
-                if good:
-                    return preferences
-                else:
                     print('To get rid of this warning either execute \"save_preferences()\", or figure out what the '
                           'issue is in {0} and fix that'.format(self._path + 'preferences.txt'))
+                # Clean data, making sure loaded preferences are actually in the format we expect
+                else:
+                    return preferences
                 # returning the preferences read from the file IF it is good
                 # OTHERWISE passes on to return a default version
 
@@ -1455,12 +1450,6 @@ class ConvoReader(BaseConvoReader):
     def __len__(self):
         """Returns the number of messages in self"""
         return self._len
-
-    def __str__(self):
-        """Returns a string with the alphabetically sorted names of people
-        in this conversation
-        """
-        return "Converation for " + self._name.title()
 
     def __repr__(self):
         """Returns a valid constructor for this object"""

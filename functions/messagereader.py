@@ -296,7 +296,7 @@ class MessageReader:
 
         for i in range(1, len(self) + 1):
             try:
-                messages_data = self.get_convo_gui(i)._raw_msgs_graph(contact=contact, forward_shift=forward_shift)
+                messages_data = self.get_convo_gui(i).raw_msgs_graph(contact=contact, forward_shift=forward_shift)
                 total += Counter({key: val for key, val in messages_data})
             except AssertionError:
                 pass
