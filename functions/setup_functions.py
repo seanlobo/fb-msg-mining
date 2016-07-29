@@ -254,18 +254,6 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                 duplicate_index += 1
             elif prev_time.distance_from(next_time) <= 0:
 
-                # The following is used in setup to time how long it takes various processes
-                # This timing counts the time that user input starts, as there can be a lag before
-
-                if not user_input_time:
-                    times.append(time.time())  # Background setup done
-                    print('\n' + one_line() + '\n')
-                    input("Press enter when you're ready to continue to user input: \n")
-                    # this time is user input prompt time
-
-                    times.append(time.time())  # User selection is starting
-                    user_input_time = True
-
                 clear_screen()
 
                 print("#{0} of {1} (at maximum) duplicate conversations. Some might be done for you behind the scenes."
