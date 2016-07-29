@@ -51,6 +51,7 @@ $(function () {
             plotOptions: {
                 area: {
                     color: '#f2a85e',
+                    cursor: 'pointer',
                     fillColor: {
                         linearGradient: {
                             x1: 0,
@@ -117,7 +118,8 @@ $(function () {
             },
             plotOptions: {
                 line: {
-                    color: '#e0ba00',
+                    color: '#f9cf00',
+                    cursor: 'pointer',
                     marker: {
                         radius: 3
                     },
@@ -175,6 +177,48 @@ $(function () {
                 }
             },
             series: [{
+                type: 'line',
+                name: 'Total messages sent',
+                data: evaluatedData
+           }]
+        });
+    });
+
+
+    // messages by day of week
+    $.getJSON(messageByDayURL('none')).success(function (data) {
+        evaluatedData = data['data'];
+        
+        $('#days_of_week').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie',
+                height: height,
+                width: width,
+            },
+            colors: ['#5690d2', '#fceea5', '#f2a85e', '#3669a4', '#ff8845', '#f3cb07', '#9fbceb'],
+            title: {
+                text: 'Messages by day of week',
+                style: {
+                    fontWeight: 'bold'
+                }
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                    }
+                }
+            },
+            series: [{
                 name: 'Percent messages sent',
                 data: evaluatedData
             }]
@@ -194,7 +238,10 @@ $(function () {
                 width: width
             },
             title: {
-                text: 'Stacked column chart'
+                text: 'Messages by time of day',
+                style: {
+                    fontWeight: 'bold'
+                }
             },
             xAxis: {
                 categories: categories
@@ -202,7 +249,7 @@ $(function () {
             yAxis: {
                 min: 0,
                 title: {
-                    text: 'Messages by Time of Day'
+                    text: 'Percent messages sent'
                 },
                 stackLabels: {
                     enabled: false,
@@ -229,6 +276,7 @@ $(function () {
             },
             plotOptions: {
                 column: {
+                    cursor: 'pointer',
                     stacking: 'normal',
                     dataLabels: {
                         enabled: false,

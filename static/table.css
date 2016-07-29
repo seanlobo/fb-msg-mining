@@ -1,21 +1,17 @@
 body {
 	margin: 0;
 	padding: 0;    
-	
-	/* Change this :3 */
 	font-family: "avenir";
-	background-color: blue;
+	background-color: #ececec;
 }
 
 .page-contents {
 	margin: 0 auto;
 	padding: 0;
 	padding-top: 2vh;
-	width: 1000px;
+	width: 1100px;
 	height: 98vh;
-
-	/* Change this :3 */
-	background-color: aqua;
+	background-color: #fcfffc;
 }
 
 /* Page Title */
@@ -59,11 +55,11 @@ body {
 .container input#search {
 	width: 100%;
 	height: 100%;
-	background-color: Orchid;
+	background-color: #efefef;
 	border: none;
 	font-size: 15px;
 	float: left;
-	color: red;
+	color: black;
 	padding-left: 45px;
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
@@ -92,7 +88,7 @@ body {
 
 .container input#search:hover, .container input#search:focus, .container input#search:active{
     outline:none;
-    background: #ffffff;
+    background: #efefef;
   }
 
 .container input#search::-webkit-input-placeholder {
@@ -194,19 +190,19 @@ th {
 	font-family: "avenir";
 	font-size: 20px;
 	padding-left: 20px;
-	background-color: LightGreen;
+	background-color: #8eb5e1;
 }
 
 .th-button:hover {
 	/* Change this :3 */
-	background-color: green;
+	background-color: #4484ce;
 }
 
 .th-button:focus {
 	outline: none;
 
 	/* Change this :3 */
-	background-color: yellow;
+   	background-color: #4484ce;
 }
 
 .th-button:active {
@@ -216,7 +212,7 @@ th {
 
 tbody tr:hover {
 	/* Change this :3 */
-	background: yellow;
+	background: #fff8d9;
 	font-weight: 500;
 }
 
@@ -252,10 +248,9 @@ td div {
  http://www.w3schools.com/css/css_link.asp */
 
 a:link, a:visited {
-	color: orange;
+	color: black;
 }
 
 a:hover, a:active {
-	color: white;
-	background-color: red;
+	color: #3669a4;
 }
