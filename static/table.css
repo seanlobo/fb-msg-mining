@@ -254,3 +254,8 @@ a:link, a:visited {
 a:hover, a:active {
 	color: #3669a4;
 }
+
+div.hide {
+    visibility: hidden;
+    display: none;
+}

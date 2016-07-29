@@ -14,22 +14,28 @@ class GUIConvoReader(BaseConvoReader):
     def data_for_total_graph(self, contact=None, cumulative=False, forward_shift=0):
         raw_data = self.msgs_graph(contact, cumulative, forward_shift)
 
-        data = []
-        for day, frequency in raw_data:
-            data.append('[Date.UTC({0},{1},{2}),{3}]'.format(day.year(), day.month() - 1, day.day(), frequency))
+        if contact is None:  # This is a graph for everyone's totals
+            data = []
+            for day, frequency in raw_data:
+                data.append('[Date.UTC({0},{1},{2}),{3}]'.format(day.year(), day.month() - 1, day.day(), frequency))
 
-        return json.dumps(dict(data=data))
+            return json.dumps(dict(data=data))
+        else:  # A graph for an individual person, requires a different data format for highcharts
+            categories = [day.to_string() for day, _ in raw_data]
+            data = [freq for _, freq in raw_data]
+
+            return json.dumps(dict(categories=categories, data=dict(name=contact.title(), data=data)))
 
     def data_for_msgs_by_day(self, contact=None):
         """Returns the data for use in html/ javascript"""
-        raw_data = self._raw_msgs_by_weekday(contact=contact)
+        raw_data = self.raw_msgs_by_weekday(contact=contact)
         raw_data = [ele * 100 for ele in raw_data]
 
         data = [dict(name=CustomDate.WEEK_INDEXES_TO_DAY_OF_WEEK[i], y=ele) for i, ele in enumerate(raw_data)]
         return json.dumps(dict(data=data))
 
     def data_for_msgs_by_time(self, window=60, contact=None):
-        raw_data = self._raw_msgs_by_time(window=window, contact=contact)
+        raw_data = self.raw_msgs_by_time(window=window, contact=contact)
 
         categories = []
         for i in range(len(raw_data)):
@@ -67,7 +73,7 @@ class GUIConvoReader(BaseConvoReader):
     # ----------------------------------------------   INTERNAL METHODS   -------------------------------------------- #
 
     def msgs_graph(self, contact, cumulative, forward_shift):
-        val = self._raw_msgs_graph(contact=contact, forward_shift=forward_shift)
+        val = self.raw_msgs_graph(contact=contact, forward_shift=forward_shift)
         while val[-1][0].date != self._last_day.date:
             val.append([val[-1][0].plus_x_days(1), 0])
         if not cumulative:

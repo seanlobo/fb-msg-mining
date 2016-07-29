@@ -9,23 +9,34 @@
             
             <div class="header-section">
                 <div class="header-btn prev">
-                    <button></button>
+                    <a><div>Previous</div></a>
                 </div>
                 <div class="header">
-                    <h1>{{ convo._name.title() }}</h1>
+                    <div style="visibility: hidden" class="title">{{ convo._name.title() }}</div>
                 </div>
                 <div class="header-btn next">
-                    <button></button>
+                    <a><div>Next</div></a>
                 </div>
             </div>
+            <div class="message-count">{{ '{:,}'.format(convo|length) }} messages</div>
+
 
             <!-- Graph container -->
             <div class="graph_body_settings">
                 <div class="graph_body">
                     <!-- Graphs -->
+                        <!-- Over Time -->
                     <div id="graph_over_time" class="graph" data-graph="0"></div>
+                    <div id="graph_over_time2" class="graph" data-graph="4"></div>
+
+                        <!-- Cumulative -->
                     <div id="cumulative_over_time" class="graph" data-graph="1"></div>
+                    <div id="cumulative_over_time2" class="graph" data-graph="5"></div>
+
+                        <!-- Day of Week -->
                     <div id="days_of_week" class="graph" data-graph="2"></div>
+
+                        <!-- Time of Day -->
                     <div id="time_of_day" class="graph" data-graph="3"></div>
                     
                     <!-- Buttons -->
@@ -34,16 +45,18 @@
                         <button type="button" class="graph_type_button" data-graph-type="1">Cumulative messages</button>
                         <button type="button" class="graph_type_button" data-graph-type="2">Messages by day of week</button>
                         <button type="button" class="graph_type_button" data-graph-type="3">Messages by time of day</button>
+                        <button type="button" class="select-conversation">Select Conversations</button>
                     </div>
                 </div>
 
                 <!-- Settings -->
-                <div class="settings-container">
+                <div class="settings-container hide">
                     <div class="settings-header">
                         GRAPH SETTINGS
                     </div>
                     <div class="settings-body" data-settings-num="0">
                         maybe some sort of settings in here? Try clicking the buttons on the right in order.
+                        <button id="test"> </button>
                     </div>
                     <div class="settings-body" data-settings-num="1">
                         Add the buttons and settings for each graph in the appropriate div in the "settings" section.

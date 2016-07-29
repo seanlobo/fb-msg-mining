@@ -16,12 +16,9 @@ all_gui_convo_readers = [m.get_convo_gui(i) for i in range(1, len(m) + 1)]
 
 # ---------------------------------------------------   HOME PAGE   -------------------------------------------------- #
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def home_screen():
-    if request.method == 'POST':
-        return redirect("/{0}/".format(request.form['redirect_page']), code=302)
-    else:  # request.method == 'GET'
-        return render_template('index.html')
+    return render_template('index.html')
 
 # ---------------------------------------------------   HOME PAGE   -------------------------------------------------- #
 
@@ -62,11 +59,15 @@ def graphs(convo_num):
 
 @app.route('/graphs/conversation/<int:convo_num>/next/')
 def next_page(convo_num):
+    if convo_num == len(all_gui_convo_readers):
+        return redirect('/graphs/conversation/{0}/'.format(1), code=302)
     return redirect('/graphs/conversation/{0}/'.format(convo_num + 1), code=302)
 
 
 @app.route('/graphs/conversation/<int:convo_num>/prev/')
 def prev_page(convo_num):
+    if convo_num == 1:
+        return redirect('/graphs/conversation/{0}/'.format(len(all_gui_convo_readers)), code=302)
     return redirect('/graphs/conversation/{0}/'.format(convo_num - 1), code=302)
 
 
@@ -117,8 +118,15 @@ def messages_by_time_data(convo_num, contact, window):
 # ----------------------------------------------------   GRAPHS   ---------------------------------------------------- #
 
 
+# -------------------------------------------------   COMING SOON   ------------------------------------------------- #
+
+@app.route('/coming_soon/')
+def coming_soon():
+    return render_template('coming_soon.html')
+
+
 def load_all_gui(convo_num) -> GUIConvoReader:
-    if convo_num < 1 or len(m) + 1 < convo_num:
+    if convo_num < 1 or len(m) < convo_num:
         abort(404)
     return all_gui_convo_readers[convo_num - 1]
 

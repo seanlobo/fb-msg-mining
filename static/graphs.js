@@ -1,9 +1,17 @@
+// MORE GRAPHS TO ADD
+// messages frequency - stacked area, percentage area
+// cumulative - stacked area
+// by day - donut chart OR pie with drilldown
+// by time - stacked column (might not need to change anything)
+
 $(function () {
-    // graph variables
+    // -------------------------------------------------  GRAPH VARIABLES AND FUNCTIONS ------------------------------------------------- \\
+
     var names = eval($("#name").text());
     var convo_num = eval($("#convo_num").text());
     var height = $("#graph_over_time").height();
     var width = $("#graph_over_time").width();
+    var graphData = { };
     var totalMessagesURL = function (person, cumulative, forwardShift, negative) {
         return window.location.href + "total_messages/" + 
                 person + "/" + cumulative + "/" + forwardShift + "/" + negative + "/";
@@ -14,11 +22,92 @@ $(function () {
     var messageByTimeURL = function (contact, windowSize) {
         return window.location.href + "messages_by_time/" + contact + "/" + windowSize;
     }
+    var nameToUnderscores = function (name) {
+        return name.toLowerCase().split().join("_");
+    }
+    var toTitleCase = function(str) {
+        // http://stackoverflow.com/questions/196972/convert-string-to-title-case-with-javascript
+        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    }
+ 
+    var setDataForGraph4 = function(peopleList, forwardShift) {
+        // Get a list of urls that aren't in graphData
+        var negative;
+        if (forwardShift < 0) {
+            negative = 1;
+        } else {
+            negative = 0;
+        }
+        forwardShift = Math.abs(forwardShift);
+        var urlGetter = function(person) {
+            return totalMessagesURL(person, 0, forwardShift, negative);
+        }
+        var tmpUrls = peopleList.map(urlGetter);
+        var URLsToNames = { };
+        for (i = 0; i < tmpUrls.length; i++) {
+            URLsToNames[tmpUrls[i]] = peopleList[i];
+        }
+        var urls = [];
+        for (val in tmpUrls) {
+            if (!(tmpUrls[val] in graphData)) {
+                urls.push(tmpUrls[val]);
+            }
+        }
+
+        var loadData = function () {
+            var chart = $('#graph_over_time2').highcharts();
+            // remove previous series
+            // http://stackoverflow.com/questions/6604291/proper-way-to-remove-all-series-data-from-a-highcharts-chart
+            while (chart.series.length > 0) {
+                chart.series[0].remove(true);
+            }
+
+            chart.xAxis[0].setCategories(graphData[tmpUrls[0]].categories);
+            // Load graphData into highcharts
+            $.each(tmpUrls, function (i, url) {
+                chart.addSeries(graphData[url].data);
+            });
+
+            $('#graph_over_time').addClass('hide');
+            $('#graph_over_time2').removeClass('hide');
+        }
+        
+        if (urls.length == 0) {
+            // we already have all the data for urls
+            loadData();
+        } else {
+            // get a list of data values from urls above and add to graphData
+            // http://stackoverflow.com/questions/38582200/javascript-load-arbitrary-number-of-urls-with-getjson
+            var promises = urls.map(url => $.getJSON(url));
+
+            Promise.all(promises).then(function (data) {
+                for (val in data) {
+                    graphData[urls[val]] = {
+                        categories: data[val]['categories'],
+                        data: data[val]['data']
+                    };
+                }
+
+                loadData();
+            });
+        }
+    };
+    $("#test").click(function () {
+        if ($('#graph_over_time2').hasClass("hide")) {
+            setDataForGraph4(names.map(nameToUnderscores), '0');
+        } else {
+            $("div").find("[data-graph-type='" + 0 + "']").click();
+        }
+    });
 
 
-    // message frequency
+
+    // -------------------------------------------------  MESSAGE FREQUENCY GRAPHS ------------------------------------------------- \\
+
     $.getJSON(totalMessagesURL('none', 0, 0, 0)).success(function (data) {
         evaluatedData = data['data'].map(eval);
+        graphData[totalMessagesURL('none', 0, 0, 0)] = evaluatedData;
+        
 
         $('#graph_over_time').highcharts({
             chart: {
@@ -80,13 +169,76 @@ $(function () {
                 name: 'Messages sent',
                 data: evaluatedData
            }]
-        });   
+        });
     });
 
 
-    // cumulative message frequency
+    $('#graph_over_time2').highcharts({
+        chart: {
+            type: 'area',
+            zoomType: 'x',
+            height: height,
+            width: width
+        },
+        title: {
+            text: 'Message Frequency by Person'
+        },
+        subtitle: {
+            text: ''
+        },
+        xAxis: {
+            categories: [],
+            tickmarkPlacement: 'on',
+            title: {
+                enabled: false
+            }
+        },
+        yAxis: {
+            title: {
+                text: ''
+            }
+        },
+        tooltip: {
+            shared: true,
+            // valueSuffix: ' millions'
+        },
+        plotOptions: {
+            area: {
+                // stacking: 'percent',
+                stacking: 'normal', 
+                lineColor: '#666666',
+                lineWidth: 1,
+                marker: {
+                    lineWidth: 1,
+                    lineColor: '#666666'
+                }
+            }
+        },
+        series: [{}]
+        // series: [{
+        //     name: 'Asia',
+        //     data: [502, 635, 809, 947, 1402, 3634, 5268]
+        // }, {
+        //     name: 'Africa',
+        //     data: [106, 107, 111, 133, 221, 767, 1766]
+        // }, {
+        //     name: 'Europe',
+        //     data: [163, 203, 276, 408, 547, 729, 628]
+        // }, {
+        //     name: 'America',
+        //     data: [18, 31, 54, 156, 339, 818, 1201]
+        // }, {
+        //     name: 'Oceania',
+        //     data: [2, 2, 2, 6, 13, 30, 46]
+        // }]
+    });
+
+
+    // ---------------------------------------- CUMULATIVE MESSAGE FREQUENCY GRAPHS ---------------------------------------- \\
+
     $.getJSON(totalMessagesURL('none', 1, 0, 0)).success(function (data) {
         evaluatedData = data['data'].map(eval);
+        graphData[totalMessagesURL('none', 1, 0, 0)] = evaluatedData;
 
         $('#cumulative_over_time').highcharts({
             chart: {
@@ -140,9 +292,11 @@ $(function () {
     });
 
 
-    // messages by day of week
+    // ---------------------------------------- MESSAGES BY DAY OF WEEK ---------------------------------------- \\
+
     $.getJSON(messageByDayURL('none')).success(function (data) {
         evaluatedData = data['data'];
+        graphData[messageByDayURL('none')] = evaluatedData;
         
         $('#days_of_week').highcharts({
             chart: {
@@ -226,10 +380,15 @@ $(function () {
     });
 
     
-    // messages by time of day
+    // ------------------------------------------------ MESSAGES BY TIME OF DAY ------------------------------------------------ \\
     $.getJSON(messageByTimeURL('none', 60)).success(function (data) {
         categories = data['categories'];
         evaluatedData = data['data'];
+        graphData[messageByTimeURL('none', 60)] = {
+            categories: categories,
+            data: evaluatedData
+        };
+
 
         $('#time_of_day').highcharts({
             chart: {
@@ -318,16 +477,21 @@ $(function () {
         var actualChart = $('#' + chartID).highcharts();
     });
 
+    $(".select-conversation").click(function () {
+        window.location = window.location.href.substring(0, window.location.href.indexOf('conversation') + 12);
+    });
+
     var button = $("div").find("[data-graph-type='" + 0 + "']");
     button.click();
     // button.focus();  didn't work D:
 
     // Some inspiration http://stackoverflow.com/questions/6112660/how-to-automatically-change-the-text-size-inside-a-div
     var header = $(".header");
-    var h1 = $(".header h1");
-    while (h1.height() > header.height()) {
-        h1.css("font-size", parseInt(h1.css("font-size")) - 1 + "px");
+    var header_div = $(".header .title");
+    while (header_div.outerHeight() > header.height()) {
+        console.log(header.height(), header_div.outerHeight());
+        header_div.css("font-size", parseInt(header_div.css("font-size")) - 1 + "px");
     }
-    header.removeClass("hide");
+    header_div.css("visibility", "visible");
 
 });

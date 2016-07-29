@@ -29,31 +29,37 @@ body {
 	display: inline-block;
 }
 
-.header-btn.prev {
+.header-btn a div {
+	padding-top: 25px;
+}
+
+.header-btn.prev, .header-btn.prev a {
 	float: left;
 }
 
-.header-btn.next, .header-btn.next button {
+.header-btn.next, .header-btn.next a {
 	float: right;
 }
 
-.header-btn button {
+.header-btn a {
 	width: 100%;
 	height: 100%;
 	cursor: pointer;
-
-	/* Please delete / change these preferences :D */
-	background-color: #ececec;
+	background-color: #fadbbd;
+	border: 1px solid #ec8217;
+	text-align: center;
+	font-size: 14px;
+	font-family: "Lucida Grande";
+	display: table-cell;
+	vertical-align: center;
 }
 
-.header-btn button:hover {
-	/* Please delete / change these preferences :D */
-	background-color: #fcf4cd;
+.header-btn a:hover {
+	background-color: #ec8217;
 }
 
-.header-btn button:focus {
-	/* Please delete / change these preferences :D */
-	/*background-color: blue;*/
+.header-btn a:active, .header-btn a:focus {
+	outline: none;
 }
 
 div.hide {
@@ -61,7 +67,7 @@ div.hide {
     display: none;
 }
 
-h1 {
+.header .title {
 	text-align: center;
 	font-family: "avenir";
 	font-size: 45px;
@@ -71,6 +77,13 @@ h1 {
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;         /* Opera/IE 8+ */
     padding: 10px 5px 0 5px;
+}
+
+.message-count {
+	text-align: center;
+	font-size: 15px;
+	font-family: "avenir";
+	font-weight: 700;
 }
 
 .graph_body_settings {
@@ -121,6 +134,34 @@ h1 {
 .graph_type_button:focus {
     background-color: #4484ce; 
     border: 1px solid #005fff;
+    color: white;
+    box-shadow: none;
+    outline: none;
+}
+
+.select-conversation {
+	background-color: white;
+	color: black;
+    border: 1px solid #ec8217;
+	padding: 14px 40px;
+	border-radius: 8px;
+	text-align: center;
+	font-size: 14px;
+	font-family: "Lucida Grande";
+	cursor: pointer;
+	display: block;
+	margin: 16px 4px;
+	transition-duration: 0.4s;
+}
+
+.select-conversation:hover {
+	background-color: #fadbbd; 
+    color: black;
+}
+
+.select-conversation:focus {
+    background-color: #ec8217; 
+    border: 1px solid #ec8217;
     color: white;
     box-shadow: none;
     outline: none;
