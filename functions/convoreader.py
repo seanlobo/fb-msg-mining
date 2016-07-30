@@ -943,7 +943,7 @@ class ConvoReader(BaseConvoReader):
         else:
             start = 0
         if end is not None:
-            end = CustomDate.from_date(end).plus_x_days(1)
+            end = CustomDate.from_date_string(end).plus_x_days(1)
             assert end.date <= self._convo[-1][2].date, \
                 "Your conversations ends on {0}".format(self._convo[-1][2].full_date)
             end = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2])
