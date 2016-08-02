@@ -1,89 +1,91 @@
+/* http://www.colorhexa.com/ is a nice site for colors */
+
 body {
-	margin: 0;
-	padding: 0;    
-	font-family: "avenir";
-	background-color: #ececec;
+    margin: 0;
+    padding: 0;
+    font-family: "avenir";
+    background-color: #ececec;
 }
 
 .page-contents {
-	margin: 0 auto;
-	padding: 0;
-	padding-top: 2vh;
-	width: 1100px;
-	height: 98vh;
-	background-color: #fcfffc;
+    margin: 0 auto;
+    padding: 0;
+    padding-top: 2vh;
+    width: 1100px;
+    height: 98vh;
+    background-color: #fcfffc;
 }
 
 /* Page Title */
 
 .title {
-	text-align: center;
+    text-align: center;
 }
 
 .title h1 {
-	margin: 0;
+    margin: 0;
 
-	/* Change this :3 */
-	font-size: 30px;
-	font-weight: 700;
+    /* Change this :3 */
+    font-size: 30px;
+    font-weight: 700;
 }
 
 /* Search Bar - Design adapted from http://webdesign.tutsplus.com/tutorials/css-experiments-with-a-search-form-input-and-button--cms-22069 */
 .search-area {
-	margin: 20px auto;
-	height: 50px;
-	width: 80%;
+    margin: 20px auto;
+    height: 50px;
+    width: 80%;
 }
 
 .search-bar {
-	margin: 0 auto;
-	padding-right: 10%;
-	width: 80%;
-	height: 100%;
-	display: inline;
-	float: left;
+    margin: 0 auto;
+    padding-right: 10%;
+    width: 80%;
+    height: 100%;
+    display: inline;
+    float: left;
 }
 
 .container {
-	width: 100%;
-	height: 100%;
-	vertical-align: middle;
-	white-space: nowrap;
-	position: relative;
+    width: 100%;
+    height: 100%;
+    vertical-align: middle;
+    white-space: nowrap;
+    position: relative;
 }
 
 .container input#search {
-	width: 100%;
-	height: 100%;
-	background-color: #efefef;
-	border: none;
-	font-size: 15px;
-	float: left;
-	color: black;
-	padding-left: 45px;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	-webkit-transition: background .55s ease;
-	-moz-transition: background .55s ease;
-	-ms-transition: background .55s ease;
-	-o-transition: background .55s ease;
-	transition: background .55s ease;
+    width: 100%;
+    height: 100%;
+    background-color: #efefef;
+    border: none;
+    font-size: 15px;
+    float: left;
+    color: black;
+    padding-left: 45px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-transition: background .55s ease;
+    -moz-transition: background .55s ease;
+    -ms-transition: background .55s ease;
+    -o-transition: background .55s ease;
+    transition: background .55s ease;
 }
 
 .container .icon {
-	position: absolute;
-	z-index: 1;
-	width: 20px;
-	height: 20px;
-	margin-top: 15px;
-	margin-left: 15px;
-	color: Navy;
+    position: absolute;
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+    margin-top: 15px;
+    margin-left: 15px;
+    color: Navy;
 }
 
 .container .icon i {
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .container input#search:hover, .container input#search:focus, .container input#search:active{
@@ -108,23 +110,23 @@ body {
 }
 
 .search-submit {
-	width: 10%;
-	height: 20px;
-	float: right;
-	margin-top: 15px;
+    width: 10%;
+    height: 20px;
+    float: right;
+    margin-top: 15px;
 }
 
 
 /* Table Formatting */
 
 div.table-background {
-	width: 80%;
+    width: 80%;
     overflow: scroll;
-	margin-right: auto;
-	margin-left: auto;
+    margin-right: auto;
+    margin-left: auto;
     margin-top: 30px;
-	background-color: white;
-	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    background-color: white;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;         /* Opera/IE 8+ */
     text-align: left;
@@ -142,117 +144,110 @@ table {
 }
 
 .th-name {
-	/* Change this :3 */
-	width: 600px;
+    /* Change this :3 */
+    width: 600px;
 }
 
 .th-length {
-	/* Change this :3 */
-	width: 150px;
+    /* Change this :3 */
+    width: 150px;
 }
 
 .th-date {
-	/* Change this :3 */
-	width: 250px;
+    /* Change this :3 */
+    width: 250px;
 }
 
 th, td {
-	border: 1px solid black;
-	border-left: none;
+    border: 1px solid black;
+    border-left: none;
 }
 
 td {
     padding: 10px;
-	
-	/* Change this :3 */
+
+    /* Change this :3 */
     /*text-align: center;*/
 }
 
 th {
-	margin: 0;
-	padding: 0;
-	height: 30px;
+    margin: 0;
+    padding: 0;
+    height: 30px;
 }
 
 .th-button {
-	-webkit-appearance: button;
+    -webkit-appearance: button;
     -moz-appearance: button;
     appearance: button;
-	height: 100%;
-	width: 100%;
-	border: none;
-	margin: 0;
-	padding: 0;
-	cursor: pointer;
-	vertical-align: middle;
-	
-	/* Change this :3 */
-	font-family: "avenir";
-	font-size: 20px;
-	padding-left: 20px;
-	background-color: #8eb5e1;
+    height: 100%;
+    width: 100%;
+    border: none;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    vertical-align: middle;
+
+    /* Change this :3 */
+    font-family: "avenir";
+    font-size: 20px;
+    padding-left: 20px;
+    background-color: #8eb5e1;
 }
 
 .th-button:hover {
-	/* Change this :3 */
-	background-color: #4484ce;
+    background-color: #4484ce;
 }
 
 .th-button:focus {
-	outline: none;
-
-	/* Change this :3 */
-   	background-color: #4484ce;
+    outline: none;
+    background-color: #4484ce;
 }
 
 .th-button:active {
-	/* Change this :3 */
-	background-color: red;
+    background-color: #284f7b;
 }
 
 tbody tr:hover {
-	/* Change this :3 */
-	background: #fff8d9;
-	font-weight: 500;
+    background: #fff8d9;
+    font-weight: 500;
 }
 
 th div {
-	float: right;
-
-	/* Change this :3 */
-	height: 15px;
-	width: 15px;
-	margin-right: 5px;
+    float: right;
+    height: 15px;
+    width: 15px;
+    margin-right: 5px;
 }
 
 th img {
-	visibility: hidden;
+    visibility: hidden;
 }
 
 th div img {
-	width: 100%;
-	height: 100%;
-	z-index: 1;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
 }
 
 .image-active {
-	visibility: visible;
+    visibility: visible;
 }
 
 td div {
-	width: 100%;
-	overflow: hidden;
+    width: 100%;
+    overflow: hidden;
 }
 
 /* Change anything and everything below 
  http://www.w3schools.com/css/css_link.asp */
 
 a:link, a:visited {
-	color: black;
+    color: black;
 }
 
 a:hover, a:active {
-	color: #3669a4;
+    color: #3669a4;
 }
 
 div.hide {

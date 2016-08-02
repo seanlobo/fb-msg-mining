@@ -47,7 +47,12 @@ def table():
         sort = ['contacted', 'alpha', 'length']
 
     reverse = mode == 'down'
-    return render_template('table.html', m=m, p=m.quick_stats, sort=sort, mode=mode, reverse=reverse)
+
+    if 'query' in request.args:
+        data = m.quick_stats.match_name(request.args['query'].lower())
+    else:
+        data = m.quick_stats.ordered_values(sort, reverse=reverse)
+    return render_template('table.html', m=m, p=m.quick_stats, sort=sort, mode=mode, reverse=reverse, data=data)
 
 
 @app.route('/graphs/conversation/<int:convo_num>/')

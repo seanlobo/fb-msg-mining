@@ -12,16 +12,16 @@
         </div>
 
 
-        <!-- Search Bar -->
-        <div class="search-area hide">
+        <!-- Search Bar  - Design adapted from http://webdesign.tutsplus.com/tutorials/css-experiments-with-a-search-form-input-and-button--cms-22069 */-->
+        <form method="get" class="search-area">
             <div class="search-bar">
                 <div class="container">
                     <span class="icon"><img src="/static/resources/Search-icon.svg" /></span>
-                    <input type="search" id="search" placeholder="Search..." />
+                    <input type="search" id="search" name="query" placeholder="Search..." />
                 </div>
             </div>
-            <button type="submit" class="search-submit"></button>
-        </div>
+            <button type="submit" class="search-submit">Go!</button>
+        </form>
 
 
         <!-- Data table -->
@@ -68,7 +68,7 @@
                 </thead>
 
                 <!-- Actual table data -->
-                {% for data_ele in p.ordered_values(sort, reverse=reverse) %}
+                {% for data_ele in data %}
                     <tbody>
                         <tr>
                             <td><div><a class="graph-link" href="{{ p.get_index(data_ele['alpha'], 'length') }}">{{ data_ele['alpha'] }}</a></div></td>

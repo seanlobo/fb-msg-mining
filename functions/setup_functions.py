@@ -114,7 +114,7 @@ def get_messages_readable(thread, previous=None):
 
 
 def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
-    """Returns the dictionary uesd by MessageReader"""
+    """Returns the dictionary used by MessageReader"""
     conversation_color = Fore.LIGHTYELLOW_EX + Back.LIGHTBLACK_EX
     previous_color = Fore.LIGHTCYAN_EX + Back.BLACK
     current_color = Fore.LIGHTGREEN_EX + Back.BLACK
@@ -373,8 +373,15 @@ class PreferencesSearcher:
         data = self.preferences[quality][name]
         return data[1] if value else data[0]
 
-    def ordered_values(self, sort, reverse=False):
-        assert isinstance(sort, list), "sort must be a list of sorting preferences"
+    def ordered_values(self, sort, reverse=False) -> list:
+        """Returns a list of dictionaries sorted by the values corresponding to sort
+        Parameters:
+            sort: A list of the qualities to include in the returned dicts. The order of sort determines the sort order
+            reverse (optional): Whether the returned list should be reverse sorted
+        Return:
+            A list of dictionaries with each dictionary having queryable keys from sort
+        """
+        assert isinstance(sort, list) or isinstance(sort, tuple), "sort must be a list or tuple of sorting preferences"
         for ele in sort:
             assert ele in self.QUALITIES, "sort must contain only values from self.QUALITIES: {0}"\
                 .format(self.QUALITIES)
@@ -387,7 +394,12 @@ class PreferencesSearcher:
                 tmp.append(self.get_index(name, quality, value=True))
             values.append(tmp)
 
+        # A list of dictionaries with keys from quality and corresponding values. sorted by ordered values
         return [dict(zip(sort, value)) for value in sorted(values, reverse=reverse)]
+
+    def match_name(self, query, sort=('length', 'alpha', 'contacted'), reverse=True):
+        """Returns a filtered output of ordered_values where each conversation name contains query"""
+        return [d for d in self.ordered_values(sort, reverse=reverse) if query.lower() in d['alpha'].lower()]
 
     def __repr__(self):
         return "PreferenceSearcher({0})".format(repr(self.preferences))
