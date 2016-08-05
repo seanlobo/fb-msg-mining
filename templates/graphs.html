@@ -26,18 +26,18 @@
                 <div class="graph_body">
                     <!-- Graphs -->
                         <!-- Over Time -->
-                    <div id="graph_over_time" class="graph" data-graph="0"></div>
-                    <div id="graph_over_time2" class="graph" data-graph="4"></div>
+                    <div id="graph_over_time" class="graph line-area" data-graph="0"></div>
+                    <div id="graph_over_time2" class="graph hide line-area" data-graph="4"></div>
 
                         <!-- Cumulative -->
-                    <div id="cumulative_over_time" class="graph" data-graph="1"></div>
-                    <div id="cumulative_over_time2" class="graph" data-graph="5"></div>
+                    <div id="cumulative_over_time" class="graph hide line-area" data-graph="1"></div>
+                    <div id="cumulative_over_time2" class="graph hide line-area" data-graph="5"></div>
 
                         <!-- Day of Week -->
-                    <div id="days_of_week" class="graph" data-graph="2"></div>
+                    <div id="days_of_week" class="graph hide" data-graph="2"></div>
 
                         <!-- Time of Day -->
-                    <div id="time_of_day" class="graph" data-graph="3"></div>
+                    <div id="time_of_day" class="graph hide" data-graph="3"></div>
                     
                     <!-- Buttons -->
                     <div class="button_box">
@@ -50,22 +50,123 @@
                 </div>
 
                 <!-- Settings -->
-                <div class="settings-container hide">
+                <div class="settings-container">
                     <div class="settings-header">
                         GRAPH SETTINGS
                     </div>
-                    <div class="settings-body" data-settings-num="0">
-                        maybe some sort of settings in here? Try clicking the buttons on the right in order.
-                        <button id="test"> </button>
+                    <!-- Setings section 1 - Frequency over time -->
+                    <div class="settings-body hide" data-settings-num="0">
+                        <div class="zoom-types">
+                            <span>Zoom Type</span>
+                            <div class="radio">
+                                <input type="radio" value="xy" data-type="xy" name="zoom0">
+                                xy
+                            </div>
+                            <div class="radio">
+                                <input type="radio" value="x" data-type="x" name="zoom0" checked>
+                                x
+                            </div>
+                            <div class="radio">
+                                <input type="radio" value="y" data-type="y" name="zoom0">
+                                y
+                            </div>
+                        </div>
+                        <div class="stacked-area">
+                            <div class="swap-clear-select">
+                                <div id="swap-graphs">Toggle Graph Types</div>
+                                <div class="clear-all">Clear All</div>
+                                <div class="select-all">Select All</div>
+                            </div>
+                            <div class="people">
+                                {% for person in convo.get_people() %}
+                                    <div class="tr">
+                                        <div class="tr-right">
+                                            <input data-color-person="{{ person }}" data-rank="{{ convo.person_rank(person) }}" type="color" placeholder="Hex Color Code">
+                                        </div>
+                                        <div class="tr-left">
+                                            <div class="rank">{{ convo.person_rank(person) }}</div>
+                                            <div class="specific-person" data-person="{{ person }}">{{ person.title() }}</div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="stack-type">
+                            <span>Stack Type</span>
+                            <div class="radio">
+                                <input type="radio" value="no-stack" name="stack-type0">
+                                no-stack
+                            </div>
+                            <div class="radio">
+                                <input type="radio" value="vertical-stack" name="stack-type0" checked>
+                                vertical-stack
+                            </div>
+                            <div class="radio">
+                                <input type="radio" value="percentage" name="stack-type0">
+                                percentage
+                            </div>
+                        </div>
                     </div>
-                    <div class="settings-body" data-settings-num="1">
-                        Add the buttons and settings for each graph in the appropriate div in the "settings" section.
+                    <!-- Settings section 2 - Cumulative over time -->
+                    <div class="settings-body hide" data-settings-num="1">
+                        <div class="zoom-types">
+                            <span>Zoom Type</span>
+                            <div class="radio">
+                                <input type="radio" value="xy" data-type="xy" name="zoom1">
+                                xy
+                            </div>
+                            <div class="radio">
+                                <input type="radio" value="x" data-type="x" name="zoom1" checked>
+                                x
+                            </div>
+                            <div class="radio">
+                                <input type="radio" value="y" data-type="y" name="zoom1">
+                                y
+                            </div>
+                        </div>
+                        <div class="stacked-area">
+                            <div class="swap-clear-select">
+                                <div id="swap-graphs">Toggle Graph Types</div>
+                                <div class="clear-all">Clear All</div>
+                                <div class="select-all">Select All</div>
+                            </div>
+                            <div class="people">
+                                {% for person in convo.get_people() %}
+                                    <div class="tr">
+                                        <div class="tr-right">
+                                            <input data-color-person="{{ person }}" data-rank="{{ convo.person_rank(person) }}" type="color" placeholder="Hex Color Code">
+                                        </div>
+                                        <div class="tr-left">
+                                            <div class="rank">{{ convo.person_rank(person) }}</div>
+                                            <div class="specific-person" data-person="{{ person }}">{{ person.title() }}</div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="stack-type">
+                            <span>Stack Type</span>
+                            <div class="radio">
+                                <input type="radio" value="no-stack" name="stack-type1">
+                                no-stack
+                            </div>
+                            <div class="radio">
+                                <input type="radio" value="vertical-stack" name="stack-type1" checked>
+                                vertical-stack
+                            </div>
+                            <div class="radio">
+                                <input type="radio" value="percentage" name="stack-type1">
+                                percentage
+                            </div>
+                        </div>
                     </div>
-                    <div class="settings-body" data-settings-num="2">
+                    <!-- Settings section 3 - By day of week -->
+                    <div class="settings-body hide" data-settings-num="2">
                         The data-settings-num corresponds to the button and graph data elements. 
                         Each of these different colored settings sections only appear for their specific graph
                     </div>
-                    <div class="settings-body" data-settings-num="3">
+                    <!-- Settings section 4 - By time of day -->
+                    <div class="settings-body hide" data-settings-num="3">
                         Delete this text and modify the css at the bottom of the css file.
                     </div>
                 </div>
@@ -73,7 +174,7 @@
         </div>
     
         <!-- Name of this conversation -->
-        <div class="hide" id="name"> {{ convo.get_people() }} </div>
+        <div class="hide" id="name"> {{ convo.people_by_messages }} </div>
         <div class="hide" id="convo_num">{{ convo_num }}</div>
 
     </body>

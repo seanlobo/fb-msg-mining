@@ -10,21 +10,16 @@ class GUIConvoReader(BaseConvoReader):
         BaseConvoReader.__init__(self, convo_name, convo_list, 'gui', emojify=emojify)  # default value of gui for rank
         self._last_day = download_date
 
+        self.people_by_messages = sorted(self.get_people(), key=lambda x: self.raw_messages(x), reverse=True)
+
     # -----------------------------------------------   PUBLIC METHODS   --------------------------------------------- #
     def data_for_total_graph(self, contact=None, cumulative=False, forward_shift=0):
+        """Returns a json string representation of this conversation's total message data"""
         raw_data = self.msgs_graph(contact, cumulative, forward_shift)
-
-        if contact is None:  # This is a graph for everyone's totals
-            data = []
-            for day, frequency in raw_data:
-                data.append('[Date.UTC({0},{1},{2}),{3}]'.format(day.year(), day.month() - 1, day.day(), frequency))
-
-            return json.dumps(dict(data=data))
-        else:  # A graph for an individual person, requires a different data format for highcharts
-            categories = [day.to_string() for day, _ in raw_data]
-            data = [freq for _, freq in raw_data]
-
-            return json.dumps(dict(categories=categories, data=dict(name=contact.title(), data=data)))
+        data = []
+        for day, frequency in raw_data:
+            data.append('[Date.UTC({0},{1},{2}),{3}]'.format(day.year(), day.month() - 1, day.day(), frequency))
+        return json.dumps(dict(data=data))
 
     def data_for_msgs_by_day(self, contact=None):
         """Returns the data for use in html/ javascript"""
@@ -66,6 +61,22 @@ class GUIConvoReader(BaseConvoReader):
             data.append('[Date.UTC({0},{1},{2}),{3}]'.format(day.year(), day.month() - 1, day.day(), frequency))
 
         return json.dumps(dict(data=data))
+
+    def person_rank(self, person) -> int:
+        """Returns the order person is in chat frequency for this chat, with 1 being the most frequent poster and
+        len(self) being the least
+        Parameters:
+            person: A string representing the person desired
+        Return:
+            An Integer, The rank of this person in the conversation by number of messages sent, with 1 being the most
+            messages sent and len(self) being the last
+        """
+        assert isinstance(person, str), "person must be a string"
+        person = self._assert_contact(person)[0]
+        for i, p in enumerate(self.people_by_messages):
+            if p == person:
+                return i + 1
+
     # -----------------------------------------------   PUBLIC METHODS   --------------------------------------------- #
 
     #

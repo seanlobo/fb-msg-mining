@@ -1,19 +1,22 @@
+/*  http://stackoverflow.com/questions/13585186/how-can-i-use-custom-fonts-on-a-website  */
+
 body {
-	margin: 0;
-	padding: 0;
-	background: #ececec;
+    margin: 0;
+    padding: 0;
+    background: #ececec;
+    font-family: "avenir";
 }
 
 .page_contents {
-	width: 1100px;
-	height: 100vh;
-	margin: 0 auto;
-	background: #fcfffc;
+    width: 1100px;
+    height: 100vh;
+    margin: 0 auto;
+    background: #fcfffc;
 }
 
 .header-section {
-	height: 80px;
-	/*padding-top: 20px;*/
+    height: 80px;
+    /*padding-top: 20px;*/
 }
 
 .header {
@@ -24,42 +27,44 @@ body {
 }
 
 .header-btn {
-	width: 10%;
-	height: 100%;
-	display: inline-block;
+    width: 10%;
+    height: 100%;
+    display: inline-block;
 }
 
 .header-btn a div {
-	padding-top: 25px;
+    padding-top: 25px;
 }
 
 .header-btn.prev, .header-btn.prev a {
-	float: left;
+    float: left;
 }
 
 .header-btn.next, .header-btn.next a {
-	float: right;
+    float: right;
 }
 
 .header-btn a {
-	width: 100%;
-	height: 100%;
-	cursor: pointer;
-	background-color: #fadbbd;
-	border: 1px solid #ec8217;
-	text-align: center;
-	font-size: 14px;
-	font-family: "Lucida Grande";
-	display: table-cell;
-	vertical-align: center;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    background-color: #fadbbd;
+    border: 1px solid #ec8217;
+    text-align: center;
+    font-size: 14px;
+    font-family: "Lucida Grande";
+    display: table-cell;
+    vertical-align: center;
+    transition-duration: 0.4s;
 }
 
 .header-btn a:hover {
-	background-color: #ec8217;
+    background-color: #ec8217;
+    border: 1px solid black;
 }
 
 .header-btn a:active, .header-btn a:focus {
-	outline: none;
+    outline: none;
 }
 
 div.hide {
@@ -68,9 +73,9 @@ div.hide {
 }
 
 .header .title {
-	text-align: center;
-	font-family: "avenir";
-	font-size: 45px;
+    text-align: center;
+    font-family: "avenir";
+    font-size: 45px;
     color: black;
     margin: 0;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -80,25 +85,25 @@ div.hide {
 }
 
 .message-count {
-	text-align: center;
-	font-size: 15px;
-	font-family: "avenir";
-	font-weight: 700;
+    text-align: center;
+    font-size: 15px;
+    font-family: "avenir";
+    font-weight: 700;
 }
 
 .graph_body_settings {
-	width: 100%;
-	/*height: inherit;*/
-	padding: 0 4px;
-	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    width: 100%;
+    /*height: inherit;*/
+    padding: 0 4px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;         /* Opera/IE 8+ */
 }
 
 .graph_body {
-	width: 100%;
-	height: 400px;
-	/*margin-left: 4px;*/
+    width: 100%;
+    height: 400px;
+    /*margin-left: 4px;*/
 }
 
 .graph {
@@ -112,18 +117,18 @@ div.hide {
 }
 
 .graph_type_button {
-	background-color: white;
-	color: black;
+    background-color: white;
+    color: black;
     border: 1px solid #005fff; 
-	padding: 14px 40px;
-	border-radius: 8px;
-	text-align: center;
-	font-size: 14px;
-	font-family: "Lucida Grande";
-	cursor: pointer;
-	display: block;
-	margin: 16px 4px;
-	transition-duration: 0.4s;
+    padding: 14px 40px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 14px;
+    font-family: "Lucida Grande";
+    cursor: pointer;
+    display: block;
+    margin: 16px 4px;
+    transition-duration: 0.4s;
 }
 
 .graph_type_button:hover {
@@ -131,7 +136,7 @@ div.hide {
     color: white;
 }
 
-.graph_type_button:focus {
+.graph_type_button:focus, .graph_type_button.graph_button_active {
     background-color: #4484ce; 
     border: 1px solid #005fff;
     color: white;
@@ -140,22 +145,22 @@ div.hide {
 }
 
 .select-conversation {
-	background-color: white;
-	color: black;
+    background-color: white;
+    color: black;
     border: 1px solid #ec8217;
-	padding: 14px 40px;
-	border-radius: 8px;
-	text-align: center;
-	font-size: 14px;
-	font-family: "Lucida Grande";
-	cursor: pointer;
-	display: block;
-	margin: 16px 4px;
-	transition-duration: 0.4s;
+    padding: 14px 40px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 14px;
+    font-family: "Lucida Grande";
+    cursor: pointer;
+    display: block;
+    margin: 16px 4px;
+    transition-duration: 0.4s;
 }
 
 .select-conversation:hover {
-	background-color: #fadbbd; 
+    background-color: #fadbbd;
     color: black;
 }
 
@@ -168,50 +173,191 @@ div.hide {
 }
 
 .button_box {
-	/*margin-right: 4px;*/
+    /*margin-right: 4px;*/
 }
 
 .settings-container {
-	width: 100%;
-	height: 100px;
-	margin-top: 20px;
-	background-color: yellow;
+    width: 100%;
+    height: 150px;
+    margin-top: 20px;
+    background-color: yellow;
 }
 
-.setings-header {
-	
-	min-height: 20%;
-	margin-top: -20%;
+.settings-header {
+    height: 20%;
 }
+
+.settings-body {
+    height: 80%;
+    width: 80%;
+}
+
+
+
+
+/* ---------------------------------- Settings section 1 ---------------------------------- */
+.zoom-types {
+    display: inline-block;
+    height: 100%;
+    float: left;
+
+    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
+    background-color: Violet;
+}
+
+.zoom-types span {
+    padding: 5px;
+    display: block;
+    text-align: center;
+}
+
+/* end zoom changing section */
+
+
+/* start participant selection section*/
+.stacked-area {
+    float: left;
+    width: 50%;
+    height: 100%;
+    margin-left: 20px;
+
+    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
+    background-color: LightGreen;
+}
+
+.swap-clear-select {
+    height: 20%;
+}
+
+#swap-graphs, .clear-all, .select-all {
+    text-align: center;
+    height: 100%;
+    display: inline-block;
+    float: left;
+
+    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
+    background-color: orange;
+}
+
+#swap-graphs:hover, .clear-all:hover, .select-all:hover {
+    cursor: pointer;
+
+    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
+    background-color: OrangeRed;
+}
+
+#swap-graphs {
+    width: 50%;
+}
+.clear-all, .select-all {
+    width: 25%;
+}
+
+.stacked-area .people {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 80%;
+}
+
+.stacked-area .people .tr {
+    width: 100%;
+    padding-left: 2px;
+    height: 25px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+}
+
+.tr-left:hover {
+    cursor: pointer;
+
+    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
+    background-color: SeaGreen;
+}
+
+.tr-left.people-active {
+    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
+    background-color: Turquoise;
+}
+
+.tr-left.people-active:hover {
+    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
+    background-color: SteelBlue;
+}
+
+/* http://stackoverflow.com/questions/1260122/expand-a-div-to-take-the-remaining-width */
+.tr-left {
+    width: auto;
+    overflow: hidden;
+}
+
+.tr-right {
+    float: right;
+    width: 25px;
+    padding-right: 10px;
+}
+
+.tr-right input {
+    width: 100%;
+}
+
+.tr-left .rank {
+    float: left;
+    width: 25px;
+}
+
+.tr-left .specific-person {
+    width: auto;
+    overflow: hidden;
+}
+/* end participant selection section*/
+
+
+/* start stack-type styling */
+.stack-type {
+    display: inline-block;
+    height: 100%;
+    float: left;
+    margin-left: 20px;
+
+    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
+    background-color: Orange;
+}
+
+.stack-type span {
+    padding: 5px;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.stack-type .radio {
+    padding-right: 10px;
+}
+
 
 div[data-settings-num="0"] {
-	height: 80%;
-	width: 80%;
 
-	/* Please delete / change these colors :D*/
-	background-color: #BA55D3; 
+    /* Please delete / change these colors :D*/
+    background-color: #87CEEB;
 }
 
-div[data-settings-num="1"] {
-	height: 80%;
-	width: 80%;
+/* ---------------------------------- Settings section 2 ---------------------------------- */
 
-	/* Please delete / change these colors :D*/
-	background-color: green; 
+div[data-settings-num="1"] {
+
+    /* Please delete / change these colors :D*/
+    background-color: green;
 }
 
 div[data-settings-num="2"] {
-	height: 80%;
-	width: 80%;
 
-	/* Please delete / change these colors :D*/
-	background-color: red; 
+    /* Please delete / change these colors :D*/
+    background-color: red;
 }
 
 div[data-settings-num="3"] {
-	height: 80%;
-	width: 80%;
 
-	/* Please delete / change these colors :D*/
-	background-color: orange; 
+    /* Please delete / change these colors :D*/
+    background-color: orange;
 }
