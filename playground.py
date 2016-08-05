@@ -55,6 +55,12 @@ except:
     print(traceback.format_exc())
     os._exit(1)
 
+
+# http://stackoverflow.com/questions/2356399/tell-if-python-is-in-interactive-mode
+if not sys.flags.interactive:
+    print("Are you sure you ran this program interactively, with the `-i` flag?")
+    input("If not the program will exit. Press enter to continue: ")
+
 clear_screen()
 console_width = min(shutil.get_terminal_size().columns, 150)
 
