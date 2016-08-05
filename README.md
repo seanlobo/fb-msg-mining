@@ -2,11 +2,17 @@
 
 ## Installing dependencies
 
-Ensure that you have a version of python3 installed. If you don't, navigate to [python's homepage](https://www.python.org/downloads/). Installing python from here should come with `pip`, python's package manager, but if you don't have `pip` installed, visit [this page](https://pip.pypa.io/en/stable/installing/) to install it.
+Ensure that you have a version of python3 installed. If you don't, navigate to [python's homepage](https://www.python.org/downloads/).
+Installing python from here should come with `pip`, python's package manager, but if you don't have `pip` installed, visit
+[this page](https://pip.pypa.io/en/stable/installing/) to install it.
 
-Then to install dependencies run:
+After cloning the project to install dependencies run:
 
     pip3 install -r requirements.txt
+
+Additionally, if you would like to use WordCloud features ensure that you have Java installed. You can find installation instructions
+[here](https://www.java.com/en/download/help/download_options.xml).
+
 
 ---
 
@@ -17,13 +23,15 @@ Run `git clone https://github.com/seanlobo/fb-msg-mining.git` where you would li
 
 ## Step 2:
 
-Request a copy of your Facebook data:
+[Request a copy of your Facebook data:](https://www.facebook.com/help/131112897028467/)
 
 Go to Facebook and click on Settings -> "Download a copy" link near the middle of the page.
 You'll need to put in your facebook password in order to request the download, and you should
 receive a confirmation email from facebook immediately, sent to the email you used when signing up.
 **It can take less than an hour or up to a week to get your archive, and you only have around 24 hours
 before the link sent to you expires, so check carefully!**
+
+Note that at all times your data is only analyzed locally.
 
 
 ## Step 3:
@@ -52,6 +60,6 @@ run `python3 -i playground.py` to get an interactive session and analyze data, o
 
 # Libraries used
 While original aspects of this project are open source under the MIT License, various libraries are utilized that are subject to their own
-terms and conditions. Licenses can be found in this project, with more information in credit.txt.
+terms and conditions. Licenses can be found in this project, with more information in `credit.txt`.
 In particular, the graphing functionality of highcharts is used in this project.
-Note that HighCharts and its software is not free for commercial and Governmental use. More information can be found at [highcharts.com](highcharts.com)
+Note that HighCharts and its software is not free for commercial and Governmental use. More information can be found at [highcharts.com](www.highcharts.com)

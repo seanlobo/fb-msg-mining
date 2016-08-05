@@ -1,5 +1,7 @@
 # Place to run all commands
 
+import sys
+
 from functions.messagereader import MessageReader
 from functions.setup_functions import clear_screen, color_method
 from functions.wordcloud import WordCloud
@@ -14,6 +16,12 @@ except Exception as e:
     print(e)
     exit()
 
+
+# http://stackoverflow.com/questions/2356399/tell-if-python-is-in-interactive-mode
+if not sys.flags.interactive:
+    print("Are you sure you ran this program interactively, with the `-i` flag?")
+    input("If not the program will exit. Press enter to continue: ")
+
 clear_screen()
 print("\nWelcome to the python3 terminal version of fb-msg-mining!\n\n")
 print("If you are unfamiliar with python syntax... then you might be better off using the GUI version of this program. "
@@ -23,5 +31,3 @@ print("If you are unfamiliar with python syntax... then you might be better off 
 
 print('Once you feel comfortable with basic python syntax, get ready to analyze your conversations with the '
       'command `{0}`\n\n'.format(color_method("m.help()")))
-
-
