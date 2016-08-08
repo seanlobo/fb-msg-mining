@@ -63,3 +63,8 @@ While original aspects of this project are open source under the MIT License, va
 terms and conditions. Licenses can be found in this project, with more information in `credit.txt`.
 In particular, the graphing functionality of highcharts is used in this project.
 Note that HighCharts and its software is not free for commercial and Governmental use. More information can be found at [highcharts.com](https://www.highcharts.com)
+
+---
+
+## Version history
+See [CHANGES.md](CHANGES.md)
