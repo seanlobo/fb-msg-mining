@@ -1,7 +1,7 @@
 import os
 import shutil
 import time
-from collections import Counter
+import textwrap
 from bs4 import BeautifulSoup
 from colorama import init, Fore, Back, Style
 
@@ -437,3 +437,30 @@ def color_method(string: str) -> str:
     else:
         result += inner_code_color + string + Style.RESET_ALL
     return result
+
+
+def fit_colored_text_to_console(text, *to_be_colored, color_fn=None) -> str:
+    """Returns a string formatted to the console width and with all elements of to_be_colored colored by color_fn
+    Parameters:
+        text: (str) the text to be formated
+        to_be_colored: (str) an arbitrary number of substrings from text that should be colored according to color_fn
+        color_fn (optional): (fn) the function used to color elements of to_be_colored. Should take in a string and
+            return a colored version of that string. Defaults to functions.setup_functions.color_method
+    """
+    if color_fn is None:
+        color_fn = color_method
+    console_width = min(shutil.get_terminal_size().columns, 150)
+    formatted_text = textwrap.fill(text, console_width)
+
+    for colorable_text in to_be_colored:
+        if colorable_text in formatted_text:
+            formatted_text = formatted_text.replace(colorable_text, color_fn(colorable_text))
+        else:
+            words = colorable_text.split()
+            for i in range(1, len(words)):
+                tmp_text = ' '.join(words[0:i]) + '\n' + ' '.join(words[i:])
+                if tmp_text in formatted_text:
+                    formatted_text = formatted_text.replace(tmp_text, color_fn(tmp_text))
+                    break
+
+    return formatted_text

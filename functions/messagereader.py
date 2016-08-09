@@ -6,7 +6,9 @@ import ast
 from colorama import Fore, Back, Style, init
 
 
-from functions.setup_functions import PreferencesSearcher, clear_screen, user_says_yes
+from functions.setup_functions import (PreferencesSearcher, clear_screen, user_says_yes, fit_colored_text_to_console,
+                                       one_line)
+from functions.baseconvoreader import BaseConvoReader
 from functions.convoreader import ConvoReader, color_method
 from functions.guiconvoreader import GUIConvoReader
 from functions.customdate import CustomDate
@@ -306,7 +308,7 @@ class MessageReader:
 
     @staticmethod
     def help():
-        """Responsively provides help for using MessageReader"""
+        """Provides help for using MessageReader based on user input"""
         clear_screen()
         print("Welcome to the help function for MessageReader\n\n")
 
@@ -331,52 +333,70 @@ class MessageReader:
             if choice == '0':
                 # Helps user with an idea of what they can do with a messagereader
                 print("Option 0:")
-                print(Fore.LIGHTCYAN_EX + Back.BLACK + '\"What can I do here??\"')
-                print(Style.RESET_ALL + 'Good question. Here you can perform a variety of analysis on your facebook'
-                                        ' conversations, '
-                      'ranging from analyzing the words you use most frequently in your favorite chat, to stats '
-                      'on who starts conversations the most in that spammy group chat, to rankings of total emoji '
-                      'use in all your conversations combined, and much more.\n')
-                print('If you\'re primarily interested in viewing graphs of message history, you might be better off '
-                      'using the GUI version of this program. Exit this helper (choice 3) and type the command '
-                      '`{0}`. Once you\'re out of this python session, run the command `{1}`'
-                      .format(color_method('exit()'), color_method("python3 fancy_playground.py")))
-                print()
-                print('If you\'re looking to get into the nitty gritty analysis of your facebook converation history, '
-                      'well this is the place for you. To get information on analyzing your data, pick choices 1 or 2 '
-                      'below')
+                print(Fore.LIGHTCYAN_EX + Back.BLACK + '\"What can I do here??\"' + Style.RESET_ALL)
+                chunk1 = ('Good question. Here you can perform a variety of analysis on your facebook conversations, '
+                          'from analyzing the words you use most frequently in your favorite chat, to stats '
+                          'on who starts or ends conversations the most, to rankings of total emoji use in all your '
+                          'conversations, and much more.')
+                chunk2 = ('If you\'re primarily interested in viewing visualizations of your data, and not in actually '
+                          'using the raw data, you might be better off using the GUI version of this program. Exit '
+                          'this helper (choice 3) and type the command `exit()`. Once you\'re out of this python'
+                          ' session, run the command `python3 fancy_playground.py`')
+                chunk3 = ('If you\'re looking to get into the nitty gritty analysis of your facebook conversation '
+                          'history, this is the place for you. To get information on getting started pick choices '
+                          '1 or 2 below')
+
+                print(fit_colored_text_to_console(chunk1))
+                print('\n')
+                print(fit_colored_text_to_console(chunk2, "exit()", "python3 fancy_playground.py"))
+                print('\n')
+                print(fit_colored_text_to_console(chunk3))
+                print('\n')
 
             elif choice == '1':
                 # Helps users view a list of conversations they can analyze
-                print("Option 1: Viewing a list of conversations you can analyze\n")
-                print(Fore.RED + '*', end=' ')
-                print('To view a list of conversations that you can analyze, exit this helper and execute the '
-                      'command `{0}`'.format(color_method('m.print_names()')))
-                print(Fore.RED + '*', end=' ')
-                print('To get more options on printing conversations, exit the helper and execute `{0}`. This is '
-                      'only if you plan on doing fancy stuff'
-                      .format(color_method('help(m.print_names)')))
-                print('\nAfter picking a conversation to analyze, see option (2) below')
+                print("Option 1: Viewing a list of conversations you can analyze")
+                print(one_line())
+
+                chunk1 = ('To view a list of conversations that you can analyze, exit this helper and execute the '
+                          'command `m.print_names()`. This will print to the console a list of all contacts you '
+                          'have messaged, sorted with decreasing number of messages. Since this number can be large, '
+                          'you can optionally pass an integer limiting the conversations printed, for example '
+                          '`m.print_names(10)` to print your top 10 conversations')
+                chunk2 = ('To get more options on printing conversations, exit the helper and execute '
+                          '`help(m.print_names)`. This is only if you plan on doing fancy stuff')
+
+                print(fit_colored_text_to_console(chunk1, "m.print_names()", "m.print_names(10)"))
+                print()
+                print(fit_colored_text_to_console(chunk2, "help(m.print_names)"))
+                print()
+                print('After deciding on a conversation to analyze, see option (2) below on how to get started, '
+                      'as well as an example')
 
             elif choice == '2':
                 # Helps users see how to grab a specific conversation
-                print(Fore.RED + '*', end=' ')
+                print('Option 2: Getting started analyzing a specific conversation')
+                print(one_line())
                 print('To analyze a specific conversation, you must retrieve it in one of 3 main ways:')
-                print(Fore.GREEN + 'a)', end=' ')
-                print('Print to the screen the ordered list of conversations (see choice 1) and find the rank of'
-                      ' the conversation you would like. Then save that conversation to variable by executing the '
-                      'command `{0}{1}`'.format(color_method('variable_name = '),
-                                                color_method('m.get_convo(rank_of_desired_convo)')))
-                print(Fore.GREEN + 'b)', end=' ')
-                print('Get the conversation you would like by searching for it\'s name, e.g. executeing the command '
-                      '`{0}{1}`'.format(color_method('variable_name = '),
-                                        color_method('m.get_convo(\'bob smith, sally brown\')')))
-                print(Fore.GREEN + 'c)', end=' ')
-                print('Get the conversation you would like by searching for it\'s name as a list, e.g.'
-                      ' executing the command `{0}{1}`'
-                      .format(color_method('variable_name = '),
-                              color_method('m.get_convo([\'both smith\', \'sally brown\'])')))
                 print()
+
+                chunk1 = ('Print to the screen the ordered list of conversations (see choice 1) and find the rank of '
+                          'the conversation you would like. Then save that conversation to variable by executing the '
+                          'command `variable_name = m.get_convo(rank_of_desired_convo)`')
+                chunk2 = ('Get the conversation you would like by searching for its name, e.g. executing the '
+                          'command `variable_name = m.get_convo(\'bob smith, sally brown\')`')
+                chunk3 = ('Get the conversation you would like by searching for its name as a list, e.g. '
+                          'executing the command `variable_name = m.get_convo([\'both smith\', \'sally brown\'])`')
+
+                print(Fore.GREEN + Back.BLACK + '(1)')
+                print(fit_colored_text_to_console(chunk1, "variable_name", "m.get_convo(rank_of_desired_convo)"))
+                print(Fore.GREEN + Back.BLACK + '\n(2)')
+                print(fit_colored_text_to_console(chunk2, "variable_name", "m.get_convo(\'bob smith, sally brown\')"))
+                print(Fore.GREEN + Back.BLACK + '\n(3)')
+                print(fit_colored_text_to_console(chunk3, "variable_name",
+                                                  'm.get_convo([\'both smith\', \'sally brown\'])'))
+                print()
+
                 print('Once you have your desired conversation, to get additional help analyzing it execute '
                       '`{0}`'.format(color_method('help(variable_name_from_above)')))
 
@@ -384,29 +404,40 @@ class MessageReader:
 
                 # Describes an example of how to grab a conversation
                 if user_says_yes():
-                    print(Fore.LIGHTRED_EX + "\nEXAMPLE)")
-                    print("Let\'s say I want to see my top 3 conversations. I can do this with command "
-                          "`{0}`, where the 3 tells the program to print my top 3 contacts (ordered "
-                          "by total number of messages sent and received; for more options do `{1}`)"
-                          .format(color_method('m.print_names(3)'), color_method('help(m.print_names)')))
+                    code_color = Fore.LIGHTBLACK_EX + Back.BLACK
+                    print(one_line())
+                    print(Fore.LIGHTRED_EX + Back.BLACK + "\nEXAMPLE)")
+
+                    chunk1 = ("Let\'s say I want to see my top 3 conversations. I can do this with command "
+                              "`m.print_names(3)`, where the 3 tells the program to print my top 3 contacts "
+                              "(ordered by total number of messages sent and received; for more options do "
+                              "`help(m.print_names)`)")
+                    print(fit_colored_text_to_console(chunk1, "help(m.print_names)", "m.print_names(3)"))
                     print("The above would go something like this:\n")
 
-                    print(Fore.LIGHTBLACK_EX + ">>> m.print_names(3)\n"
-                          "1) Sally Brown, Your Name\n"
-                          "2) Bob Smith, Your Name\n"
-                          "3) Your Name, Edward Newgate\n")
-                    print("Now if I'd like to analyze my chat with Edward, I should first capture our conversation in "
-                          "the following way:\n")
-                    print(Fore.LIGHTBLACK_EX + ">>> edward = m.get_convo(3)\n")
-                    print("Here, we use the `{0}` method to retrieve our conversation. The 3 corresponds to "
-                          "our 3rd most contacted person from the `{1}` method"
-                          .format(color_method("get_convo()"), color_method("print_names()")))
-                    print("Additionally, the fact that we used the variable name \"edward\" is arbitrary. Any name can "
-                          "be used, I've just fallen into the habit of naming conversation variables after the "
-                          "name of the conversation, so it\'s easy to remember later")
-                    print("\nOnce we\'ve successfully saved the chat we'd like, we can proceed to analyze it by "
-                          "executing the command `{0}` (replace edward with whatever variable name you used)"
-                          .format(color_method('edward.help()')))
+                    print(code_color + ">>> m.print_names(3)" + Style.RESET_ALL +
+                          code_color + "\n1) Sally Brown, Your Name" + Style.RESET_ALL +
+                          code_color + "\n2) Bob Smith, Your Name" + Style.RESET_ALL +
+                          code_color + "\n3) Your Name, Edward Newgate" + Style.RESET_ALL)
+                    print()
+
+                    chunk2 = ("Now if I'd like to analyze my chat with Edward, I should first capture our "
+                              "conversation in the following way:\n")
+                    print(fit_colored_text_to_console(chunk2))
+                    print(code_color + ">>> edward = m.get_convo(3)" + Style.RESET_ALL + '\n')
+
+                    chunk3 = ("Here, we use the `get_convo(3)` method to retrieve our conversation. The 3 "
+                              "corresponds to our 3rd most contacted person from the `print_names()` method call."
+                              " Additionally, the fact that we used the variable name \"edward\" is arbitrary. "
+                              "Any name can be used, I've just fallen into the habit of naming conversation variables "
+                              "after the name of the conversation, so it\'s easy to remember later")
+                    print(fit_colored_text_to_console(chunk3, "print_names()", "get_convo(3)"))
+                    print()
+
+                    chunk4 = ("\nOnce we\'ve successfully saved the chat we'd like, we can proceed to analyze it by "
+                              "executing the command `edward.help()` (replace edward with whatever variable name"
+                              " you used)")
+                    print(fit_colored_text_to_console(chunk4, "edward.help()"))
 
             condition = choice != '3'
             if condition:  # We're continuing for another round
