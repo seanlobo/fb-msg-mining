@@ -11,7 +11,7 @@ from functions.baseconvoreader import BaseConvoReader
 from functions.wordcloud import WordCloud
 from functions.customdate import CustomDate
 import functions.emojis as emojis
-from functions.setup_functions import clear_screen, one_line, user_says_yes, color_method
+from functions.setup_functions import clear_screen, one_line, user_says_yes, color_method, fit_colored_text_to_console
 
 
 init(autoreset=True)
@@ -21,7 +21,7 @@ class ConvoReader(BaseConvoReader):
     """Extends the functionality of BaseConvoReader, prints stats to console and handles wordcloud creation"""
     _CANCEL_WC_PREFERENCE = 'cancel'
 
-    def __init__(self, convo_name: str, convo_list: list):
+    def __init__(self, convo_name, convo_list, rank):
         """Constructor for ConvoReader, important instance variables summarized below:
         name  String - this conversation's name, all people in the conversation concatenated together
                         separated by commas and a space. E.g. "swetha raman, sean lobo"
@@ -31,7 +31,7 @@ class ConvoReader(BaseConvoReader):
                             would be self.convo[4][1]
         people List<String> - A list of all people in the conversation. E.g. ["swetha raman", "sean lobo"]
         """
-        BaseConvoReader.__init__(self, convo_name, convo_list)
+        BaseConvoReader.__init__(self, convo_name, convo_list, rank)
 
         self._preferences = self._load_preferences()
         # preferences_choices = {'personal': {"Name": val, "Message": val, "Date" : val},
@@ -776,7 +776,6 @@ class ConvoReader(BaseConvoReader):
 
     # ------------------------------------------   PUBLIC STATIC METHODS   ------------------------------------------- #
 
-
     # -----------------------------------------------   PREFERENCES   ------------------------------------------------ #
 
     def _pick_color(self, person: int) -> int:
@@ -808,9 +807,7 @@ class ConvoReader(BaseConvoReader):
                     assert 'global' in preferences and 'threshold' in preferences['global'],\
                         "You are missing global parameters in preferences"
                 except AssertionError as e:
-                    print(e)
-                    print('To get rid of this warning either execute \"save_preferences()\", or figure out what the '
-                          'issue is in {0} and fix that'.format(self._path + 'preferences.txt'))
+                    pass
                 # Clean data, making sure loaded preferences are actually in the format we expect
                 else:
                     return preferences
@@ -820,9 +817,7 @@ class ConvoReader(BaseConvoReader):
         except FileNotFoundError:
             pass
         except Exception as e:
-            print("A {0} error was encountered when loading preferences: {1}".format(e, str(e)))
-            print('\nThis most likely means you have modified the preferences.txt file in {0}'.format(self._path))
-            print('To get rid of this warning, execute the command \"save_preferences()\"')
+            pass
 
         preferences = {person: dict() for person in self._people}
         preferences['global'] = dict(threshold=240)

@@ -7,7 +7,7 @@ from functions.baseconvoreader import BaseConvoReader
 
 class GUIConvoReader(BaseConvoReader):
     def __init__(self, convo_name, convo_list, download_date, emojify=False):
-        BaseConvoReader.__init__(self, convo_name, convo_list, emojify=emojify)
+        BaseConvoReader.__init__(self, convo_name, convo_list, 'gui', emojify=emojify)  # default value of gui for rank
         self._last_day = download_date
 
     # -----------------------------------------------   PUBLIC METHODS   --------------------------------------------- #

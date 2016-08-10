@@ -37,11 +37,12 @@ class MessageReader:
                                                       "sure setup.py finished properly")
                 raise e
         self.names = self._get_convo_names_freq()
-        self.person = join(self.download.split(' ')[2:-8], split=" ")
+        self.person = " ".join(self.download.split(' ')[2:-8])
         self.download_date = CustomDate(" ".join(self.download.split()[-7:]))
 
-        self._edits = dict()
-        self._spacer = ' ---> '
+        self._edits = []
+
+    # -------------------------------------------   CONVERSATION GRABBING  ------------------------------------------ #
 
     def get_convo_names(self, by_recent=False):
         """Returns a list of lists, where each inner list is
@@ -89,16 +90,19 @@ class MessageReader:
 
         if type(people) is int:
             if people > 0:
-                return ConvoReader(self.names[people - 1], self.data[self.names[people - 1]])
+                return ConvoReader(self.names[people - 1], self.data[self.names[people - 1]], people)
             else:
-                return ConvoReader(self.names[len(self.names) + people], self.data[self.names[len(self.names) + people]])
+                return ConvoReader(self.names[len(self.names) + people],
+                                   self.data[self.names[len(self.names) + people]],
+                                   people)
         if type(people) is str:
             people = people.title().split(', ')
         else:
             people = list(map(lambda x: x.title() if 'facebook' not in x else x, people))
-        for name in self.data.keys():
+        for i in range(len(self)):
+            name = self.quick_stats.get_name(i + 1, 'alpha')
             if contents_equal(name.split(', '), people):
-                return ConvoReader(name, self.data[name])
+                return ConvoReader(name, self.data[name], i + 1)
         print("You haven't talked with {0} before".format(people))
         return None
 
@@ -108,107 +112,6 @@ class MessageReader:
         assert 0 < index <= len(self), "Index out of bounds, index must be between 1 and {0}".format(len(self))
 
         return GUIConvoReader(self.names[index - 1], self.data[self.names[index - 1]], self.download_date)
-
-    def edit_convo_participants(self, convo_num, old_name, new_name):
-        """Updates the specified conversation number by replacing all instances of old_name in the person
-        attribute with new_name
-        Parameter:
-            convo_num: an integer representing the conversation we would like to edit
-            old_name: the old name to be replaced
-            new_name: the new name to replace old_name with
-        """
-        # Assertions to make sure data is good 
-        assert isinstance(convo_num, int), "convo_num must be an integer"
-        assert 1 <= convo_num <= len(self) or -len(self) <= convo_num <= -1, \
-            "convo_num must be a valid index (between 1 and the number of conversations)"
-        if convo_num < 1:
-            convo_num = convo_num + len(self) + 1
-        assert isinstance(old_name, str), "old_name must be a string"
-        old_name = old_name.lower()
-        convo = self.get_convo(convo_num)
-        assert old_name in convo.get_people(), "old_name must be someone currently in the conversation"
-        assert isinstance(new_name, str), "new_name must be a string"
-        new_name = new_name.lower()
-        # Assertions to make sure data is good
-
-        if new_name in convo.get_people():
-            # if the user is trying to replace a name with an already existing name, 
-            # it could be impossible to undo this, since we can't tell which names 
-            # were originally the new name and which were changed. This block warns them 
-            print("{0} is already in the conversation. Swapping {1} for {2} will potentially make it "
-                  "impossible to revert settings for this conversation alone. If you proceed and save these changes,"
-                  "you will have to run setup again and revert all conversation edits. "
-                  .format(new_name, old_name, new_name), end="")
-            print(Fore.RED + "Are you sure you would like to proceed? [Y/n]")
-            if not user_says_yes():
-                print()
-                return
-            print()
-
-        occurrences = 0  # number of occurrences that are being swapped. Just so the user knows
-        for person, msg, date in convo:
-            if person == old_name:
-                occurrences += 1
-        print("Swapping {0} for {1} will result in {2} changes. Would you like to proceed? [Y/n]"
-              .format(old_name, new_name, occurrences))
-
-        # Does the user really want to continue after getting information
-        if not user_says_yes():
-            return
-
-        # The name and data associated with the desired converation before any actions have been performed
-        previous_name = self.names[convo_num - 1]
-        previous_data = self.data[previous_name]
-
-        # if else block below deal with getting an updated name for the self.data dictionary key
-        if new_name.title() not in previous_name:  # if new_name is not already present, swap the old_name for it
-            updated_name = previous_name.replace(old_name.title(), new_name.title())
-        else:
-            # Take the previous_name and cut out old_name, instead of
-            # replacing with new_name since new name is already in the name
-            updated_name = join([name for name in previous_name.split(', ') if name != old_name.title()], ", ")
-
-        # The block below updates the List<tuple> for the self.data value of the dictionary
-        for i in range(len(previous_data)):
-            person, msg, date = previous_data[i]
-            if person.lower() == old_name:
-                previous_data[i] = tuple([new_name.title(), msg, date])
-
-        del self.data[previous_name]  # deletes the old data from self.data
-        self.data[updated_name.title()] = previous_data  # updates self.data with the new data
-        self.names = self._get_convo_names_freq()  # update self.names with new keyset
-        edit_string = "{0}{1}{2}".format(previous_name, self._spacer, updated_name)
-        if convo_num not in self._edits:
-            self._edits[convo_num] = [edit_string]
-        else:
-            self._edits[convo_num].append(edit_string)
-        print("The specified changes have been made. Please note that these changes will only last the "
-              "duration of this python session. If you would like to make the changes permanent, call ", end="")
-        print(Fore.LIGHTGREEN_EX + "m.save_convo_edits()")
-
-    def save_convo_edits(self):
-        """Saves changes made to conversation names with edit_convo_participants"""
-        print("Are you sure you would like to save the changes made? "
-              "You might have to redo setup in order to revert. Your conversation preferences will  be lost. [Y/n]")
-        if user_says_yes():
-            return
-
-        for key in self._edits:
-            for change in self._edits[key]:
-                old, new = change.split(self._spacer)
-
-                old_path = 'data/' + ConvoReader.list_to_combined_string(sorted(old.split(', ')))
-                new_path = 'data/' + ConvoReader.list_to_combined_string(sorted(old.split(', ')))
-
-                if os.path.isdir(old_path):
-                    shutil.rmtree(old_path)
-
-                # for future use in moving things consider the following post
-                # http://stackoverflow.com/questions/225735/batch-renaming-of-files-in-a-directory
-
-        with open('data/data.txt', mode='w', encoding='utf-8') as f:
-            f.write(repr(self.data) + '\n')
-            f.write(repr(self.download))
 
     def random(self):
         """Returns a random conversation"""
@@ -226,21 +129,200 @@ class MessageReader:
         except AssertionError as e:
             print(e)
 
-    def raw_top_conversations(self, start, end):
-        """Returns a counter for top conversations in a time period"""
-        CustomDate.assert_dates(start, end)
-        start, end = CustomDate.from_date_string(start), CustomDate.from_date(CustomDate.from_date_string(end) + 1)
-        rankings = Counter()
+    # -------------------------------------------   CONVERSATION GRABBING  ------------------------------------------ #
+
+    # ------------------------------------------------   EDITING DATA  ----------------------------------------------- #
+
+    def edit_convo_participants(self, convo_num, old_name, new_name, force=False, verbose=True):
+        """Updates the specified conversation number by replacing all instances of old_name in the person
+        attribute with new_name
+        Parameter:
+            convo_num: an integer representing the conversation we would like to edit
+            old_name: the old name to be replaced
+            new_name: the new name to replace old_name with
+            force (optional): if True then user prompts are bypassed and the edits occur anyway. Defaults to False
+        """
+        # Assertions to make sure data is good 
+        assert isinstance(convo_num, int), "convo_num must be an integer"
+        assert 1 <= convo_num <= len(self) or -len(self) <= convo_num <= -1, \
+            "convo_num must be a valid index (between 1 and {0})".format(len(self))
+        if convo_num < 1:
+            convo_num = convo_num + len(self) + 1
+        assert isinstance(old_name, str), "old_name must be a string"
+        old_name = old_name.lower()
+        convo = self.get_convo(convo_num)
+        if old_name not in convo.get_people():
+            return
+        assert isinstance(new_name, str), "new_name must be a string"
+        new_name = new_name.lower()
+        # Assertions to make sure data is good
+
+        if verbose:
+            chunk = ("Beginning conversation edits for your #{rank} ranked chat (by messages). The conversation "
+                     "includes {people}".format(rank=self.rank(convo), people=convo.get_people()))
+            print(fit_colored_text_to_console(chunk))
+
+        if new_name in convo.get_people() and not force:
+            # if the user is trying to replace a name with an already existing name, 
+            # it could be impossible to undo this, since we can't tell which names 
+            # were originally the new name and which were changed. This block warns them if force is False
+            print("{new} is already in the conversation. Swapping {old} for {new} will potentially make it "
+                  "impossible to revert settings for this conversation alone. If you proceed and save these changes,"
+                  "you will have to run setup again and revert all conversation edits. "
+                  .format(new=new_name, old=old_name), end="")
+            print(Fore.RED + "Are you sure you would like to proceed? [Y/n]")
+            if not user_says_yes():
+                print()
+                return
+            print()
+
+        occurrences = 0  # number of occurrences that are being swapped. Just so the user knows
+        for person, msg, date in convo:
+            if person == old_name:
+                occurrences += 1
+        if not force:
+            print("Swapping {old} for {new} will result in {num_changes} changes. Would you like to proceed? [Y/n]"
+                  .format(old=old_name, new=new_name, num_changes=occurrences))
+
+            # Does the user really want to continue after getting information
+            if not user_says_yes():
+                return
+
+        # The name and data associated with the desired conversation before any actions have been performed
+        previous_name = self.names[convo_num - 1]
+        previous_data = self.data[previous_name]
+
+        # if else block below deal with getting an updated name for the self.data dictionary key
+        if new_name.title() not in previous_name.split(', '):
+            # if new_name is not already present, swap the old_name for it
+            updated_name = previous_name.replace(old_name.title(), new_name.title())
+        else:
+            # Take the previous_name and cut out old_name, instead of
+            # replacing with new_name since new name is already in the name
+            updated_name = ", ".join([name for name in previous_name.split(', ') if name != old_name.title()])
+        updated_name = ', '.join(sorted(updated_name.split(', ')))
+
+        if updated_name in self.names and not force:
+            print('\n' + Fore.LIGHTRED_EX + Back.BLACK + "Warning:" + Style.RESET_ALL)
+            chunk1 = ("Replacing '{old}' with '{new}' would result in a conversation whose participants are "
+                      "identical to an existing conversation. This may cause unexpected behavior, or cause issues. "
+                      "If you encounter any such issues contact someone at this project's download location. "
+                      "Would you like to continue? [Y/n]".format(old=old_name, new=new_name))
+            print(fit_colored_text_to_console(chunk1, old_name, new_name, '[Y/n]'))
+            if not user_says_yes():
+                return
+
+        # The block below updates the List<tuple> for the self.data value of the dictionary
+        for i in range(len(previous_data)):
+            person, msg, date = previous_data[i]
+            if person.lower() == old_name:
+                previous_data[i] = tuple([new_name.title(), msg, date])
+
+        self._edits.append(self._raw_rank(previous_name))
+        del self.data[previous_name]  # deletes the old data from self.data
+        self.data[updated_name.title()] = previous_data  # updates self.data with the new data
+        self.names = self._get_convo_names_freq()  # update self.names with new keyset
+
+        chunk = ("The specified changes have been made. Please note that these changes will only last the duration "
+                 "of this python session. If you would like to make the changes permanent, call m.save_convo_edits()")
+        if verbose:  # print confirmation if in verbose mode
+            print(fit_colored_text_to_console(chunk, "m.save_convo_edits()"))
+
+    def edit_all_occurrences(self, old_person, new_person, force=False, verbose=True):
+        """Edits every conversation with old_person, replacing them with new_person
+        Parameters:
+            old_person: (str) the name of the person to be replaced
+            new_person: (str) the name to replace occurrences of old_person with
+            force (optional): (Boolean) Whether to prompt the user about the change
+        """
+        assert isinstance(old_person, str), "old_person must be a string"
+        assert isinstance(new_person, str), "new_person must be a string"
+        old_person = old_person.lower()
+        new_person = new_person.lower()
+
+        change_count = 0
+        for i in range(len(self)):
+            if old_person in self.names[i].lower().split(', '):
+                change_count += 1
+        if change_count == 0:
+            return
+        if not force:
+            chunk = "Changing all conversations would result in {num_changes} changes. Would you like to proceed? [Y/n]"\
+                .format(num_changes=change_count)
+            print(fit_colored_text_to_console(chunk))
+            if not user_says_yes():
+                return
 
         for i in range(len(self)):
-            convo = self.get_convo(i + 1)
-            name = convo._name.title()
-            rankings[name] = 0
-            for person, msg, date in convo:
-                if start <= date <= end:
-                    rankings[name] += 1
+            self.edit_convo_participants(i + 1, old_person, new_person, force=True, verbose=False)
 
-        return rankings
+        if verbose:
+            print("Your changes have been made where applicable")
+
+    def save_convo_edits(self, force=False):
+        """Saves changes made to conversation names with edit_convo_participants
+        Parameters:
+            force (optional): (Boolean) If True bypasses user prompts to continue. Default False
+        """
+        if not force:
+            print(fit_colored_text_to_console("Are you sure you would like to save the changes made? You might have to "
+                  "redo setup in order to revert. Additionally your conversation preferences will  be lost. [Y/n]"))
+            if not user_says_yes():
+                return
+
+        for value in self._edits:
+            path = BaseConvoReader.BASE_PATH + str(value) + '/'
+            if os.path.isfile(path):
+                shutil.rmtree(path)
+
+        with open('data/data.txt', mode='w', encoding='utf-8') as f:
+            f.write(repr(self.data) + '\n')
+            f.write(self.download)
+            f.write(str(PreferencesSearcher.from_msgs_dict(self.data).preferences))
+
+    def save_subset_of_data(self, conversation_names, file_name):
+        """Saves to a file the data for the conversation specified
+        Parameters:
+            conversation_names: a list of: integer indexes corresponding to the conversation you would like,
+                or comma separated strings of names e.g. 'my name, your name',
+                or lists of names as strings e.g. ['your name', 'my name']
+            file_name: a string filename for the data to be written to
+        """
+        try:
+            assert isinstance(conversation_names, list) or isinstance(conversation_names, tuple), \
+                "conversation_names must be a list or tuple of conversation identifiers"
+            assert len(conversation_names) > 0, "conversation_names must not be empty"
+            assert isinstance(file_name, str), "file_name must be a string"
+            assert ' ' not in file_name[
+                              -4:] == '.txt' in file_name, "file_name can't have spaces and should end in .txt"
+
+            # prompt user if the passed file_name already exists
+            if os.path.isfile(file_name):
+                print(
+                    "{0} already exists, continuing would override this data. Would you like to continue? [Y/n]")
+                if not user_says_yes():
+                    return
+
+            convo_ranks = [self._raw_rank(self.get_convo(name)) for name in conversation_names]
+
+            new_data = dict()
+            for rank in convo_ranks:
+                new_data[self.names[rank - 1]] = self.data[self.names[rank - 1]]
+
+            download = self.download
+            quick_settings = PreferencesSearcher.from_msgs_dict(new_data)
+
+            with open(file_name, mode='w', encoding='utf-8') as f:
+                f.write(str(new_data) + '\n')
+                f.write(download)
+                f.write(str(quick_settings.preferences))
+        except AssertionError as e:
+            print(e)
+            return
+
+    # ------------------------------------------------   EDITING DATA  ----------------------------------------------- #
+
+    # ----------------------------------------------   ANALYTIC METHODS  --------------------------------------------- #
 
     def top_conversations(self, start, end, limit=10):
         """Prints a ranking of top conversations in a time period
@@ -305,6 +387,8 @@ class MessageReader:
 
         result = sorted(total.most_common(), key=lambda x: x[0])
         return result
+
+    # ----------------------------------------------   ANALYTIC METHODS  --------------------------------------------- #
 
     @staticmethod
     def help():
@@ -479,17 +563,7 @@ class MessageReader:
         return 'MessageReader()'
 
 
-def join(lst, split=""):
-    res = ""
-    for i in range(len(lst) - 1):
-        res += str(lst[i]) + split
-    return res + lst[-1]
-
-
 def contents_equal(lst1, lst2):
     if len(lst1) != len(lst2):
         return False
-    for ele in lst1:
-        if ele not in lst2:
-            return False
-    return True
+    return sorted(lst1) == sorted(lst2)

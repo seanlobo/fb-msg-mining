@@ -12,7 +12,9 @@ from functions.wordcloud import WordCloud
 class BaseConvoReader:
     """Provides base analysis of conversations, extended by ConvoReader and GUIConvoReader classes"""
 
-    def __init__(self, convo_name, convo_list, emojify=True):
+    BASE_PATH = 'data/conversation_data/'
+
+    def __init__(self, convo_name, convo_list, rank, emojify=True):
         """Parameters:
             convo_name: A string for the conversation name, found in your facebook archive
             convo)list: A 2D list with inner lists of the format [person_name (str), message (str), date-time (str)]
@@ -27,7 +29,7 @@ class BaseConvoReader:
         self._kicked_or_left = [person for person in self._people if person not in self._name.split(', ')]
         self._individual_words = self._cleaned_word_freqs()
         self._len = len(self._convo)
-        self._path = 'data/conversation_data/' + BaseConvoReader.list_to_combined_string(self._people)
+        self._path = BaseConvoReader.BASE_PATH + str(rank) + '/'
         self._word_cloud = None
 
     # -----------------------------------------------   PUBLIC METHODS ---------------------------------------------- #
