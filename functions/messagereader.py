@@ -39,7 +39,7 @@ class MessageReader:
         self.names = self._get_convo_names_freq()
         self.person = " ".join(self.download.split(' ')[2:-8])
         self.download_date = CustomDate(" ".join(self.download.split()[-7:]))
-
+        self.first_chat_date = self.get_first_chat_date()
         self._edits = []
 
     # -------------------------------------------   CONVERSATION GRABBING  ------------------------------------------ #
@@ -352,7 +352,38 @@ class MessageReader:
             print("{0}{1} - {2}".format(' ' * (MAX_INT_LEN - len(str(i))), convo, freq))
             i += 1
 
-    def total_emojis(self, only_me=False):
+    def raw_top_conversations(self, start, end):
+        """Returns a counter for top conversations in a time period"""
+        CustomDate.assert_dates(start, end)
+        start, end = CustomDate.from_date_string(start), CustomDate.from_date(CustomDate.from_date_string(end) + 1)
+        rankings = Counter()
+
+        for i in range(len(self)):
+            convo = self.get_convo(i + 1)
+            name = convo._name.title()
+            rankings[name] = 0
+            if start < convo[-1][2] and end > convo[0][2]:  # if the range we want overlaps with this conversation
+                for person, msg, date in convo:
+                    if start <= date <= end:
+                        rankings[name] += 1
+
+        return rankings
+
+    def emoijs(self, only_me=False, limit=10):
+        """Prints the emoji use of all conversations combined to the console
+        Parameters:
+            only_me (optional): (Boolean) Whether to include only your emoji use or everyone's in total.
+                                Defaults to everyone's use
+            limit (optional): (int|None) The number of emojis to print, or None to print all. Defaults to 10
+        """
+        ranking = self.raw_emojis(only_me=only_me)
+        try:
+            ConvoReader.print_counter(ranking, limit=limit)
+        except AssertionError as e:
+            print(e)
+            return
+
+    def raw_emojis(self, only_me=False):
         """Returns the total raw_emojis in an aggregate sum of all your conversations
             Parameters:
                 only_me (optional): Considers only your sent messages if True, otherwise both your sent and received
@@ -370,9 +401,88 @@ class MessageReader:
                 pass
         return res
 
-    def total_messages(self, only_me=False, forward_shift=0):
-        total = Counter()
+    def messages_graph(self, only_me=False, forward_shift=0, start=None, end=None):
+        try:
+            msgs_freq = self.raw_messages_graph(only_me=only_me, forward_shift=forward_shift, start=start, end=end)
+            CustomDate.assert_dates(start, end)
+        except AssertionError as e:
+            print(e)
+            return
 
+        if start is not None:
+            start = CustomDate.from_date_string(start)
+        else:
+            start = msgs_freq[0][0]
+        if end is not None:
+            end = CustomDate.from_date_string(end)
+        else:
+            end = msgs_freq[-1][0]
+
+        if not start <= end:
+            print("The start date of the conversation must be before the end date")
+            return
+
+        start_index, end_index = 0, len(msgs_freq)
+        for i in range(end_index):
+            if msgs_freq[i][0].date == start.date:
+                start_index = i
+            if msgs_freq[i][0].date == end.date:
+                end_index = i + 1
+
+        max_msgs = max(msgs_freq, key=lambda x: x[1])[1]
+        value = max_msgs / 50
+        print("\nEach \"#\" refers to ~{0} messages".format(value))
+        print()
+
+        max_date_len = 12
+        # The Maximum length of the string containing the longest date (with padding) i.e. '12/12/2012  '
+
+        max_num_length = len(str(max(msgs_freq, key=lambda x: x[1])[1]))
+        # The maximum length of the string containing the largest number of messages in a day i.e. "420"
+
+        for i in range(start_index, end_index):
+            day = msgs_freq[i][0].to_string()
+            day += ' ' * (max_date_len - len(day))
+
+            msg_num = str(msgs_freq[i][1])
+            msg_num += " " * (max_num_length - len(msg_num))
+
+            string = day + msg_num
+            if i % 2 == 0:
+                print(string + " |", end="")
+            else:
+                print(max_date_len * " " + msg_num + " |", end="")
+
+            if msgs_freq[i][1] == 0:
+                print("(none)")
+            else:
+                print('#' * int(msgs_freq[i][1] / value))
+        print()
+
+    def raw_messages_graph(self, only_me=False, forward_shift=0, start=None, end=None):
+        """Returns a list representing the data for aggregate messaging totals by day for every day from the date your
+        first message was sent to data's download date
+        Parameters:
+            only_me (optional): (Boolean) Whether to include just your chatting data (messages sent by you) or all
+                                messages sent and received
+            forward_shift (optional): (int) The number of minutes past 11:59pm that should be counted towards the totals
+                                       for the previous day
+            start (optional): (str|None) a date string representing the start date in the form "{month}/{day}/{year}"
+            end (optional): (str|None) a date string for the end date, in the same format as start
+        Return:
+            A list of tuples with a CustomDate in element 0 and the integer number of messages for that day in element 1
+        """
+        CustomDate.assert_dates(start, end)
+        start = self.first_chat_date if start is None else CustomDate.from_date_string(start)
+        end = self.download_date if end is None else CustomDate.from_date_string(end)
+        assert start >= self.first_chat_date, "start needs to be on or after {0}"\
+            .format(self.first_chat_date.to_string())
+        assert end <= self.download_date, "end needs to be before or on {0}".format(self.download_date.to_string())
+
+        start_index = start - self.first_chat_date
+        end_index = end - self.download_date - 1
+
+        total = Counter()
         if only_me:
             contact = self.person.lower()
         else:
@@ -381,12 +491,12 @@ class MessageReader:
         for i in range(1, len(self) + 1):
             try:
                 messages_data = self.get_convo_gui(i).raw_msgs_graph(contact=contact, forward_shift=forward_shift)
-                total += Counter({key: val for key, val in messages_data})
+                total.update({key: val for key, val in messages_data})
             except AssertionError:
                 pass
 
         result = sorted(total.most_common(), key=lambda x: x[0])
-        return result
+        return result[start_index: end_index]
 
     # ----------------------------------------------   ANALYTIC METHODS  --------------------------------------------- #
 
@@ -531,10 +641,18 @@ class MessageReader:
 
             clear_screen()
 
-    def _raw_rank(self, convo_name):
+    def get_first_chat_date(self) -> CustomDate:
+        start_dates = []
+        for i in range(len(self)):
+            # the date of the first message for the ith chat
+            start_dates.append(CustomDate(self.data[self.names[i]][0][2]))
+
+        return min(start_dates)
+
+    def _raw_rank(self, convo_name) -> int:
         """Returns the rank of the particular conversation, or None if not found"""
         assert type(convo_name) in [str, list, ConvoReader], "You must pass a Conversation name or ConvoReader object"
-        if type(convo_name) is ConvoReader:
+        if isinstance(convo_name, BaseConvoReader):
             return self._raw_rank(convo_name.get_people())
         if type(convo_name) == list:
             for i, name in enumerate(convo_name):
@@ -550,8 +668,8 @@ class MessageReader:
         """Returns the list of title case names of conversations you have,
         sorted first in order of most chatted to least and second alphabetically"""
         return [ele for ele, _ in
-            sorted([(key, len(val)) for key, val in self.data.items()],
-                    key=lambda x: (-x[1], x[0]))]
+                sorted([(key, len(val)) for key, val in self.data.items()],
+                       key=lambda x: (-x[1], x[0]))]
 
     def __len__(self):
         return len(self.names)

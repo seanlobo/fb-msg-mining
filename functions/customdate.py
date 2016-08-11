@@ -155,9 +155,9 @@ class CustomDate():
 
     @staticmethod
     def assert_dates(*args):
-        for date in args:
-            if date is not None:
-                CustomDate.assert_date_string(date)
+        for date_string in args:
+            if date_string is not None:
+                CustomDate.assert_date_string(date_string)
 
     def __add__(self, other):
         if type(other) is not int:
