@@ -414,9 +414,10 @@ class ConvoReader(BaseConvoReader):
             self._print_selected_messages(*centers, padding=padding)
             return
         else:
-            print(Fore.LIGHTGREEN_EX + "Usage of {0} is shown below"
-                  .format(ConvoReader.prettify.__name__ + str(inspect.signature(ConvoReader.prettify))))
-            print(Fore.WHITE + inspect.getdoc(self.prettify))
+            print(Fore.LIGHTGREEN_EX + Back.BLACK + "Usage of {0} is shown below"
+                  .format(ConvoReader.prettify.__name__ + str(inspect.signature(ConvoReader.prettify)))
+                  + Style.RESET_ALL)
+            print(inspect.getdoc(self.prettify))
             print()
             return
 
@@ -638,10 +639,8 @@ class ConvoReader(BaseConvoReader):
         if len(indexes) == 0:
             print()
             return
-        max_len_index = len(max(map(str, indexes), key=len)) + 2
         for i in indexes:
-            print(str(i) + ' ' * (max_len_index - len(str(i))), end="")
-            self._print_message(i)
+            self._print_messages(start=i, end=i)
 
     def times(self, query: str, ignore_case=False, regex=False):
         """Returns the number of times a message matching the query string occurs in the conversation
@@ -875,24 +874,27 @@ class ConvoReader(BaseConvoReader):
             start: The start index
             end: The end index
         """
-        start = 0 if start is None else start
+        start = 1 if start is None else start
         end = len(self) - 1 if end is None else end
         try:
             assert isinstance(start, int), "Start needs to be an integer"
             assert isinstance(end, int), "End needs to be an integer"
-            assert 0 <= start < len(self), "Start needs to be between 0 and {0}".format(len(self))
-            assert 0 <= end < len(self), "End needs to be between 0 and {0}".format(len(self))
+            assert 0 < start < len(self), "Start needs to be between 0 and {0}".format(len(self))
+            assert 0 < end < len(self), "End needs to be between 0 and {0}".format(len(self))
             assert start <= end, "End should be greater than or equal to start"
         except AssertionError as e:
             print(str(e))
             return
         # Making sure user input is good
 
-        max_len_index = len(str(end)) + 2
-        for i in range(start, end):
+        if start == end:  # normally if end == start then the range object below is empty. This ensures we have 1
+            end += 1
+
+        max_len_index = len('{0:,}'.format(end + 1)) + 2
+        for i in range(start - 1, end):
             if self._convo[i - 1][2].distance_from(self._convo[i][2]) < -self._preferences['global']['threshold']:
                 print()
-            print(str(i) + ' ' * (max_len_index - len(str(i))), end="")
+            print('{0:,}'.format(i + 1) + ' ' * (max_len_index - len('{0:,}'.format(i + 1))), end="")
             self._print_message(i)
 
     def _print_selected_messages(self, *args, padding=None):
@@ -905,7 +907,7 @@ class ConvoReader(BaseConvoReader):
         def get_range(center, padding_amount):
             """Returns a range object with a padded center, and with a minimum of 0 and maximum of len(self)"""
             assert isinstance(center, int), "Center needs to be an integer"
-            assert isinstance(padding_amount, int), "Padding neesd to be an integer"
+            assert isinstance(padding_amount, int), "Padding needs to be an integer"
             assert 0 <= center < len(self), "Passed value must be between 0 and {0}".format(len(self))
             assert padding_amount >= 0, "Padding needs to be greater than or equal to 0"
             return range(max(0, center - padding_amount), min(len(self), center + padding_amount + 1))
@@ -913,32 +915,32 @@ class ConvoReader(BaseConvoReader):
         padding = 5 if padding is None else padding
 
         start_end_ranges = [get_range(num, padding) for num in args]
-        max_len_index = len(str(max(start_end_ranges, key=lambda x: len(str(x.stop))).stop)) + 1
 
         for start_end in start_end_ranges:
-            for i in start_end:
-                print(str(i) + ' ' * (max_len_index - len(str(i))), end="- ")
-                self._print_message(i)
+            self._print_messages(start=start_end.start, end=start_end.stop)
             print('\n')
 
     def _print_message_dates(self, start=None, end=None):
         """Prints a "pretty" version of the conversation history"""
         try:
-            CustomDate.assert_dates(start, end)
+            if not isinstance(start, CustomDate):
+                CustomDate.assert_date_string(start)
+            if not isinstance(end, CustomDate):
+                CustomDate.assert_date_string(end)
         except AssertionError as e:
             print(e)
             return
         # verifying user dates are correct form
 
         if start is not None:
-            start = CustomDate.from_date_string(start)
+            start = CustomDate.from_date_string(start) if isinstance(start, str) else start
             assert start.date >= self._convo[0][2].date, \
                 "Your conversations only begin after {0}".format(self._convo[0][2].full_date)
             start = CustomDate.bsearch_index(self._convo, start, key=lambda x: x[2])
         else:
             start = 0
         if end is not None:
-            end = CustomDate.from_date_string(end).plus_x_days(1)
+            end = CustomDate.from_date_string(end).plus_x_days(1) if isinstance(end, str) else end
             assert end.date <= self._convo[-1][2].date, \
                 "Your conversations ends on {0}".format(self._convo[-1][2].full_date)
             end = CustomDate.bsearch_index(self._convo, end, key=lambda x: x[2])

@@ -1,8 +1,9 @@
 # Place to run all commands
 
 import sys
+import os
 import shutil
-import textwrap
+import traceback
 
 
 from functions.messagereader import MessageReader
@@ -12,12 +13,14 @@ from functions.convoreader import ConvoReader
 from functions.customdate import CustomDate
 from functions import emojis
 
+
 try:
     m = MessageReader()
     p = m.quick_stats
-except Exception as e:
-    print(e)
-    exit()
+except:
+    # http://stackoverflow.com/questions/3702675/how-to-print-the-full-traceback-without-halting-the-program
+    print(traceback.format_exc())
+    os._exit(1)
 
 
 # http://stackoverflow.com/questions/2356399/tell-if-python-is-in-interactive-mode

@@ -363,6 +363,20 @@ class BaseConvoReader:
         except re.error:
             raise re.error("\"{0}\" is not a valid regex string".format(query))
 
+    def raw_longest_messages(self, num=None) -> list:
+        """Returns a list of integers corresponding to message indexes, sorted in reverse order based on length (longest
+        message index first)
+        Parameters:
+            num (optional): (int|None) the number of messages to include, or None to include all
+        """
+        assert num is None or isinstance(num, int), (
+            "num must be None or an integer representing the number of messages desired"
+        )
+        num = min(num, len(self)) if num is not None else len(self)
+
+        order = Counter({index: len(self._convo[index][1]) for index in range(len(self))})
+        return order.most_common(num)
+
     # -----------------------------------------------   PUBLIC METHODS ---------------------------------------------- #
 
     # -----------------------------------------------   PRIVATE METHODS ---------------------------------------------- #
