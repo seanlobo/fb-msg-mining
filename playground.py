@@ -14,8 +14,10 @@ from functions.customdate import CustomDate
 from functions import emojis
 
 
+print("Please wait a few moments for the playground to set up")
+
 try:
-    m = MessageReader()
+    m = MessageReader(preload_conversations=True)
     p = m.quick_stats
 except:
     # http://stackoverflow.com/questions/3702675/how-to-print-the-full-traceback-without-halting-the-program

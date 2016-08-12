@@ -3,13 +3,14 @@ import shutil
 import os
 import random
 import ast
+import inspect
 from colorama import Fore, Back, Style, init
 
 
 from functions.setup_functions import (PreferencesSearcher, clear_screen, user_says_yes, fit_colored_text_to_console,
                                        one_line)
 from functions.baseconvoreader import BaseConvoReader
-from functions.convoreader import ConvoReader, color_method
+from functions.convoreader import ConvoReader, color_method, get_user_choice_from_range
 from functions.guiconvoreader import GUIConvoReader
 from functions.customdate import CustomDate
 
@@ -18,7 +19,7 @@ init(autoreset=True)
 
 class MessageReader:
 
-    def __init__(self):
+    def __init__(self, preload_conversations=False):
         with open('data/data.txt', mode='r', encoding='UTF8') as f:
             try:
                 self.data = ast.literal_eval(f.readline())
@@ -39,8 +40,13 @@ class MessageReader:
         self.names = self._get_convo_names_freq()
         self.person = " ".join(self.download.split(' ')[2:-8])
         self.download_date = CustomDate(" ".join(self.download.split()[-7:]))
-        self.first_chat_date = self.get_first_chat_date()
+        self.first_chat_date = self._get_first_chat_date()
         self._edits = []
+
+        self.convo_readers = {}
+        if preload_conversations:
+            for name in self.names:
+                self.convo_readers[name] = self.get_convo(name)
 
     # -------------------------------------------   CONVERSATION GRABBING  ------------------------------------------ #
 
@@ -89,12 +95,13 @@ class MessageReader:
         )
 
         if type(people) is int:
-            if people > 0:
-                return ConvoReader(self.names[people - 1], self.data[self.names[people - 1]], people)
-            else:
-                return ConvoReader(self.names[len(self.names) + people],
-                                   self.data[self.names[len(self.names) + people]],
-                                   people)
+            if people < 0:
+                people += len(self)
+            if self.names[people - 1] not in self.convo_readers:
+                self.convo_readers[self.names[people - 1]] = \
+                    ConvoReader(self.names[people - 1], self.data[self.names[people - 1]], people)
+            return self.convo_readers[self.names[people - 1]]
+
         if type(people) is str:
             people = people.title().split(', ')
         else:
@@ -102,7 +109,9 @@ class MessageReader:
         for i in range(len(self)):
             name = self.quick_stats.get_name(i + 1, 'alpha')
             if contents_equal(name.split(', '), people):
-                return ConvoReader(name, self.data[name], i + 1)
+                if name not in self.convo_readers:
+                    self.convo_readers[name] = ConvoReader(name, self.data[name], i + 1)
+                return self.convo_readers[name]
         print("You haven't talked with {0} before".format(people))
         return None
 
@@ -141,6 +150,7 @@ class MessageReader:
             old_name: the old name to be replaced
             new_name: the new name to replace old_name with
             force (optional): if True then user prompts are bypassed and the edits occur anyway. Defaults to False
+            verbose (optional): (Boolean) Whether to print out a confirmation string upon completion. Defaults to True
         """
         # Assertions to make sure data is good 
         assert isinstance(convo_num, int), "convo_num must be an integer"
@@ -234,6 +244,7 @@ class MessageReader:
             old_person: (str) the name of the person to be replaced
             new_person: (str) the name to replace occurrences of old_person with
             force (optional): (Boolean) Whether to prompt the user about the change
+            verbose (optional): (Boolean) Whether to print out a confirmation string upon completion. Defaults to True
         """
         assert isinstance(old_person, str), "old_person must be a string"
         assert isinstance(new_person, str), "new_person must be a string"
@@ -324,15 +335,16 @@ class MessageReader:
 
     # ----------------------------------------------   ANALYTIC METHODS  --------------------------------------------- #
 
-    def top_conversations(self, start, end, limit=10):
+    def top_conversations(self, start=None, end=None, limit=10):
         """Prints a ranking of top conversations in a time period
         Parameters:
-            start: The date string representing the first day to start counting from (in the format {month}/{day}/{year}
-            end: The date string for the last day to count
+            start (optional): The date string representing the first day to start counting from
+                                (in the format {month}/{day}/{year}. Defaults to the first date messages were sent
+            end (optional): The date string for the last day to count. Defaults to the download date
             limit (optional): An integer representing the number of conversations to print, or False to display all
         """
         try:
-            rankings = self.raw_top_conversations(start, end)
+            rankings = self.raw_top_conversations(start=start, end=end)
             assert isinstance(limit, int) or isinstance(limit, False), "Limit should be an integer or False"
             if isinstance(limit, int):
                 assert 1 <= limit, "Limit should be greater than or equal to 1"
@@ -349,13 +361,24 @@ class MessageReader:
             if freq == 0:
                 break
             print(Fore.GREEN + Back.BLACK + str(i) + ')', end="")
-            print("{0}{1} - {2}".format(' ' * (MAX_INT_LEN - len(str(i))), convo, freq))
+            print("{0}{1} - {2:,}".format(' ' * (MAX_INT_LEN - len(str(i))), convo, freq))
             i += 1
 
-    def raw_top_conversations(self, start, end):
-        """Returns a counter for top conversations in a time period"""
+    def raw_top_conversations(self, start=None, end=None):
+        """Returns a Counter object holding the names of conversations mapped to their message frequency
+        in a time period
+        Parameters:
+            start (optinal): (str) A date string for the beginning of the desired period, in the form
+                            "{month}/{day}/{year}". Defaults to the first date messages were sent
+            end (optional): (str) A date string for the end of the desired period, in the same form as start.
+                            Defaults to the download date
+        Return:
+            a Counter object with keys being the title case names of conversations and values being the number of
+              messages sent during the specified period
+        """
         CustomDate.assert_dates(start, end)
-        start, end = CustomDate.from_date_string(start), CustomDate.from_date(CustomDate.from_date_string(end) + 1)
+        start = CustomDate.from_date_string(start) if start is not None else self.first_chat_date
+        end = CustomDate.from_date_string(end).plus_x_days(1) if end is not None else self.download_date
         rankings = Counter()
 
         for i in range(len(self)):
@@ -394,14 +417,23 @@ class MessageReader:
         for i in range(1, len(self) + 1):
             try:
                 if only_me:
-                    res += self.get_convo_gui(i).raw_emojis(person=self.person)
+                    res += self.get_convo(i).raw_emojis(person=self.person)
                 else:
-                    res += self.get_convo_gui(i).raw_emojis()
+                    res += self.get_convo(i).raw_emojis()
             except AssertionError:
                 pass
         return res
 
     def messages_graph(self, only_me=False, forward_shift=0, start=None, end=None):
+        """Prints to the console a graph of aggregate message frequency by day for all conversation data combined
+        Parameters:
+            only_me (optional): (Boolean) Whether the data should only reflect messages sent by you
+            forward_shift (optional): (int) The number of minutes past 11:59pm that count for the previous date.
+                                            Example, if forward_shift == 30, a messages sent on July 5th until 12:29am
+                                            will count as being sent on July 4th.
+            start (optional): (str) the date string for the start date of the graph, in the form "{month}/{day}/{year}"
+            end (optional): (str) the date string for the end date of the graph
+        """
         try:
             msgs_freq = self.raw_messages_graph(only_me=only_me, forward_shift=forward_shift, start=start, end=end)
             CustomDate.assert_dates(start, end)
@@ -490,7 +522,7 @@ class MessageReader:
 
         for i in range(1, len(self) + 1):
             try:
-                messages_data = self.get_convo_gui(i).raw_msgs_graph(contact=contact, forward_shift=forward_shift)
+                messages_data = self.get_convo(i).raw_msgs_graph(contact=contact, forward_shift=forward_shift)
                 total.update({key: val for key, val in messages_data})
             except AssertionError:
                 pass
@@ -509,22 +541,26 @@ class MessageReader:
         condition = True
         while condition:  # Continue's offering help until the user escapes with option 3
             print(Fore.LIGHTMAGENTA_EX + Back.BLACK + 'Please select which feature you would like help with:')
-            print(Style.RESET_ALL)
-            print(Fore.LIGHTCYAN_EX + Back.BLACK + '0) What can I do here??')
-            print(Style.RESET_ALL + '\n1) Viewing a list of conversations you can analyze')
-            print('2) Getting started analyzing a specific conversation')
-            print('3) Exit helper\n')
-            print("Choose a number between 0 and 3")
+            print()
+            choices = [
+                Fore.LIGHTCYAN_EX + Back.BLACK + '0) What can I do here??' + Style.RESET_ALL + '\n',
+                '1) Viewing a list of conversations you can analyze',
+                '2) Getting started analyzing a specific conversation',
+                '3) Aggregate data analytic methods',
+                Fore.LIGHTRED_EX + Back.BLACK + '4) Exit helper' + Style.RESET_ALL,
+            ]
+            for line in choices:
+                print(fit_colored_text_to_console(line))
+            print()
+            print("Choose a number between 0 and {length}".format(length=len(choices) - 1))
             # Which choice would the user like help with?
 
             choice_condition = True
-            while choice_condition:
-                choice = input('> ')
-                choice_condition = choice not in [str(i) for i in range(4)]
+            choice = get_user_choice_from_range(0, 4)
             clear_screen()
             # Gets the user's choice of 0-3 and clears the screen after in preparation
 
-            if choice == '0':
+            if choice == 0:
                 # Helps user with an idea of what they can do with a messagereader
                 print("Option 0:")
                 print(Fore.LIGHTCYAN_EX + Back.BLACK + '\"What can I do here??\"' + Style.RESET_ALL)
@@ -547,7 +583,7 @@ class MessageReader:
                 print(fit_colored_text_to_console(chunk3))
                 print('\n')
 
-            elif choice == '1':
+            elif choice == 1:
                 # Helps users view a list of conversations they can analyze
                 print("Option 1: Viewing a list of conversations you can analyze")
                 print(one_line())
@@ -567,7 +603,7 @@ class MessageReader:
                 print('After deciding on a conversation to analyze, see option (2) below on how to get started, '
                       'as well as an example')
 
-            elif choice == '2':
+            elif choice == 2:
                 # Helps users see how to grab a specific conversation
                 print('Option 2: Getting started analyzing a specific conversation')
                 print(one_line())
@@ -633,15 +669,112 @@ class MessageReader:
                               " you used)")
                     print(fit_colored_text_to_console(chunk4, "edward.help()"))
 
-            condition = choice != '3'
-            if condition:  # We're continuing for another round
+            elif choice == 3:
+                    # Give info on the analytic methods of messagereader
+                keep_going = True
+                while keep_going:
+                    print('Option 3: Aggregate data analytic methods')
+                    print(one_line())
+
+                    method_key = lambda method: method.__name__
+                    visualization_methods = sorted([MessageReader.messages_graph, MessageReader.emoijs,
+                                                    MessageReader.top_conversations], key=method_key)
+
+                    raw_data_methods = sorted([MessageReader.raw_messages_graph, MessageReader.raw_emojis,
+                                               MessageReader.raw_top_conversations], key=method_key)
+
+                    editing_data_methods = sorted([MessageReader.save_subset_of_data,
+                                                   MessageReader.save_convo_edits,
+                                                   MessageReader.edit_all_occurrences,
+                                                   MessageReader.edit_convo_participants], key=method_key)
+
+                    # the length of the string representing the length of each list, plus a bit of padding,
+                    len_longest_str = len(str(len(visualization_methods) + len(raw_data_methods) +
+                                              len(editing_data_methods))) + 1
+
+                    chunk1 = ("Below are a list of analytic methods you can perform with the MessageReader object. You "
+                              "can call each of the following methods from the object. E.g. if you see the method "
+                              "'test' listed below, you can call it with the command `m.test()`. Note that all of these"
+                              "methods perform aggregate analysis, that is information for all conversations combined. "
+                              "If you would like information on specific conversations then see options (1) and (2) "
+                              "on how view a list of conversations and grab a desired one, respectively.")
+                    chunk2 = "Visualization methods - methods that print information to the console:"
+                    chunk3 = ("Raw data methods - methods that return the data (some of these are used by the "
+                              "visualization methods")
+                    chunk4 = ("Conversation editing methods - methods that allow you to edit your conversation data "
+                              "in case you find issues or errors")
+                    print(fit_colored_text_to_console(chunk1, 'm.test()'))
+                    print()
+
+                    print(Fore.LIGHTRED_EX + Back.BLACK + "0) Exit" + Style.RESET_ALL)
+                    print()
+
+                    print(fit_colored_text_to_console(chunk2))
+                    # print the names of visualization_methods
+                    for i, method in enumerate(visualization_methods):
+                        method_name = color_method(method.__name__)
+                        print('{0}){1}{2}'.format(str(i + 1), ' ' * (len_longest_str - len(str(i + 1)) + 1), method_name))
+
+                    print()
+                    print(fit_colored_text_to_console(chunk3))
+                    # print the names of the raw_data methods
+                    for i, method in enumerate(raw_data_methods):
+                        method_name = color_method(method.__name__)
+                        index = i + len(visualization_methods) + 1
+                        print('{0}){1}{2}'.format(str(index),
+                                                  ' ' * (len_longest_str - len(str(index)) + 1),
+                                                  method_name))
+
+                    print()
+                    print(fit_colored_text_to_console(chunk4))
+                    # print the names of editing_data
+                    for i, method in enumerate(editing_data_methods):
+                        method_name = color_method(method.__name__)
+                        index = i + len(visualization_methods) + +len(raw_data_methods) + 1
+                        print('{0}){1}{2}'.format(str(index),
+                                                  ' ' * (len_longest_str - len(str(index)) + 1),
+                                                  method_name))
+                    print()
+
+                    length = len(visualization_methods) + len(raw_data_methods) + len(editing_data_methods)
+                    print("Select your option [0-{length}]".format(length=length))
+                    method_choice = get_user_choice_from_range(0, length)
+
+                    if method_choice != 0:
+                        methods = visualization_methods + raw_data_methods + editing_data_methods
+                        method_choice -= 1
+
+                        print('\n')
+
+                        if 'return' in methods[method_choice].__annotations__:
+                            # in the form '(self, person=None) -> collections.Counter'
+                            annotation = str(inspect.signature(methods[method_choice]))
+                            # the part of the annotation up until the signature ends
+                            end_method = annotation.find(' ->')
+                            name = color_method(methods[method_choice].__name__ + annotation[:end_method])
+                            name += color_method(annotation[end_method:])
+                        else:
+                            name = color_method(methods[method_choice].__name__ +
+                                                str(inspect.signature(methods[method_choice])))
+
+                        print(name)
+                        print(inspect.getdoc(methods[method_choice]))
+
+                    print()
+                    print("Would you like to view help for another method? [Y/n]")
+                    keep_going = user_says_yes()
+                    if keep_going:
+                        clear_screen()
+
+            condition = choice != 4  # If the user wanted to quit
+            if condition:  # If they just got help do they want to quit now?
                 print('\nContinue getting help? [Y/n]')
                 if not user_says_yes():
                     return
 
             clear_screen()
 
-    def get_first_chat_date(self) -> CustomDate:
+    def _get_first_chat_date(self) -> CustomDate:
         start_dates = []
         for i in range(len(self)):
             # the date of the first message for the ith chat
@@ -684,4 +817,5 @@ class MessageReader:
 def contents_equal(lst1, lst2):
     if len(lst1) != len(lst2):
         return False
-    return sorted(lst1) == sorted(lst2)
+    filter = lambda x: x.lower()
+    return sorted(map(filter, lst1)) == sorted(map(filter, lst2))
