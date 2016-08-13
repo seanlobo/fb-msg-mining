@@ -127,16 +127,45 @@ class MessageReader:
         return self.get_convo(int(random.random() * len(self) + 1))
 
     def rank(self, convo_name):
-        """Prints to the console the rank of the conversation passed"""
+        """Prints to the console the rank of the conversation passed, based on the number of messages for the chat
+        Parameters:
+            convo_name: (str|list<str>|ConvoReader) A representation of the conversation, either as a string e.g
+                        "my name, your name", a list of names e.g. ["your name", "my name"], or a ConvoReader object
+        """
         try:
-            res = self._raw_rank(convo_name)
+            res = self.raw_rank(convo_name)
             if res is not None:
-                print(res)
+                if isinstance(convo_name, str):
+                    name = convo_name.title()
+                    length = len(self.get_convo(convo_name))
+                elif isinstance(convo_name, list):
+                    name = ', '.join(sorted(convo_name)).title()
+                    length = len(self.get_convo(convo_name))
+                else:  # if isinstance(convo_name, ConvoReader)
+                    name = convo_name._name.title()
+                    length = len(convo_name)
+                print("{rank}) {name} - {length:,}".format(rank=res, name=name, length=length))
             else:
                 print("A conversation for {0} was not found"
                       .format(convo_name.get_people if isinstance(convo_name, ConvoReader) else str(convo_name)))
         except AssertionError as e:
             print(e)
+
+    def raw_rank(self, convo_name) -> int:
+        """Returns the rank of the particular conversation, or None if not found"""
+        assert type(convo_name) in [str, list,
+                                    ConvoReader], "You must pass a Conversation name or ConvoReader object"
+        if isinstance(convo_name, BaseConvoReader):
+            return self.raw_rank(convo_name._name.split(', '))
+        if type(convo_name) == list:
+            for i, name in enumerate(convo_name):
+                assert type(name) == str, "Your list must contain strings corresponding to names of people"
+                convo_name[i] = name.title()
+        elif type(convo_name) == str:
+            convo_name = convo_name.title().split(', ')
+        for i, name in enumerate(self.names):
+            if contents_equal(convo_name, name.title().split(', ')):
+                return i + 1
 
     # -------------------------------------------   CONVERSATION GRABBING  ------------------------------------------ #
 
@@ -228,7 +257,7 @@ class MessageReader:
             if person.lower() == old_name:
                 previous_data[i] = tuple([new_name.title(), msg, date])
 
-        self._edits.append(self._raw_rank(previous_name))
+        self._edits.append(self.raw_rank(previous_name))
         del self.data[previous_name]  # deletes the old data from self.data
         self.data[updated_name.title()] = previous_data  # updates self.data with the new data
         self.names = self._get_convo_names_freq()  # update self.names with new keyset
@@ -314,7 +343,7 @@ class MessageReader:
                 if not user_says_yes():
                     return
 
-            convo_ranks = [self._raw_rank(self.get_convo(name)) for name in conversation_names]
+            convo_ranks = [self.raw_rank(self.get_convo(name)) for name in conversation_names]
 
             new_data = dict()
             for rank in convo_ranks:
@@ -678,7 +707,8 @@ class MessageReader:
 
                     method_key = lambda method: method.__name__
                     visualization_methods = sorted([MessageReader.messages_graph, MessageReader.emoijs,
-                                                    MessageReader.top_conversations], key=method_key)
+                                                    MessageReader.top_conversations, MessageReader.rank],
+                                                   key=method_key)
 
                     raw_data_methods = sorted([MessageReader.raw_messages_graph, MessageReader.raw_emojis,
                                                MessageReader.raw_top_conversations], key=method_key)
@@ -693,11 +723,11 @@ class MessageReader:
                                               len(editing_data_methods))) + 1
 
                     chunk1 = ("Below are a list of analytic methods you can perform with the MessageReader object. You "
-                              "can call each of the following methods from the object. E.g. if you see the method "
-                              "'test' listed below, you can call it with the command `m.test()`. Note that all of these"
-                              "methods perform aggregate analysis, that is information for all conversations combined. "
-                              "If you would like information on specific conversations then see options (1) and (2) "
-                              "on how view a list of conversations and grab a desired one, respectively.")
+                              "can call each of the following methods from the object m, e.g. if you see the method "
+                              "'test' listed below, you can call it with the command `m.test()`. Note that all of "
+                              "these methods perform aggregate analysis, that is information for all conversations "
+                              "combined. If you would like information on specific conversations then see options (1) "
+                              "and (2) on how view a list of conversations and grab a desired one, respectively.")
                     chunk2 = "Visualization methods - methods that print information to the console:"
                     chunk3 = ("Raw data methods - methods that return the data (some of these are used by the "
                               "visualization methods")
@@ -744,7 +774,8 @@ class MessageReader:
                         methods = visualization_methods + raw_data_methods + editing_data_methods
                         method_choice -= 1
 
-                        print('\n')
+                        print(one_line())
+                        print()
 
                         if 'return' in methods[method_choice].__annotations__:
                             # in the form '(self, person=None) -> collections.Counter'
@@ -760,7 +791,7 @@ class MessageReader:
                         print(name)
                         print(inspect.getdoc(methods[method_choice]))
 
-                    print()
+                    print('\n')
                     print("Would you like to view help for another method? [Y/n]")
                     keep_going = user_says_yes()
                     if keep_going:
@@ -781,21 +812,6 @@ class MessageReader:
             start_dates.append(CustomDate(self.data[self.names[i]][0][2]))
 
         return min(start_dates)
-
-    def _raw_rank(self, convo_name) -> int:
-        """Returns the rank of the particular conversation, or None if not found"""
-        assert type(convo_name) in [str, list, ConvoReader], "You must pass a Conversation name or ConvoReader object"
-        if isinstance(convo_name, BaseConvoReader):
-            return self._raw_rank(convo_name.get_people())
-        if type(convo_name) == list:
-            for i, name in enumerate(convo_name):
-                assert type(name) == str, "Your list must contain strings corresponding to names of people"
-                convo_name[i] = name.title()
-        elif type(convo_name) == str:
-            convo_name = convo_name.title().split(', ')
-        for i, name in enumerate(self.names):
-            if contents_equal(convo_name, name.title().split(', ')):
-                return i + 1
 
     def _get_convo_names_freq(self):
         """Returns the list of title case names of conversations you have,

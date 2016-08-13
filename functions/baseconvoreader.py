@@ -38,6 +38,9 @@ class BaseConvoReader:
         """Returns a list of lower case names for the individuals in this conversation. Does not include DUPLICATE #X
         if the conversation name includes that.
         """
+        if hasattr(self, '_people'):
+            return self._people
+
         duplicate = re.compile("duplicate #\d+", re.IGNORECASE)
         people = []
         for person in sorted(self._name.split(', ')):

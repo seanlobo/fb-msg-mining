@@ -14,6 +14,11 @@ from functions.customdate import CustomDate
 from functions import emojis
 
 
+# http://stackoverflow.com/questions/2356399/tell-if-python-is-in-interactive-mode
+if not sys.flags.interactive:
+    print("Are you sure you ran this program interactively, with the `-i` flag?")
+    input("If not the program will exit. Press enter to continue: ")
+
 print("Please wait a few moments for the playground to set up")
 
 try:
@@ -23,12 +28,6 @@ except:
     # http://stackoverflow.com/questions/3702675/how-to-print-the-full-traceback-without-halting-the-program
     print(traceback.format_exc())
     os._exit(1)
-
-
-# http://stackoverflow.com/questions/2356399/tell-if-python-is-in-interactive-mode
-if not sys.flags.interactive:
-    print("Are you sure you ran this program interactively, with the `-i` flag?")
-    input("If not the program will exit. Press enter to continue: ")
 
 clear_screen()
 console_width = min(shutil.get_terminal_size().columns, 150)
