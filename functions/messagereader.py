@@ -321,7 +321,7 @@ class MessageReader:
             f.write(str(PreferencesSearcher.from_msgs_dict(self.data).preferences))
 
     def save_subset_of_data(self, conversation_names, file_name):
-        """Saves to a file the data for the conversation specified
+        """Saves to a file the data for the conversations specified
         Parameters:
             conversation_names: a list of: integer indexes corresponding to the conversation you would like,
                 or comma separated strings of names e.g. 'my name, your name',
@@ -619,9 +619,9 @@ class MessageReader:
 
                 chunk1 = ('To view a list of conversations that you can analyze, exit this helper and execute the '
                           'command `m.print_names()`. This will print to the console a list of all contacts you '
-                          'have messaged, sorted with decreasing number of messages. Since this number can be large, '
-                          'you can optionally pass an integer limiting the conversations printed, for example '
-                          '`m.print_names(10)` to print your top 10 conversations')
+                          'have messaged, sorted with decreasing number of messages. Since you might have many '
+                          'contacts, you can optionally pass an integer limiting the conversations printed, for '
+                          'example `m.print_names(10)` to print your top 10 conversations')
                 chunk2 = ('To get more options on printing conversations, exit the helper and execute '
                           '`help(m.print_names)`. This is only if you plan on doing fancy stuff')
 
@@ -665,19 +665,20 @@ class MessageReader:
                 if user_says_yes():
                     code_color = Fore.LIGHTBLACK_EX + Back.BLACK
                     print(one_line())
-                    print(Fore.LIGHTRED_EX + Back.BLACK + "\nEXAMPLE)")
+                    print()
+                    print(Fore.LIGHTRED_EX + Back.BLACK + "EXAMPLE)" + Style.RESET_ALL)
 
                     chunk1 = ("Let\'s say I want to see my top 3 conversations. I can do this with command "
                               "`m.print_names(3)`, where the 3 tells the program to print my top 3 contacts "
                               "(ordered by total number of messages sent and received; for more options do "
                               "`help(m.print_names)`)")
                     print(fit_colored_text_to_console(chunk1, "help(m.print_names)", "m.print_names(3)"))
-                    print("The above would go something like this:\n")
+                    print("\nThe above would go something like this:")
 
-                    print(code_color + ">>> m.print_names(3)" + Style.RESET_ALL +
-                          code_color + "\n1) Sally Brown, Your Name" + Style.RESET_ALL +
-                          code_color + "\n2) Bob Smith, Your Name" + Style.RESET_ALL +
-                          code_color + "\n3) Your Name, Edward Newgate" + Style.RESET_ALL)
+                    print(code_color + ">>> m.print_names(3)" + Style.RESET_ALL)
+                    print(code_color + "1) Sally Brown, Your Name" + Style.RESET_ALL)
+                    print(code_color + "2) Bob Smith, Your Name" + Style.RESET_ALL)
+                    print(code_color + "3) Your Name, Edward Newgate" + Style.RESET_ALL)
                     print()
 
                     chunk2 = ("Now if I'd like to analyze my chat with Edward, I should first capture our "
@@ -690,10 +691,15 @@ class MessageReader:
                               " Additionally, the fact that we used the variable name \"edward\" is arbitrary. "
                               "Any name can be used, I've just fallen into the habit of naming conversation variables "
                               "after the name of the conversation, so it\'s easy to remember later")
+                    chunk4 = ("Note that as stated previously, we could also retrieve this conversation by using "
+                              "`m.get_convo('edward newgate, your name')` or `m.get_convo(['edward newgate', 'your "
+                              "name'])`")
                     print(fit_colored_text_to_console(chunk3, "print_names()", "get_convo(3)"))
+                    print(fit_colored_text_to_console(chunk4, "m.get_convo('edward newgate, your name')",
+                                                      "m.get_convo(['edward newgate', 'your name'])"))
                     print()
 
-                    chunk4 = ("\nOnce we\'ve successfully saved the chat we'd like, we can proceed to analyze it by "
+                    chunk4 = ("Once we\'ve successfully saved the chat we'd like, we can proceed to analyze it by "
                               "executing the command `edward.help()` (replace edward with whatever variable name"
                               " you used)")
                     print(fit_colored_text_to_console(chunk4, "edward.help()"))
@@ -711,7 +717,8 @@ class MessageReader:
                                                    key=method_key)
 
                     raw_data_methods = sorted([MessageReader.raw_messages_graph, MessageReader.raw_emojis,
-                                               MessageReader.raw_top_conversations], key=method_key)
+                                               MessageReader.raw_top_conversations, MessageReader.raw_rank],
+                                              key=method_key)
 
                     editing_data_methods = sorted([MessageReader.save_subset_of_data,
                                                    MessageReader.save_convo_edits,
@@ -730,10 +737,10 @@ class MessageReader:
                               "and (2) on how view a list of conversations and grab a desired one, respectively.")
                     chunk2 = "Visualization methods - methods that print information to the console:"
                     chunk3 = ("Raw data methods - methods that return the data (some of these are used by the "
-                              "visualization methods")
+                              "visualization methods)")
                     chunk4 = ("Conversation editing methods - methods that allow you to edit your conversation data "
                               "in case you find issues or errors")
-                    print(fit_colored_text_to_console(chunk1, 'm.test()'))
+                    print(fit_colored_text_to_console(chunk1, 'm.test()', "'test'"))
                     print()
 
                     print(Fore.LIGHTRED_EX + Back.BLACK + "0) Exit" + Style.RESET_ALL)
@@ -791,12 +798,13 @@ class MessageReader:
                         print(name)
                         print(inspect.getdoc(methods[method_choice]))
 
-                    print('\n')
-                    print("Would you like to view help for another method? [Y/n]")
-                    keep_going = user_says_yes()
-                    if keep_going:
-                        clear_screen()
-
+                        print('\n')
+                        print("Would you like to view help for another method? [Y/n]")
+                        keep_going = user_says_yes()
+                        if keep_going:
+                            clear_screen()
+                    else:
+                        keep_going = False
             condition = choice != 4  # If the user wanted to quit
             if condition:  # If they just got help do they want to quit now?
                 print('\nContinue getting help? [Y/n]')
