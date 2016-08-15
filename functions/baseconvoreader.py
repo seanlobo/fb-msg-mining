@@ -19,7 +19,7 @@ class BaseConvoReader:
             convo_name: A string for the conversation name, found in your facebook archive
             convo)list: A 2D list with inner lists of the format [person_name (str), message (str), date-time (str)]
             emojify: A boolean, whether to convert python src encodings for emoji in message to unicode
-            """
+        """
         self._name = convo_name.lower()
         if emojify:
             self._convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]

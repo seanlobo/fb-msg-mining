@@ -4,6 +4,7 @@ import os
 import random
 import ast
 import inspect
+import re
 from colorama import Fore, Back, Style, init
 
 
@@ -35,7 +36,7 @@ class MessageReader:
                 self.quick_stats = PreferencesSearcher(tmp_preference)
             except Exception as e:
                 print(Fore.LIGHTRED_EX + Back.BLACK + "An error occurred when reading in your data file. Please make "
-                                                      "sure setup.py finished properly")
+                                                      "sure setup.py finished properly" + Style.RESET_ALL)
                 raise e
         self.names = self._get_convo_names_freq()
         self.person = " ".join(self.download.split(' ')[2:-8])
@@ -81,7 +82,7 @@ class MessageReader:
             if limit is not None and i > limit:
                 break
 
-    def get_convo(self, people):
+    def get_convo(self, people) -> ConvoReader:
         """Returns a ConvoReader object representing the conversation
         passed as a list of names, string name or index of conversation
         (from print_names). If an invalid parameter is passed return None
@@ -107,7 +108,7 @@ class MessageReader:
         else:
             people = list(map(lambda x: x.title() if 'facebook' not in x else x, people))
         for i in range(len(self)):
-            name = self.quick_stats.get_name(i + 1, 'alpha')
+            name = self.quick_stats.get_name(i + 1, 'length')  # get names sorting by number of messages
             if contents_equal(name.split(', '), people):
                 if name not in self.convo_readers:
                     self.convo_readers[name] = ConvoReader(name, self.data[name], i + 1)
@@ -198,7 +199,7 @@ class MessageReader:
 
         if verbose:
             chunk = ("Beginning conversation edits for your #{rank} ranked chat (by messages). The conversation "
-                     "includes {people}".format(rank=self.rank(convo), people=convo.get_people()))
+                     "includes {people}".format(rank=self.raw_rank(convo), people=convo.get_people()))
             print(fit_colored_text_to_console(chunk))
 
         if new_name in convo.get_people() and not force:
@@ -232,13 +233,15 @@ class MessageReader:
         previous_data = self.data[previous_name]
 
         # if else block below deal with getting an updated name for the self.data dictionary key
-        if new_name.title() not in previous_name.split(', '):
+        if new_name not in previous_name.lower().split(', '):  # use split so substrings aren't false positives
+                            # aka 'sean lo' is in 'sean lobo, bob builder' but not 'sean lobo, bob builder'.split()
+
             # if new_name is not already present, swap the old_name for it
-            updated_name = previous_name.replace(old_name.title(), new_name.title())
+            updated_name = previous_name.replace(self.custom_title(old_name), self.custom_title(new_name))
         else:
             # Take the previous_name and cut out old_name, instead of
             # replacing with new_name since new name is already in the name
-            updated_name = ", ".join([name for name in previous_name.split(', ') if name != old_name.title()])
+            updated_name = ", ".join([name for name in previous_name.split(', ') if name != self.custom_title(old_name)])
         updated_name = ', '.join(sorted(updated_name.split(', ')))
 
         if updated_name in self.names and not force:
@@ -255,14 +258,15 @@ class MessageReader:
         for i in range(len(previous_data)):
             person, msg, date = previous_data[i]
             if person.lower() == old_name:
-                previous_data[i] = tuple([new_name.title(), msg, date])
+                previous_data[i] = tuple([self.custom_title(new_name), msg, date])
 
         self._edits.append(self.raw_rank(previous_name))
         del self.data[previous_name]  # deletes the old data from self.data
-        self.data[updated_name.title()] = previous_data  # updates self.data with the new data
+        del self.convo_readers[previous_name]  # deletes the old convoreader from the cache
+        self.data[updated_name] = previous_data  # updates self.data with the new data
         self.names = self._get_convo_names_freq()  # update self.names with new keyset
 
-        chunk = ("The specified changes have been made. Please note that these changes will only last the duration "
+        chunk = ("The specified changes have been made. Note that these changes will only last the duration "
                  "of this python session. If you would like to make the changes permanent, call m.save_convo_edits()")
         if verbose:  # print confirmation if in verbose mode
             print(fit_colored_text_to_console(chunk, "m.save_convo_edits()"))
@@ -287,8 +291,8 @@ class MessageReader:
         if change_count == 0:
             return
         if not force:
-            chunk = "Changing all conversations would result in {num_changes} changes. Would you like to proceed? [Y/n]"\
-                .format(num_changes=change_count)
+            chunk = ("Changing all conversations would result in {num_changes} conversation changes. "
+                     "Would you like to proceed? [Y/n]".format(num_changes=change_count))
             print(fit_colored_text_to_console(chunk))
             if not user_says_yes():
                 return
@@ -359,6 +363,352 @@ class MessageReader:
         except AssertionError as e:
             print(e)
             return
+
+    def update_all_facebook_names(self):
+        """Prompts the user to give the real names of all facebook names (e.g. '23524534634@facebook.com') and then
+        updates those names. Goes through all names in sorted order of the numbers before @facebook. To update a
+        specific contact use update_select_facebook_names()
+        """
+        def check_data_file(data):
+            r = re.compile("\d+@facebook.com")
+            assert isinstance(data, dict), "file must be a python dictionary"
+            for key, val in data.items():
+                assert isinstance(key, str) and r.fullmatch(key), (
+                    "All keys in data must be facebook strings (e.g. '2358249589240@facebook.com'"
+                )
+                assert isinstance(val, str), "All mapped values in data must be names as strings"
+
+                data[key] = val.title()  # ensure all strings are title case after verifying this element
+
+        exit_color = Fore.LIGHTMAGENTA_EX + Back.BLACK
+        continue_color = Fore.LIGHTGREEN_EX + Back.BLACK
+
+        facebook_names = self.raw_facebook_names()
+
+        chunk1 = (
+            "Here you can update facebook names (e.g. 23023502345@facebook.com) with the true names they belong "
+            "to. To find out what account a number belongs to go to facebook.com/number and see if you are "
+            "redirected to a friend's account. If so, that is the account."
+        )
+        chunk2 = (
+            "You have a total of {} facebook names in your conversation. You will now be prompted to update as "
+            "many of these as you would like. ".format(len(facebook_names))
+        )
+        print(Fore.LIGHTGREEN_EX + Back.BLACK + "Update Facebook Names" + Style.RESET_ALL)
+        print(fit_colored_text_to_console(chunk1))
+        print()
+
+        previous_mapping = dict()
+        if os.path.isfile('data/facebook_name_mapping.txt'):  # we can use a previous data file
+            mapping_text = (
+                "A previous facebook_name_mapping file was found, would you like to load this data to help expedite "
+                "the process? [Y/n]"
+            )
+            print(one_line())
+            print(fit_colored_text_to_console(mapping_text))
+            print('\n')
+            if user_says_yes():  # the user wants to use this data file
+                try:
+                    with open('data/facebook_name_mapping.txt', mode='r', encoding="utf-8") as f:
+                        previous_mapping = ast.literal_eval(f.read())
+                except (SyntaxError, TypeError, ValueError) as e:  # there was an error loading in the data file
+                    previous_mapping = dict()
+                    error_loading_text = (
+                        "There was an error when loading your previous mapping. If you would like to use this data "
+                        "ensure the file is formatted as a proper python dictionary. Now aborting data loading. "
+                        "Would you like to view the error message? [Y/n]"
+                    )
+                    print(fit_colored_text_to_console(error_loading_text))
+                    if user_says_yes():
+                        print()
+                        print("Error:", e)
+                else:  # The data file was correctly loaded
+                    try:  # ensure that the loaded data is of the proper form
+                        check_data_file(previous_mapping)
+                    except AssertionError as e:
+                        previous_mapping = dict()
+                        invalid_syntax_text = (
+                            "The data files was properly loaded but contained invalid syntax for use in this method. "
+                            "If you would like to use this data ensure that the structure of the file is valid. Now "
+                            "aborting data loading. Would you like to view the error message received when validating "
+                            "structure? [Y/n]"
+                        )
+                        print(fit_colored_text_to_console(invalid_syntax_text))
+                        if user_says_yes():
+                            print(e)
+                    else:  # the data file was loaded and has proper structure
+                        print()
+                        print(one_line())
+                        print()
+                        print("The data file was properly loaded. Below is its data:")
+                        print()
+
+                        key_set = sorted(previous_mapping.keys())
+
+                        print(exit_color + "-1) Cancel data loading")
+                        print(continue_color + "0) Continue")
+                        print()
+                        for i, key in enumerate(key_set):  # print out the dictionary's elements
+                            val = previous_mapping[key]
+                            print("{}) {fb_name} ---> {new_name}".format(i + 1, fb_name=key, new_name=val))
+
+                        print()
+                        prompt = (
+                            "Select a conversation if you would like to edit its mapping, (0) continue to proceed with "
+                            "the current mappings, or (-1) cancel to discard these data file values and proceed. "
+                            "[-1 to {}]"
+                            .format(len(previous_mapping))
+                        )
+
+                        to_user_input = False
+                        while not to_user_input:
+                            # this outer loop is used to allow the user to confirm whether they would like to continue /
+                            # delete previous_mappings
+
+                            print(fit_colored_text_to_console(prompt))
+                            choice = get_user_choice_from_range(-1, len(previous_mapping))
+                            print()
+                            # While loop allows users to edit elements of previous mapping, or remove them entirely
+                            while choice not in [-1, 0]:
+                                key_set = sorted(previous_mapping.keys())
+                                key = key_set[choice - 1]
+
+                                while True:
+                                    chunk = (
+                                        "Type the name you would like to use instead of {name}, or 'delete' to delete "
+                                        "this value from the mapping".format(name=previous_mapping[key])
+                                    )
+                                    print(fit_colored_text_to_console(chunk))
+                                    name = input("> ").title()
+
+                                    if name == 'Delete':
+                                        del previous_mapping[key]
+                                        break
+
+                                    print()
+                                    print("Would you like to confirm {}? [Y/n]".format(name))
+                                    if user_says_yes():
+                                        previous_mapping[key] = name
+                                        break
+
+                                print(one_line())
+                                print(exit_color + "-1) Cancel data loading")
+                                print(continue_color + "0) Continue")
+                                for i, key in enumerate(key_set):  # print out the dictionary's elements
+                                    val = previous_mapping[key]
+                                    print("{}) {fb_name} ---> {new_name}".format(i + 1, fb_name=key, new_name=val))
+                                print(fit_colored_text_to_console(prompt))
+                                choice = get_user_choice_from_range(-1, len(previous_mapping))
+                                print()
+
+                            if choice == -1:
+                                print("Are you sure you would like to discard the data file? [Y/n]")
+                                if user_says_yes():
+                                    previous_mapping = dict()
+                                    to_user_input = True
+                            elif choice == 0:
+                                print("Are you sure you would like to continue to user input? [Y/n]")
+                                if user_says_yes():
+                                    to_user_input = True
+
+            print(one_line())
+
+        print(fit_colored_text_to_console(chunk2))
+        print('\n')
+        input("Press enter to continue to user input ")
+
+        value = None
+        name_mapping = previous_mapping
+        for i, name in enumerate(facebook_names):
+            # go through all facebook names, until we complete them all or the user wants to quit
+
+            if name not in name_mapping.keys():  # if we don't already have a value for this name
+                number = name.split("@")[0]
+                print(one_line())
+                print(fit_colored_text_to_console("({0}) {num} ---> ?".format(i + 1, num=number),
+                                                  "({})".format(i + 1)))
+                chunk = (
+                    "Type one of the following: (1) the name you find at facebook.com/{num} , (2) 'skip' to skip this "
+                    "name, or (3) 'quit' to skip the remaining names. Note that all names are converted "
+                    "to title case".format(num=number)
+                )
+                print(fit_colored_text_to_console(chunk))
+
+                while True:
+                    print()
+                    print("Type your value")
+                    value = input("> ").title()
+
+                    if value == "Skip" or value == "Quit":
+                        break
+
+                    print()
+                    print("Would you like to confirm: {facebook_name} == {user_name}? [Y/n]".
+                          format(facebook_name=name, user_name=value))
+                    if user_says_yes():
+                        break
+
+                if value == "Quit":
+                    break
+
+                if value != "Skip":
+                    name_mapping[name] = value
+                    print()
+
+        print(one_line())
+        print("Below is a summary of the names you provided:")
+        print()
+
+        print(continue_color + "0) Continue" + Style.RESET_ALL)
+        key_set = sorted(name_mapping.keys())
+        for i, key in enumerate(key_set):
+            val = name_mapping[key]
+            print("{index}) {facebook_name} ---> {name}".format(index=i + 1, facebook_name=key, name=val))
+
+        print()
+        print("Choose a number if you would like to edit it, or 0 to continue:")
+        num = get_user_choice_from_range(0, len(name_mapping))
+
+        while num != 0:
+            key = key_set[num - 1]
+
+            while True:
+                chunk = "Type the name you would like to use instead of {name}, or 'delete' to delete this value"\
+                    .format(name=name_mapping[key])
+                print(fit_colored_text_to_console(chunk))
+                name = input("> ").title()
+
+                if name == 'Delete':
+                    del name_mapping[key]
+                    key_set = sorted(name_mapping.keys())
+                    break
+
+                print()
+                print("Would you like to confirm {}? [Y/n]".format(name))
+                if user_says_yes():
+                    name_mapping[key] = name
+
+            print(one_line())
+            print("Choose a number if you would like to edit it, or 0 to continue:")
+            num = get_user_choice_from_range(0, len(name_mapping))
+
+        # Write mapping to file
+        if os.path.isfile('data/facebook_name_mapping.txt'):
+            exist_promt = (
+                "A file named `facebook_name_mapping.txt` already exists in the data directory. Continuing will "
+                "override the file. If you would like to save your old version, rename or move it elsewhere."
+            )
+            print(fit_colored_text_to_console(exist_promt))
+            input("Press enter when ready ")
+        with open('data/facebook_name_mapping.txt', mode='w', encoding='utf-8') as f:
+            f.write(str(name_mapping))
+
+        self._update_facebook_names(name_mapping)
+
+    def update_select_facebook_names(self):
+        """Interactive method to allow users to update specific facebook names (e.g. '2353424235234@facebook.com')
+        with the account names they belong to. Users will presumably look up the accounts online, e.g.
+        2353424235234@facebook.com --> the name of the account at facebook.com/2353424235234. To update all names
+        in a row use update_all_facebook_names()
+        """
+        facebook_names = self.raw_facebook_names()
+        choice = None
+        while choice != 0:
+            print("0) Exit")
+            print("1) View a list of names and select one to edit")
+            print("2) Enter a facebook name and updated account name")
+            print()
+            print("Select your option [0-2]")
+            choice = get_user_choice_from_range(0, 2)
+
+            if choice == 1:
+                print('\n' + one_line())
+
+                print("0) Cancel")
+                for i, fb_name in enumerate(facebook_names):
+                    print("{index}) {name}".format(index=i + 1, name=fb_name))
+                print()
+                print("Select the facebook_name you would like to edit, or 0 to cancel")
+                name_index = get_user_choice_from_range(0, len(facebook_names))
+
+                if name_index != 0:
+                    replacement = None
+                    while True:
+                        print()
+                        print("Type the name you would like to replace {fb_name} with, or 'cancel' to cancel"
+                              .format(fb_name=facebook_names[name_index - 1]))
+                        replacement = input("> ").title()
+
+                        if replacement == 'Cancel':
+                            break
+
+                        print("Would you like to confirm: {fb_name} ---> {replacement}? [Y/n]"
+                              .format(fb_name=facebook_names[name_index - 1], replacement=replacement))
+                        if user_says_yes():
+                            break
+
+                    print(one_line())
+                    if replacement != 'Cancel':
+                        self.edit_all_occurrences(facebook_names[name_index - 1], replacement,
+                                                  force=True, verbose=False)
+                else:
+                    print()
+                    print(one_line())
+                    print()
+
+            elif choice == 2:
+                print('\n' + one_line())
+
+                fb_name = False
+                while True:
+                    chunk = ("Type the account number of the facebook name you would like to update, e.g. if the full "
+                             "name is '23582450923@facebook.com' type '23582450923' (without the quotes)")
+                    print(fit_colored_text_to_console(chunk))
+                    fb_name = input("> ") + '@facebook.com'
+                    print()
+
+                    if fb_name in facebook_names:
+                        break
+                    else:  # the user's number isn't present, tell them and loop back
+                        chunk = ("'{fb_name}' isn't in your list of facebook names. (to "
+                                 "see a list of names choose no and then choose option 1)".format(fb_name=fb_name))
+                        print(fit_colored_text_to_console(chunk))
+                        print("Would you like to try again? [Y/n]")
+                        if not user_says_yes():
+
+                            print()
+                            print(one_line())
+                            print()
+                            fb_name = False
+                            break
+
+                if isinstance(fb_name, str):  # the user specified a valid name
+                    while True:
+                        print()
+                        print("Type the name you would like to replace {fb_name} with, or 'cancel' to cancel"
+                              .format(fb_name=fb_name))
+                        replacement = input("> ").title()
+
+                        if replacement == 'Cancel':
+                            break
+
+                        print("Would you like to confirm: {fb_name} ---> {replacement}? [Y/n]"
+                              .format(fb_name=fb_name, replacement=replacement))
+                        if user_says_yes():
+                            self.edit_all_occurrences(fb_name, replacement, force=True, verbose=False)
+                            break
+
+    def _update_facebook_names(self, name_mapping, force=True, verbose=False):
+        """Replaces all occurrences of facebook names with their real names, using the data in name_mapping
+        Parameters:
+            name_mapping: (dict) A mapping of facebook names (e.g. 1384239872@facebook.com) to their real names
+        """
+        assert isinstance(name_mapping, dict), (
+            "name_mapping must be a dictionary with keys being facebook names (e.g. 23425323452@facebook.com) and "
+            "values being the account name corresponding to the integer"
+        )
+        for key, val in name_mapping.items():
+            self.edit_all_occurrences(key, val, force=force, verbose=verbose)
 
     # ------------------------------------------------   EDITING DATA  ----------------------------------------------- #
 
@@ -559,6 +909,17 @@ class MessageReader:
         result = sorted(total.most_common(), key=lambda x: x[0])
         return result[start_index: end_index]
 
+    def raw_facebook_names(self):
+        """Returns a list of all facebook names in chats, e.g. 10232342934@facebook.com, but with a working number"""
+        facebook_person = re.compile("\d+@facebook.com")
+        res = set()
+        for i in range(1, len(self) + 1):
+            convo = self.get_convo(i)
+            for person in convo.get_people():
+                if facebook_person.fullmatch(person):
+                    res.add(person)
+        return sorted(list(res))
+
     # ----------------------------------------------   ANALYTIC METHODS  --------------------------------------------- #
 
     @staticmethod
@@ -569,7 +930,7 @@ class MessageReader:
 
         condition = True
         while condition:  # Continue's offering help until the user escapes with option 3
-            print(Fore.LIGHTMAGENTA_EX + Back.BLACK + 'Please select which feature you would like help with:')
+            print(Fore.LIGHTMAGENTA_EX + Back.BLACK + 'Select which feature you would like help with:')
             print()
             choices = [
                 Fore.LIGHTCYAN_EX + Back.BLACK + '0) What can I do here??' + Style.RESET_ALL + '\n',
@@ -723,7 +1084,9 @@ class MessageReader:
                     editing_data_methods = sorted([MessageReader.save_subset_of_data,
                                                    MessageReader.save_convo_edits,
                                                    MessageReader.edit_all_occurrences,
-                                                   MessageReader.edit_convo_participants], key=method_key)
+                                                   MessageReader.edit_convo_participants,
+                                                   MessageReader.update_all_facebook_names,
+                                                   MessageReader.update_select_facebook_names], key=method_key)
 
                     # the length of the string representing the length of each list, plus a bit of padding,
                     len_longest_str = len(str(len(visualization_methods) + len(raw_data_methods) +
@@ -827,6 +1190,13 @@ class MessageReader:
         return [ele for ele, _ in
                 sorted([(key, len(val)) for key, val in self.data.items()],
                        key=lambda x: (-x[1], x[0]))]
+
+    @staticmethod
+    def custom_title(name):
+        """Returns a title case version of name if name does not contain facebook in it"""
+        if 'facebook' not in name.lower():
+            return name.title()
+        return name.lower()
 
     def __len__(self):
         return len(self.names)

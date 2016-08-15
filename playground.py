@@ -1,18 +1,25 @@
 # Place to run all commands
+try:
+    import sys
+    import os
+    import shutil
+    import traceback
+    import ast
 
-import sys
-import os
-import shutil
-import traceback
-import ast
+    from functions.messagereader import MessageReader
+    from functions.setup_functions import clear_screen, fit_colored_text_to_console
+    from functions.wordcloud import WordCloud
+    from functions.convoreader import ConvoReader
+    from functions.customdate import CustomDate
+    from functions import emojis
+except (ImportError, SyntaxError) as e:  # if an error arises when importing abort the program
 
-
-from functions.messagereader import MessageReader
-from functions.setup_functions import clear_screen, fit_colored_text_to_console
-from functions.wordcloud import WordCloud
-from functions.convoreader import ConvoReader
-from functions.customdate import CustomDate
-from functions import emojis
+    try:  # attempt to print out a traceback, and catch possible name error due to traceback not importing
+        print(traceback.format_exc())
+        os._exit(3)
+    except NameError as error:
+        print(e)
+        os._exit(3)
 
 
 preload = True
