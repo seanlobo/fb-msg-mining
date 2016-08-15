@@ -18,7 +18,7 @@ class BaseConvoReader:
         """Parameters:
             convo_name: A string for the conversation name, found in your facebook archive
             convo)list: A 2D list with inner lists of the format [person_name (str), message (str), date-time (str)]
-            emojify: A boolean, whether to convert python src encodings for emoji in message to unicode
+            emojify: A boolean, whether to convert python src encodings for emojis in message to unicode
         """
         self._name = convo_name.lower()
         if emojify:
@@ -84,7 +84,7 @@ class BaseConvoReader:
             person (optional): The name of the person as a string whose character data you would like. Defaults to None,
                                or data for the aggregate conversation
         Return:
-            Counter
+            Counter with keys being characters (as strings) used in the conversation and values being their frequency
         """
         if person is not None:
             assert type(person) is str, "Optional parameter person must be a string"
@@ -98,12 +98,13 @@ class BaseConvoReader:
         return res
 
     def raw_emojis(self, person=None) -> Counter:
-        """Returns emoji frequency for the conversation in a Counter object
+        """Returns emojis frequency for the conversation in a Counter object
         Parameter:
-            person (optional): the name of the person whose emoji frequencies you would like. If left to default
+            person (optional): the name of the person whose emojis frequencies you would like. If left to default
                 None, an aggregate total for the conversation is returned
         Return:
-            Counter
+            Counter with keys being emojis (or private use unicode values*) and values being their frequency
+        *http://stackoverflow.com/questions/38780324/python3-src-encodings-of-emojis
         """
         chars = self.raw_characters(person=person)
         res = Counter()
@@ -167,7 +168,7 @@ class BaseConvoReader:
         else:
             return self.__ave_words(name)
 
-    def raw_msgs_graph(self, contact=None, forward_shift=0):
+    def raw_msgs_graph(self, contact=None, forward_shift=0) -> list:
         """The raw data used by print_msgs_graph to display message graphs
         Parameters:
             contact (optional): the name (as a string) of the person you are interested in
@@ -204,9 +205,15 @@ class BaseConvoReader:
 
         return msg_freq
 
-    def raw_msgs_by_weekday(self, contact=None):
-        """Returns a list containing frequency of chatting by days
-        of week, ordered by index, with 0 being Monday, 1 Tuesday.. and 6 Sunday
+    def raw_msgs_by_weekday(self, contact=None, percent=True) -> list:
+        """Returns the frequency of chatting by days of week
+            Parameters:
+                contact (optional): (str|None) a string representation of the contact whose data you would like, or if
+                                 left to default None data for the entire conversation
+                percent (optional): (boolean) Whether to return a percent frequency or raw frequency list
+            Return:
+                A list containing frequency of chatting by days of week, ordered by index,
+                with [0] being Monday, [1] Tuesday.. and [6] Sunday
         """
         contact = self._assert_contact(contact)
 
@@ -220,24 +227,26 @@ class BaseConvoReader:
             if key(p):
                 weekday_freq[d.weekday()] += 1
 
-        weekday_total = sum(weekday_freq)
-        if weekday_total == 0:  # If this conversation has no messages
-            return [0 for _ in weekday_freq]
-        return [day / weekday_total for day in weekday_freq]
+        if percent:  # return a percentage of messages by day
+            weekday_total = sum(weekday_freq)
+            if weekday_total == 0:  # If this conversation has no messages
+                return [0 for _ in weekday_freq]
+            return [day / weekday_total for day in weekday_freq]
+        else:
+            return weekday_freq
 
-    def raw_msgs_by_time(self, window=60, contact=None):
+    def raw_msgs_by_time(self, window=60, contact=None) -> list:
         """The percent of conversation by time of day
         Parameters:
             window (optional): The time length of each bin in minutes (default, 60 minutes, or 1 hour)
             contact (optional): The contact you are interested in. (default, all contacts)
         Return:
-            a list containing average frequency of chatting by
-            times in days, starting at 12:00 am. Default window is 60 minute
-            interval. If time less than the passed window is left at the end,
-            it is put at the end of the list in it's own window.
-            e.g. if window=60, the  list returned is of length 24, with each index representing one hour of chatting
-            if window=61 the list returned is still of length 24, but indexes 0-22 representing 61 minutes,
-                                                                  and index 23 representing 37 minutes
+            a list containing average frequency of chatting by times in days, starting at 12:00 am. Default window
+            is 60 minute interval. If time less than the passed window is left at the end, it is put at the end of
+            the list in it's own window. e.g. if window=60, the  list returned is of length 24, with each index
+                                                    representing one hour (60 minutes) of chatting
+                                              if window=61 the list returned is still of length 24, but indexes
+                                                    0-22 representing 61 minutes, and index 23 representing 37 minutes
         """
         contact = self._assert_contact(contact)
 
@@ -293,7 +302,7 @@ class BaseConvoReader:
             else:
                 return self._individual_words
 
-    def raw_convo_starter_freqs(self, threshold):
+    def raw_convo_starter_freqs(self, threshold) -> Counter:
         """Returns the frequency that each participant begins conversations as percents
         Parameter:
             threshold: the number of minutes lag that counts as the threshold for starting a new conversation.
@@ -309,7 +318,7 @@ class BaseConvoReader:
             res[key] = len(freq) / total * 100
         return res
 
-    def raw_convo_killer_freqs(self, threshold):
+    def raw_convo_killer_freqs(self, threshold) -> Counter:
         """Returns the frequency (as percents) that each participant 'kills' conversations, where killing is defined as
         being the last person to send a message with no replies for at least threshold minutes
         Parameters:
@@ -326,7 +335,7 @@ class BaseConvoReader:
             res[key] = len(freq) / total * 100
         return res
 
-    def raw_find_indexes(self, query, ignore_case=False):
+    def raw_find_indexes(self, query, ignore_case=False) -> list:
         """Returns a list with the indexes of each message that contain the passed message
         Parameters:
             query: The string query to search for
@@ -346,13 +355,13 @@ class BaseConvoReader:
                 indexes.append(i)
         return indexes
 
-    def raw_match_indexes(self, query, ignore_case=False):
+    def raw_match_indexes(self, query, ignore_case=False) -> list:
         """Returns a list with the indexes of each message that match the passed message
         Parameters:
             query: The string query to search for
             ignore_case (optional): Whether to search by case sensitive
         Return:
-            A list sorted list of indexes for messages matching query
+            A list sorted list of indexes for messages exactly matching query
         """
         # python re cheat sheet: https://www.debuggex.com/cheatsheet/regex/python
 

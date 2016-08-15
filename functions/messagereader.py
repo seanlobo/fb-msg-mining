@@ -772,9 +772,9 @@ class MessageReader:
         return rankings
 
     def emoijs(self, only_me=False, limit=10):
-        """Prints the emoji use of all conversations combined to the console
+        """Prints the emojis use of all conversations combined to the console
         Parameters:
-            only_me (optional): (Boolean) Whether to include only your emoji use or everyone's in total.
+            only_me (optional): (Boolean) Whether to include only your emojis use or everyone's in total.
                                 Defaults to everyone's use
             limit (optional): (int|None) The number of emojis to print, or None to print all. Defaults to 10
         """
@@ -790,7 +790,7 @@ class MessageReader:
             Parameters:
                 only_me (optional): Considers only your sent messages if True, otherwise both your sent and received
             Return:
-                Counter object storing your emoji frequencies
+                Counter object storing your emojis frequencies
         """
         res = Counter()
         for i in range(1, len(self) + 1):
@@ -928,8 +928,7 @@ class MessageReader:
         clear_screen()
         print("Welcome to the help function for MessageReader\n\n")
 
-        condition = True
-        while condition:  # Continue's offering help until the user escapes with option 3
+        while True:  # Continue's offering help until the user escapes with option 4
             print(Fore.LIGHTMAGENTA_EX + Back.BLACK + 'Select which feature you would like help with:')
             print()
             choices = [
@@ -945,8 +944,11 @@ class MessageReader:
             print("Choose a number between 0 and {length}".format(length=len(choices) - 1))
             # Which choice would the user like help with?
 
-            choice_condition = True
             choice = get_user_choice_from_range(0, 4)
+
+            if choice == 4:
+                return
+
             clear_screen()
             # Gets the user's choice of 0-3 and clears the screen after in preparation
 
@@ -956,7 +958,7 @@ class MessageReader:
                 print(Fore.LIGHTCYAN_EX + Back.BLACK + '\"What can I do here??\"' + Style.RESET_ALL)
                 chunk1 = ('Good question. Here you can perform a variety of analysis on your facebook conversations, '
                           'from analyzing the words you use most frequently in your favorite chat, to stats '
-                          'on who starts or ends conversations the most, to rankings of total emoji use in all your '
+                          'on who starts or ends conversations the most, to rankings of total emojis use in all your '
                           'conversations, and much more.')
                 chunk2 = ('If you\'re primarily interested in viewing visualizations of your data, and not in actually '
                           'using the raw data, you might be better off using the GUI version of this program. Exit '
@@ -1168,11 +1170,9 @@ class MessageReader:
                             clear_screen()
                     else:
                         keep_going = False
-            condition = choice != 4  # If the user wanted to quit
-            if condition:  # If they just got help do they want to quit now?
-                print('\nContinue getting help? [Y/n]')
-                if not user_says_yes():
-                    return
+            print('\nContinue getting help? [Y/n]')
+            if not user_says_yes():
+                return
 
             clear_screen()
 

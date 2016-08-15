@@ -92,11 +92,11 @@ class ConvoReader(BaseConvoReader):
                 print("{0}: {1}".format(person, msgs))
         print()
 
-    def emoji(self, person=None, limit=None):
-        """Prints the rankings of emoji for this conversation. Can specify a limit for number of emoji to print, and
-        a single individual to count emoji for (default is everyone's aggregate total)
+    def emojis(self, person=None, limit=None):
+        """Prints the rankings of emojis for this conversation. Can specify a limit for number of emojis to print, and
+        a single individual to count emojis for (default is everyone's aggregate total)
         Parameters:
-            person (optional): A string representing the person whose emoji you would like to analyze
+            person (optional): A string representing the person whose emojis you would like to analyze
             limit (optional): an integer representing the number of entries to print
         """
         ranking = self.raw_emojis(person=person)
@@ -667,13 +667,25 @@ class ConvoReader(BaseConvoReader):
         print('Below is a list of the most important data-analyzing functions you can perform on conversations.')
         print('Select one of the following to view more details')
 
-        # The methods I think are the most important to explain
-        most_important = [ConvoReader.find, ConvoReader.frequency, ConvoReader.prettify, ConvoReader.print_people,
-                          ConvoReader.msgs_graph, ConvoReader.save_word_freq, ConvoReader.set_preferences,
-                          ConvoReader.word_clouds]
+        key = lambda fn: fn.__name__
 
-        secondary = [ConvoReader.ave_words, ConvoReader.emoji, ConvoReader.messages,
-                     ConvoReader.msgs_by_time, ConvoReader.msgs_by_weekday, ConvoReader.times, ConvoReader.words]
+        # The methods I think are the most important to explain
+        most_important = [ConvoReader.conversation_starters, ConvoReader.find, ConvoReader.frequency,
+                          ConvoReader.prettify, ConvoReader.print_people, ConvoReader.msgs_graph,
+                          ConvoReader.set_preferences, ConvoReader.word_clouds]
+
+        secondary = [ConvoReader.ave_words, ConvoReader.emojis, ConvoReader.characters,
+                     ConvoReader.conversation_killers, ConvoReader.duplicate_word_cloud, ConvoReader.messages,
+                     ConvoReader.msgs_by_time, ConvoReader.msgs_by_weekday,
+                     ConvoReader.times, ConvoReader.words]
+
+        raw_methods = sorted([ConvoReader.get_people, ConvoReader.save_word_freq, ConvoReader.raw_characters,
+                              ConvoReader.raw_emojis, ConvoReader.raw_messages, ConvoReader.raw_words,
+                              ConvoReader.raw_ave_words, ConvoReader.raw_msgs_graph, ConvoReader.raw_msgs_by_time,
+                              ConvoReader.raw_msgs_by_weekday, ConvoReader.raw_frequency,
+                              ConvoReader.raw_convo_starter_freqs, ConvoReader.raw_convo_killer_freqs,
+                              ConvoReader.raw_find_indexes, ConvoReader.raw_match_indexes,
+                              ConvoReader.raw_longest_messages], key=key)
         while True:
             print()
             print(Fore.LIGHTRED_EX + Back.BLACK + '0) Exit' + Style.RESET_ALL + '\n')
@@ -693,22 +705,40 @@ class ConvoReader(BaseConvoReader):
                                           ' ' * (len_longest_str - len(str(i + 1 + len(most_important))) + 1),
                                           method_name))
 
+            raw_method_text = ("{}) Raw data methods - methods that are used internally to grab data. Select this if "
+                               "you're interested in using viewing documentation for these methods, although at that "
+                               "point you might as well read the source code (these methods are mostly in "
+                               "functions.baseconvoreader.py)"
+                               .format(len(secondary) + len(most_important) + 1))
+            print()
+            print(fit_colored_text_to_console(raw_method_text, "functions.baseconvoreader.py"))
+
             # get's user's choice of method
-            print('\nSelect your choice')
-            choice = None
-            choice_range = [str(i) for i in range(len(most_important) + len(secondary) + 1)]
-            while choice not in choice_range:
-                choice = input('> ')
+            print('\nSelect your choice: [0-{}]'.format(len(most_important) + len(secondary) + 1))
+            choice = get_user_choice_from_range(0, len(most_important) + len(secondary) + 1) - 1
+            methods = None
 
-            # if the user wants to exit let them
-            choice = int(choice) - 1
-            if choice == -1:
+            if choice == -1:                                                       # if the user wants to exit let them
                 return
-
-            if choice >= len(most_important):
+            elif choice == len(most_important) + len(secondary):               # the user wants to view raw methods
+                len_longest_str = len(str(len(raw_methods))) + 3
+                print()
+                print(one_line())
+                print(Fore.LIGHTRED_EX + Back.BLACK + '0) Exit' + Style.RESET_ALL + '\n')
+                for i, method in enumerate(raw_methods):
+                    method_name = color_method(method.__name__)
+                    print('{: <{width}}{}'.format(str(i + 1) + ')', method_name, width=len_longest_str))
+                print()
+                print("Choose the method you would like more help with [0-{length}]".format(length=len(raw_methods)))
+                choice = get_user_choice_from_range(0, len(raw_methods)) - 1
+                if choice == -1:
+                    return
+                else:
+                    methods = raw_methods
+            elif choice >= len(most_important):                                     # user selected a secondary method
                 choice -= len(most_important)
                 methods = secondary
-            else:
+            else:                                                                   # user selected a main method
                 methods = most_important
 
             print('\n')
@@ -729,9 +759,7 @@ class ConvoReader(BaseConvoReader):
             print()
 
             print("View help again? [Y/n] ")
-            again = user_says_yes()
-
-            if not again:
+            if not user_says_yes():
                 return
 
             clear_screen()
@@ -742,8 +770,8 @@ class ConvoReader(BaseConvoReader):
 
     @staticmethod
     def get_emoji(text: str) -> str:
-        """Returns the emoji corresponding to the src value passed,
-        or the string passed if appropriate emoji isn't found
+        """Returns the emojis corresponding to the src value passed,
+        or the string passed if appropriate emojis isn't found
         """
         return emojis.src_to_emoiji(text)
 
