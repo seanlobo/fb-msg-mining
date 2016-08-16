@@ -1,10 +1,15 @@
 /*  http://stackoverflow.com/questions/13585186/how-can-i-use-custom-fonts-on-a-website  */
 
+@font-face {
+    font-family: "Nunito-Light";
+    src: url("resources/nunito/Nunito-Light.ttf");
+}
+
 body {
     margin: 0;
     padding: 0;
     background: #ececec;
-    font-family: "avenir";
+    font-family: "Nunito-Light";
 }
 
 .page_contents {

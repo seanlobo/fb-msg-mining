@@ -23,6 +23,9 @@ https://github.com/mkoryak/floatThead/
 # CSS - Bootstrap
 http://getbootstrap.com/
 
+# Font - nunito
+http://www.1001fonts.com/nunito-font.html
+
 # Python - BeautifulSoup
 "Copyright (c) 2004-2015 Leonard Richardson"
 License - "MIT"

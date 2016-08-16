@@ -6,9 +6,25 @@
 
 /* Global Styles */
 
+@font-face {
+    font-family: "Nunito-Light";
+    src: url("resources/nunito/Nunito-Light.ttf");
+}
+
+@font-face {
+    font-family: "Nunito-Bold";
+    src: url("resources/nunito/Nunito-Bold.ttf");
+}
+
+@font-face {
+    font-family: "Nunito-Regular";
+    src: url("resources/nunito/Nunito-Regular.ttf");
+}
+
 html,
 body {
     height: 100%;
+    font-family: "Nunito-Light";
 }
 
 body {
@@ -47,6 +63,14 @@ header.carousel .fill {
     height: 100%;
     background-position: center;
     background-size: cover;
+}
+
+h1.page-header, h4 {
+    font-family: "Nunito-Regular";
+}
+
+.col-md-4 {
+    line-height: 1.5;
 }
 
 /* Footer Styles */

@@ -1,9 +1,15 @@
 /* http://www.colorhexa.com/ is a nice site for colors */
 
+
+@font-face {
+    font-family: "Nunito-Light";
+    src: url("resources/nunito/Nunito-Light.ttf");
+}
+
 body {
     margin: 0;
     padding: 0;
-    font-family: "avenir";
+    font-family: "Nunito-Light";
     background-color: #ececec;
 }
 
