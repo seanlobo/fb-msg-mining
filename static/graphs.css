@@ -53,8 +53,8 @@ body {
     width: 100%;
     height: 100%;
     cursor: pointer;
-    background-color: #fadbbd;
-    border: 1px solid #ec8217;
+    background-color: #f7f7f7;
+    border: 1px solid #adadad;
     text-align: center;
     font-size: 14px;
     font-family: "Lucida Grande";
@@ -64,7 +64,7 @@ body {
 }
 
 .header-btn a:hover {
-    background-color: #ec8217;
+    background-color: #d9d9d9;
     border: 1px solid black;
 }
 
@@ -152,7 +152,7 @@ div.hide {
 .select-conversation {
     background-color: white;
     color: black;
-    border: 1px solid #ec8217;
+    border: 1px solid #f9cf00;
     padding: 14px 40px;
     border-radius: 8px;
     text-align: center;
@@ -165,7 +165,7 @@ div.hide {
 }
 
 .select-conversation:hover {
-    background-color: #fadbbd;
+    background-color: #fdf5cc;
     color: black;
 }
 
@@ -185,7 +185,6 @@ div.hide {
     width: 100%;
     height: 150px;
     margin-top: 20px;
-    background-color: yellow;
 }
 
 .settings-header {
@@ -205,9 +204,8 @@ div.hide {
     display: inline-block;
     height: 100%;
     float: left;
-
-    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
-    background-color: Violet;
+    border: 1px solid #d9d9d9;
+    background-color: white;
 }
 
 .zoom-types span {
@@ -225,13 +223,20 @@ div.hide {
     width: 50%;
     height: 100%;
     margin-left: 20px;
-
-    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
-    background-color: LightGreen;
+    border: 1px solid #d9d9d9;
+    border-top-style: none;
+    background-color: white;
 }
 
 .swap-clear-select {
     height: 20%;
+}
+
+.swap-clear-select div {
+	border: 1px solid #d9d9d9;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
 }
 
 #swap-graphs, .clear-all, .select-all {
@@ -239,16 +244,12 @@ div.hide {
     height: 100%;
     display: inline-block;
     float: left;
-
-    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
-    background-color: orange;
+    background-color: white;
 }
 
 #swap-graphs:hover, .clear-all:hover, .select-all:hover {
     cursor: pointer;
-
-    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
-    background-color: OrangeRed;
+    background-color: #f5bb82;
 }
 
 #swap-graphs {
@@ -256,6 +257,11 @@ div.hide {
 }
 .clear-all, .select-all {
     width: 25%;
+}
+
+.stacked-area .swap-clear-select .clear-all {
+	border-left-style: none;
+	border-right-style: none;
 }
 
 .stacked-area .people {
@@ -275,19 +281,15 @@ div.hide {
 
 .tr-left:hover {
     cursor: pointer;
-
-    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
-    background-color: SeaGreen;
+    background-color: #fefbea;
 }
 
 .tr-left.people-active {
-    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
-    background-color: Turquoise;
+    background-color: #e9f1f9;
 }
 
 .tr-left.people-active:hover {
-    /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
-    background-color: SteelBlue;
+    background-color: #fefbea;
 }
 
 /* http://stackoverflow.com/questions/1260122/expand-a-div-to-take-the-remaining-width */
@@ -324,9 +326,10 @@ div.hide {
     height: 100%;
     float: left;
     margin-left: 20px;
+    border: 1px solid #d9d9d9;
 
     /* CHANGE THIS COLOR THEN DELETE THIS COMMENT */
-    background-color: Orange;
+    background-color: white;
 }
 
 .stack-type span {
@@ -341,18 +344,14 @@ div.hide {
 }
 
 
-div[data-settings-num="0"] {
 
-    /* Please delete / change these colors :D*/
-    background-color: #87CEEB;
-}
 
 /* ---------------------------------- Settings section 2 ---------------------------------- */
 
 div[data-settings-num="1"] {
 
     /* Please delete / change these colors :D*/
-    background-color: green;
+    background-color: white;
 }
 
 div[data-settings-num="2"] {
