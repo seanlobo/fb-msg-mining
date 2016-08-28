@@ -255,16 +255,14 @@ class BaseConvoReader:
         else:
             filt = lambda x: True
 
-        total_msgs = 0
         msg_bucket = [[CustomDate.minutes_to_time(i * window), 0] for i in range(ceil(60 * 24 / window))]
 
         for person, msg, date in self._convo:
             if filt(person.lower()):
                 index = (date.minutes() // window) % (len(msg_bucket))
                 msg_bucket[index][1] += 1
-                total_msgs += 1
         for i in range(len(msg_bucket)):
-            msg_bucket[i][1] /= (total_msgs / 100)
+            msg_bucket[i][1] /= (len(self) / 100)
         return msg_bucket
 
     def raw_frequency(self, person=None, word=None):

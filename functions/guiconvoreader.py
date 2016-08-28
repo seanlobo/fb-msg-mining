@@ -37,7 +37,9 @@ class GUIConvoReader(BaseConvoReader):
             categories.append(raw_data[i][0] + "-" + raw_data[(i + 1) % len(raw_data)][0])
         data = [freq for _, freq in raw_data]
         if contact is None:
-            contact = "total"
+            contact = "Aggregate"
+        else:
+            contact = contact.title()
         final_data = [dict(name=contact, data=data)]
 
         return json.dumps(dict(categories=categories, data=final_data))

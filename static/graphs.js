@@ -1,6 +1,5 @@
 // MORE GRAPHS TO ADD
 // by day - donut chart OR pie with drilldown
-// by time - stacked column (might not need to change anything)
 
 $(function () {
     // -------------------------------------------------  GRAPH VARIABLES AND FUNCTIONS ------------------------------------------------- \\
@@ -537,14 +536,13 @@ $(function () {
 
     
     // ------------------------------------------------ MESSAGES BY TIME OF DAY ------------------------------------------------ \\
+    var byTimeEveryone = true;  // tracks whether the by time graph has people or the aggregate data
+    var byTimeWindow = 60;
+
     $.getJSON(messageByTimeURL('none', 60)).success(function (data) {
         categories = data['categories'];
         evaluatedData = data['data'];
-        graphData[messageByTimeURL('none', 60)] = {
-            categories: categories,
-            data: evaluatedData
-        };
-
+        graphData[messageByTimeURL('none', 60)] = data;
 
         $('#time_of_day').highcharts({
             chart: {
@@ -586,8 +584,8 @@ $(function () {
                 shadow: false
             },
             tooltip: {
-                headerFormat: '<b>{point.x}</b><br/>',
-                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                // headerFormat: '<b>{point.x}</b><br/>',
+                pointFormat: '{series.name}: {point.y}<br/>',
             },
             plotOptions: {
                 column: {
@@ -605,6 +603,66 @@ $(function () {
             series: evaluatedData
         });
     });
+
+
+    function setDataForGraph3(forwardShift, namesForGraph) {
+        var chart = $('#time_of_day').highcharts();
+
+        if (byTimeEveryone) {
+            while (chart.series.length > 0) {  // delete all the data
+                chart.series[0].remove(true);
+            }
+
+            var url = messageByTimeURL('none', forwardShift);
+            if (url in graphData) {
+                chart.addSeries(graphData[url]['data'][0]);
+            } else {
+                $.getJSON(url).success(function (data) {
+                    graphData[url] = data;
+                    chart.addSeries(graphData[url]['data'][0]);
+                })
+            }
+        } else {
+
+            function urlGetter(name) {
+                return messageByTimeURL(name, forwardShift);
+            }
+
+            var tmpUrls = namesForGraph.map(urlGetter);
+            
+            var urls = [];
+            for (val in tmpUrls) {
+                if (!(tmpUrls[val] in graphData)) {
+                    urls.push(tmpUrls[val]);
+                }
+            }
+
+            function loadData () {
+                for (i in tmpUrls) {
+                    var name = urlsToNames[tmpUrls[i]];
+                    var color = $('div[data-settings-num="3"] input[data-color-person="' + name + '"]').val();
+                    var dataSeries = graphData[tmpUrls[i]]['data'][0];
+                    addColorToSeries(dataSeries, color);
+                    chart.addSeries(dataSeries);
+                }
+
+            }
+
+            if (urls.length == 0) {
+                loadData();
+            } else {
+                var promises = urls.map(url => $.getJSON(url));
+
+                Promise.all(promises).then(function (data) {
+                    for (val in data) {
+                        graphData[urls[val]] = data[val];
+                    }
+
+                    loadData();
+                });
+            }
+        }
+    }
 
 
     // ------------------------------------------------ Clickable Buttons and mouse features ------------------------------------------------ \\
@@ -701,9 +759,6 @@ $(function () {
                 var url = totalMessagesURL($personDiv.find(".specific-person").data("person"), cumulative, 0, 0);
                 var chart = $chartDiv.highcharts();
 
-                console.log("stacking", cumulativeStack);
-                console.log("type", cumulativeType);
-
                 if (url in graphData) {
                     var seriesData = {
                         name: toTitleCase($personDiv.find(".specific-person").data("person")),
@@ -743,7 +798,28 @@ $(function () {
         var $chartDiv = $("#cumulative_over_time2");
         var color = $("div[data-settings-num='1'] input[data-color-person='" + $(this).find(".specific-person").data("person") + "']").val();
         selectPersonSettings($(this), $chartDiv, color, 1);
-    });    
+    });
+    // click function for person selection in graph 3
+    $("div[data-settings-num='3'] .people .tr-left").click(function () {
+        var chart = $("#time_of_day").highcharts();
+        var person = $(this).find(".specific-person").data("person");
+
+        if ($(this).hasClass("people-active")) {  // deleting this person
+            $(this).removeClass("people-active");
+            if (!byTimeEveryone) {
+                for (i = 0; i < chart.series.length; i++) {
+                    if (person == chart.series[i]['name'].toLowerCase()) {
+                        chart.series[i].remove(true);
+                    }
+                }
+            }
+        } else {                                // adding this person
+            $(this).addClass("people-active");
+            if (!byTimeEveryone) {
+                setDataForGraph3(byTimeWindow, [person]);
+            }
+        }
+    });
 
 
     // Change color of graph
@@ -767,6 +843,10 @@ $(function () {
     $("div[data-settings-num='1'] .tr input").change(function () {
         changeGraphColor($('#cumulative_over_time2'), $(this).val(), $(this).data("color-person"));
     });
+    //  Change colors for stacked messages over time (3)
+    $("div[data-settings-num='3'] .tr input").change(function () {
+        changeGraphColor($('#time_of_day'), $(this).val(), $(this).data("color-person"));
+    });
 
 
     //  Clear all people for stacked graph over time (4)
@@ -785,7 +865,14 @@ $(function () {
             }
         });
     });
-
+    //  Clear all people for messages by time of day
+    $("div[data-settings-num='3'] .clear-all").click(function () {
+        $("div[data-settings-num='3'] .tr-left").each(function () {
+            if ($(this).hasClass("people-active")) {
+                $(this).click();
+            }
+        });
+    });
 
     //  Select all people for stacked graph over time (4)
     $("div[data-settings-num='0'] .select-all").click(function () {
@@ -798,6 +885,14 @@ $(function () {
     //  Select all people for stacked cumulative over time (5)
     $("div[data-settings-num='1'] .select-all").click(function () {
         $("div[data-settings-num='1'] .tr-left").each(function () {
+            if (!$(this).hasClass("people-active")) {
+                $(this).click();
+            }
+        });
+    });
+    //  Select all people for messages by time of day
+    $("div[data-settings-num='3'] .select-all").click(function () {
+        $("div[data-settings-num='3'] .tr-left").each(function () {
             if (!$(this).hasClass("people-active")) {
                 $(this).click();
             }
@@ -828,6 +923,21 @@ $(function () {
         } else {
             $("div").find("[data-graph-type='" + 1 + "']").click();
         }
+    });
+    // swap data for graph (3)
+    $("div[data-settings-num='3'] #swap-graphs").click(function () {
+        byTimeEveryone = !byTimeEveryone;  // reverse the boolean checker of graph types
+        
+        var namesForGraph = [];  // gather a list of names of active people
+        $("div[data-settings-num='3'] .people-active .specific-person").each(function () {
+            namesForGraph.push($(this).data("person"));
+        });
+
+        if (!byTimeEveryone) {  // if we switched to a graph of individual's delete the aggregate data series
+            $("#time_of_day").highcharts().series[0].remove(true)
+        }
+
+        setDataForGraph3(byTimeWindow, namesForGraph);
     });
 
 
