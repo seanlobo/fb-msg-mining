@@ -55,6 +55,7 @@ $(function () {
             "#800000", // Brown
             "#FF8000", // Orange
 
+
             "#000000", // Black
             "#4c4c4c", // dark grey
             "#e2e2e2", // very light grey/ white

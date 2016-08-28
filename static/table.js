@@ -17,8 +17,6 @@ $(function () {
 
         var tableHeight = (windowHeight - offsetHeight - minBottomPadding) - (windowHeight - offsetHeight - minBottomPadding) % 40;
 
-        console.log(windowHeight, offsetHeight, tableHeight);
-
         $("div.table-background").height(tableHeight + 1);
         $actualTable.floatThead();
     };    

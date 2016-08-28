@@ -324,13 +324,15 @@ class MessageReader:
             f.write(self.download)
             f.write(str(PreferencesSearcher.from_msgs_dict(self.data).preferences))
 
-    def save_subset_of_data(self, conversation_names, file_name):
+    def save_subset_of_data(self, conversation_names, file_name, skip_messages=False):
         """Saves to a file the data for the conversations specified
         Parameters:
             conversation_names: a list of: integer indexes corresponding to the conversation you would like,
                 or comma separated strings of names e.g. 'my name, your name',
                 or lists of names as strings e.g. ['your name', 'my name']
             file_name: a string filename for the data to be written to
+            skip_messages (optional): (boolean) If true saves a version of the data where all messages are empty strings
+                                        This data can still be used for graph annotations. Defaults to False
         """
         try:
             assert isinstance(conversation_names, list) or isinstance(conversation_names, tuple), \
@@ -343,7 +345,9 @@ class MessageReader:
             # prompt user if the passed file_name already exists
             if os.path.isfile(file_name):
                 print(
-                    "{0} already exists, continuing would override this data. Would you like to continue? [Y/n]")
+                    "{0} already exists, continuing would override this data. Would you like to continue? [Y/n]"
+                        .format(file_name)
+                )
                 if not user_says_yes():
                     return
 
@@ -351,7 +355,11 @@ class MessageReader:
 
             new_data = dict()
             for rank in convo_ranks:
-                new_data[self.names[rank - 1]] = self.data[self.names[rank - 1]]
+                if not skip_messages:
+                    new_data[self.names[rank - 1]] = self.data[self.names[rank - 1]]
+                else:
+                    data = [(person, '', date) for person, message, date in self.data[self.names[rank - 1]]]
+                    new_data[self.names[rank - 1]] = data
 
             download = self.download
             quick_settings = PreferencesSearcher.from_msgs_dict(new_data)
