@@ -348,20 +348,6 @@ div.hide {
 
 /* ---------------------------------- Settings section 2 ---------------------------------- */
 
-div[data-settings-num="1"] {
-
-    /* Please delete / change these colors :D*/
-    background-color: white;
-}
-
-div[data-settings-num="2"] {
-
-    /* Please delete / change these colors :D*/
-    background-color: red;
-}
-
-div[data-settings-num="3"] {
-
-    /* Please delete / change these colors :D*/
-    background-color: orange;
+#window_size {
+    margin-left: 30px;
 }

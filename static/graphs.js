@@ -22,7 +22,7 @@ $(function () {
         return url;
     }
     function messageByTimeURL(person, windowSize) {
-        var url = window.location.href + "messages_by_time/" + person.split(" ").join('_') + "/" + windowSize;
+        var url = window.location.href + "messages_by_time/" + person.split(" ").join('_') + "/" + windowSize + "/";
         urlsToNames[url] = person;
         return url;
     }
@@ -243,7 +243,7 @@ $(function () {
         } else {
             // get a list of data values from urls above and add to graphData
             // http://stackoverflow.com/questions/38582200/javascript-load-arbitrary-number-of-urls-with-getjson
-            var promises = urls.map(url => $.getJSON(url));
+            var promises = urls.map($.getJSON);
 
             Promise.all(promises).then(function (data) {
                 for (val in data) {
@@ -450,7 +450,7 @@ $(function () {
         } else {
             // get a list of data values from urls above and add to graphData
             // http://stackoverflow.com/questions/38582200/javascript-load-arbitrary-number-of-urls-with-getjson
-            var promises = urls.map(url => $.getJSON(url));
+            var promises = urls.map($.getJSON);
 
             Promise.all(promises).then(function (data) {
                 for (val in data) {
@@ -539,16 +539,22 @@ $(function () {
     var byTimeEveryone = true;  // tracks whether the by time graph has people or the aggregate data
     var byTimeWindow = 60;
 
-    $.getJSON(messageByTimeURL('none', 60)).success(function (data) {
+    $.getJSON(messageByTimeURL('none', byTimeWindow)).success(function (data) {
         categories = data['categories'];
         evaluatedData = data['data'];
-        graphData[messageByTimeURL('none', 60)] = data;
+        graphData[messageByTimeURL('none', byTimeWindow)] = data;
 
         $('#time_of_day').highcharts({
             chart: {
                 type: 'column',
                 height: height,
-                width: width
+                width: width,
+                zoomType: 'x',
+                panning: true,
+                panKey: 'shift'
+            },
+            subtitle: {
+                text: 'Click and drag to zoom in, <b>Shift click</b> and drag to pan'
             },
             title: {
                 text: 'Messages by time of day',
@@ -584,8 +590,10 @@ $(function () {
                 shadow: false
             },
             tooltip: {
-                // headerFormat: '<b>{point.x}</b><br/>',
-                pointFormat: '{series.name}: {point.y}<br/>',
+                // pointFormat: '{series.name}: {point.y}<br/>',
+                formatter: function () {
+                    return this.series.name + ": " + this.y.toFixed(3) + "%<br/>";
+                }
             },
             plotOptions: {
                 column: {
@@ -596,6 +604,12 @@ $(function () {
                         color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
                         style: {
                             textShadow: '0 0 3px black'
+                        }
+                    },
+                    // http://stackoverflow.com/questions/19146049/highcharts-change-column-color-on-hover
+                    states: {
+                        hover: {
+                            color: '#FFA54F'
                         }
                     }
                 }
@@ -608,18 +622,29 @@ $(function () {
     function setDataForGraph3(forwardShift, namesForGraph) {
         var chart = $('#time_of_day').highcharts();
 
+        while (chart.series.length > 0) {  // delete all the data
+            chart.series[0].remove(true);
+        }
+
         if (byTimeEveryone) {
-            while (chart.series.length > 0) {  // delete all the data
-                chart.series[0].remove(true);
-            }
 
             var url = messageByTimeURL('none', forwardShift);
             if (url in graphData) {
                 chart.addSeries(graphData[url]['data'][0]);
+
+                // http://stackoverflow.com/questions/8381331/highcharts-set-x-axis-categories
+                chart.xAxis[0].setCategories(graphData[url]['categories']);
+
+                chart.series[0].options.color = "#0000FF";
+                chart.series[0].update(chart.series[0].options);
             } else {
                 $.getJSON(url).success(function (data) {
                     graphData[url] = data;
                     chart.addSeries(graphData[url]['data'][0]);
+                    chart.xAxis[0].setCategories(graphData[url]['categories']);
+
+                    chart.series[0].options.color = "#0000FF";
+                    chart.series[0].update(chart.series[0].options);
                 })
             }
         } else {
@@ -645,13 +670,13 @@ $(function () {
                     addColorToSeries(dataSeries, color);
                     chart.addSeries(dataSeries);
                 }
-
+                chart.xAxis[0].setCategories(graphData[url]['categories']);
             }
 
             if (urls.length == 0) {
                 loadData();
             } else {
-                var promises = urls.map(url => $.getJSON(url));
+                var promises = urls.map($.getJSON);
 
                 Promise.all(promises).then(function (data) {
                     for (val in data) {
@@ -1071,7 +1096,20 @@ $(function () {
 
 
     $("#test").click(function () {
-        setDataforGraph0(['none'], 300);
+        var input_val = $("#window_size").val();
+        if (input_val != null) {
+            byTimeWindow = parseInt(input_val);
+
+            var namesForGraph = [];  // gather a list of names of active people
+            $("div[data-settings-num='3'] .people-active .specific-person").each(function () {
+                namesForGraph.push($(this).data("person"));
+            });
+
+            setDataForGraph3(byTimeWindow, namesForGraph);
+
+        } else {
+            console.log(typeof(input_val), input_val);
+        }
     });
 
 
