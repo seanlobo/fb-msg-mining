@@ -1,5 +1,13 @@
 # Change Log
 
+## 2016-09-12: v1.2.7
+* Web Browser Updates:
+  * Switch to Nunito Font
+  * Update conversation graphs on /graphs/ to have more granular data, specifically filtering by person
+* TODO:
+  * Add more granular graphs for messages by day of week
+  * General style touch ups
+
 ## 2016-08-15: v1.2.0
 * Terminal mode updates
   * Buff help methods of ConvoReader and MessageReader
