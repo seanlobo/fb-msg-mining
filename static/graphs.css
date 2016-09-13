@@ -57,7 +57,7 @@ body {
     border: 1px solid #adadad;
     text-align: center;
     font-size: 14px;
-    font-family: "Lucida Grande";
+    font-family: "Nunito-Light";
     display: table-cell;
     vertical-align: center;
     transition-duration: 0.4s;
@@ -79,7 +79,7 @@ div.hide {
 
 .header .title {
     text-align: center;
-    font-family: "avenir";
+    font-family: "Nunito-Light";
     font-size: 45px;
     color: black;
     margin: 0;
@@ -92,7 +92,7 @@ div.hide {
 .message-count {
     text-align: center;
     font-size: 15px;
-    font-family: "avenir";
+    font-family: "Nunito-Light";
     font-weight: 700;
 }
 
@@ -129,7 +129,7 @@ div.hide {
     border-radius: 8px;
     text-align: center;
     font-size: 14px;
-    font-family: "Lucida Grande";
+    font-family: "Nunito-Light";
     cursor: pointer;
     display: block;
     margin: 16px 4px;
@@ -157,7 +157,7 @@ div.hide {
     border-radius: 8px;
     text-align: center;
     font-size: 14px;
-    font-family: "Lucida Grande";
+    font-family: "Nunito-Light";
     cursor: pointer;
     display: block;
     margin: 16px 4px;
@@ -273,7 +273,7 @@ div.hide {
 .stacked-area .people .tr {
     width: 100%;
     padding-left: 2px;
-    height: 25px;
+    height: 30px;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;         /* Opera/IE 8+ */
