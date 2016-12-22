@@ -11,7 +11,7 @@ $(function () {
     var graphData = { };
     var urlsToNames = { };
     function totalMessagesURL(person, cumulative, forwardShift, negative) {
-        var url = window.location.href + "total_messages/" + 
+        var url = window.location.href + "total_messages/" +
                 person.split(" ").join('_') + "/" + cumulative + "/" + forwardShift + "/" + negative + "/";
         urlsToNames[url] = person;
         return url;
@@ -43,7 +43,7 @@ $(function () {
     function getColors(index) {
         // Generate unique colors
         // http://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
-        
+
         // below colors are modified Bonynton optomized from: http://jsfiddle.net/k8NC2/1/
         var colorList = [
             "#0000FF", // Blue
@@ -72,7 +72,7 @@ $(function () {
     $.getJSON(totalMessagesURL('none', 0, 0, 0)).success(function (data) {
         evaluatedData = data['data'].map(eval);
         graphData[totalMessagesURL('none', 0, 0, 0)] = evaluatedData;
-        
+
 
         $('#graph_over_time').highcharts({
             chart: {
@@ -167,7 +167,7 @@ $(function () {
         },
         plotOptions: {
             area: {
-                stacking: graphStack, 
+                stacking: graphStack,
                 lineColor: '#666666',
                 lineWidth: 1,
                 marker: {
@@ -235,7 +235,7 @@ $(function () {
             $('#graph_over_time').addClass('hide');
             $('#graph_over_time2').removeClass('hide');
         };
-        
+
 
         if (urls.length == 0) {
             // we already have all the data for urls
@@ -442,7 +442,7 @@ $(function () {
             $('#cumulative_over_time').addClass('hide');
             $('#cumulative_over_time2').removeClass('hide');
         };
-        
+
 
         if (urls.length == 0) {
             // we already have all the data for urls
@@ -497,7 +497,7 @@ $(function () {
     // messages by day of week
     $.getJSON(messageByDayURL('none')).success(function (data) {
         evaluatedData = data['data'];
-        
+
         $('#days_of_week').highcharts({
             chart: {
                 plotBackgroundColor: null,
@@ -534,7 +534,7 @@ $(function () {
         });
     });
 
-    
+
     // ------------------------------------------------ MESSAGES BY TIME OF DAY ------------------------------------------------ \\
     var byTimeEveryone = true;  // tracks whether the by time graph has people or the aggregate data
     var byTimeWindow = 60;
@@ -654,7 +654,7 @@ $(function () {
             }
 
             var tmpUrls = namesForGraph.map(urlGetter);
-            
+
             var urls = [];
             for (val in tmpUrls) {
                 if (!(tmpUrls[val] in graphData)) {
@@ -716,7 +716,7 @@ $(function () {
 
         chart.removeClass("hide");
         settings.removeClass("hide");
-        
+
         chartID = chart[0].id;
         var actualChart = $('#' + chartID).highcharts();
     });
@@ -789,7 +789,7 @@ $(function () {
                         name: toTitleCase($personDiv.find(".specific-person").data("person")),
                         data: graphData[url],
                     };
-                    
+
                     addStackingToSeries(seriesData, cumulative);
                     addTypeToSeries(seriesData, cumulative);
                     addColorToSeries(seriesData, color);
@@ -952,7 +952,7 @@ $(function () {
     // swap data for graph (3)
     $("div[data-settings-num='3'] #swap-graphs").click(function () {
         byTimeEveryone = !byTimeEveryone;  // reverse the boolean checker of graph types
-        
+
         var namesForGraph = [];  // gather a list of names of active people
         $("div[data-settings-num='3'] .people-active .specific-person").each(function () {
             namesForGraph.push($(this).data("person"));
@@ -976,7 +976,7 @@ $(function () {
             return "percent";
         }
     }
-    // helper function to get new value of type 
+    // helper function to get new value of type
     var getType = function (rawStackType) {
         if (rawStackType == "no-stack") {
             return 'line';
@@ -1005,7 +1005,7 @@ $(function () {
                 var tip = Highcharts.dateFormat("%A, %b %e, %Y", this.x, true);
                  // http://php.net/manual/en/function.strftime.php
                  // http://api.highcharts.com/highcharts#Highcharts.dateFormat
-                
+
                 $.each(this.points, function () {
                     tip += '<br/>' + this.series.name + ': ' + '<b>' + numberWithCommas(this.y) + '</b>';
                 });
@@ -1028,7 +1028,7 @@ $(function () {
             //  Update tooltip
             $chart.tooltip.options.formatter = function () {
                 var tip = Highcharts.dateFormat("%A, %b %e, %Y", this.x, true);
-                
+
                 $.each(this.points, function () {
                     tip += '<br/>' + this.series.name + ': ' + '<b>' + numberWithCommas(this.y) + '</b>';
                 });
@@ -1051,7 +1051,7 @@ $(function () {
             //  update tooltip
             $chart.tooltip.options.formatter = function () {
                 var tip = Highcharts.dateFormat("%A, %b %e, %Y", this.x, true);
-                
+
                 var total = 0;
                 var length = 0;
                 $.each(this.points, function () {
@@ -1059,7 +1059,7 @@ $(function () {
                     length += 1;
                 });
                 var expectedPercent = 100 / length;
-                
+
                 tip += " - " + numberWithCommas(total);
                 $.each(this.points, function () {
                     var percent = this.y / total * 100;
@@ -1095,7 +1095,7 @@ $(function () {
     });
 
 
-    $("#test").click(function () {
+    $("#submit_window_size").click(function () {
         var input_val = $("#window_size").val();
         if (input_val != null) {
             byTimeWindow = parseInt(input_val);

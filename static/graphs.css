@@ -116,15 +116,15 @@ div.hide {
     height: 100%;
     float: left;
     display: inline;
-    margin-right: 6px;    
-    border: 1px solid #005fff; 
+    margin-right: 6px;
+    border: 1px solid #005fff;
     padding-right: 1px;
 }
 
 .graph_type_button {
     background-color: white;
     color: black;
-    border: 1px solid #005fff; 
+    border: 1px solid #005fff;
     padding: 14px 40px;
     border-radius: 8px;
     text-align: center;
@@ -137,12 +137,12 @@ div.hide {
 }
 
 .graph_type_button:hover {
-    background-color: #96b9e3; 
+    background-color: #96b9e3;
     color: white;
 }
 
 .graph_type_button:focus, .graph_type_button.graph_button_active {
-    background-color: #4484ce; 
+    background-color: #4484ce;
     border: 1px solid #005fff;
     color: white;
     box-shadow: none;
@@ -170,7 +170,7 @@ div.hide {
 }
 
 .select-conversation:focus {
-    background-color: #ec8217; 
+    background-color: #ec8217;
     border: 1px solid #ec8217;
     color: white;
     box-shadow: none;
@@ -348,6 +348,11 @@ div.hide {
 
 /* ---------------------------------- Settings section 2 ---------------------------------- */
 
-#window_size {
+.window_size_selection {
+    float: left;
     margin-left: 30px;
+}
+
+.window_size_selection .title {
+    display: block;
 }

@@ -6,7 +6,7 @@
     </head>
     <body>
         <div class="page_contents">
-            
+
             <div class="header-section">
                 <div class="header-btn prev">
                     <a><div>Previous</div></a>
@@ -38,7 +38,7 @@
 
                         <!-- Time of Day -->
                     <div id="time_of_day" class="graph hide" data-graph="3"></div>
-                    
+
                     <!-- Buttons -->
                     <div class="button_box">
                         <button type="button" class="graph_type_button" data-graph-type="0" autofocus>Message frequency</button>
@@ -185,14 +185,16 @@
                                 {% endfor %}
                             </div>
                         </div>
-
-                        <input id="window_size" type="number" min="1" max="1440">
-                        <input id="test" type="submit">
+                        <div class="window_size_selection">
+                            <span class="title">Window Size (Defaults to 60 minutes)</span>
+                            <input id="window_size" type="number" min="1" max="1440">
+                            <input id="submit_window_size" type="submit">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    
+
         <!-- Name of this conversation -->
         <div class="hide" id="name"> {{ convo.people_by_messages }} </div>
         <div class="hide" id="convo_num">{{ convo_num }}</div>
