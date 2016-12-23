@@ -44,7 +44,26 @@ class WordCloud:
             self.__preferences[key] = val
 
         self.__safe_to_save = len(preferences) == 0
+        self.issues = None
         self.setup_word_cloud_starter_files()
+
+    @staticmethod
+    def get_excluded_word_files():
+        return [f for f in os.listdir(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH)
+                if os.path.isfile(os.path.join(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH, f))]
+
+    @staticmethod
+    def get_input_text_files():
+        files = [f for f in os.listdir(WordCloud.WORD_CLOUD_INPUT_PATH)
+                if os.path.isfile(os.path.join(WordCloud.WORD_CLOUD_INPUT_PATH, f)) and f.endswith('freq.txt')]
+        files = ['total.txt'] + files
+        return files
+
+    @staticmethod
+    def get_image_files():
+        return [f for f in os.listdir(WordCloud.WORD_CLOUD_IMAGE_PATH)
+                if os.path.isfile(os.path.join(WordCloud.WORD_CLOUD_IMAGE_PATH, f)) and
+                (f.endswith('.png') or f.endswith('.jpg') or f.endswith('.bmp'))]
 
     def _default_preferences(self):
         return WordCloud.get_default_preferences(self.wc_type)
@@ -101,6 +120,8 @@ class WordCloud:
                 'text_sets': [],
                 'image_names': []
             }
+        else:
+            raise ValueError("Invalid word cloud type: {}".format(wc_type))
 
     def verify_word_cloud_setup(self) -> dict:
         """Verifies that all the settings for a word cloud are met
@@ -115,7 +136,7 @@ class WordCloud:
                 'num_words_to_include': self.assert_num_words_to_include,
                 'min_word_length': lambda x: self.assert_word_length(x, 'min'),
                 'max_word_length': lambda x: self.assert_word_length(x, 'max'),
-                'excluded_words': lambda x: map(self.assert_excluded_words_for_wc, x),
+                'excluded_words': lambda x: list(map(self.assert_excluded_words_for_wc, x)),
                 'max_font_size': lambda x: self.assert_font_size(x, 'max'),
                 'min_font_size': lambda x: self.assert_font_size(x, 'min'),
                 'output_name': self.assert_output_name_for_wc,
@@ -131,7 +152,7 @@ class WordCloud:
                 'num_words_to_include': self.assert_num_words_to_include,
                 'min_word_length': lambda x: self.assert_word_length(x, 'min'),
                 'max_word_length': lambda x: self.assert_word_length(x, 'max'),
-                'excluded_words': lambda x: map(self.assert_excluded_words_for_wc, x),
+                'excluded_words': lambda x: list(map(self.assert_excluded_words_for_wc, x)),
                 'max_font_size': lambda x: self.assert_font_size(x, 'max'),
                 'min_font_size': lambda x: self.assert_font_size(x, 'min'),
                 'output_name': self.assert_output_name_for_wc,
@@ -149,13 +170,13 @@ class WordCloud:
                 'num_words_to_include': self.assert_num_words_to_include,
                 'min_word_length': lambda x: self.assert_word_length(x, 'min'),
                 'max_word_length': lambda x: self.assert_word_length(x, 'max'),
-                'excluded_words': lambda x: map(self.assert_excluded_words_for_wc, x),
+                'excluded_words': lambda x: list(map(self.assert_excluded_words_for_wc, x)),
                 'max_font_size': lambda x: self.assert_font_size(x, 'max'),
                 'min_font_size': lambda x: self.assert_font_size(x, 'min'),
                 'output_name': self.assert_output_name_for_wc,
                 'dimensions': self.assert_dimensions_for_wc,
-                'color_sets': lambda x: map(self._assert_color_for_wc, x),
-                'image_sets': lambda x: map(self.assert_image_name_for_wc, x),
+                'color_sets': lambda x: list(map(self._assert_color_for_wc, x)),
+                'image_sets': lambda x: list(map(self.assert_image_name_for_wc, x)),
                 'text_sets': self.assert_text_set,
                 'font_type': self.assert_font_type_for_wc,
             }
@@ -172,9 +193,21 @@ class WordCloud:
                 verification[attribute] = e
 
         self.__safe_to_save = len(verification) == 0
+        self.issues = verification
         if self.__safe_to_save:
             self.write_json()
         return verification
+
+    def ready(self):
+        return self.__safe_to_save
+
+    @staticmethod
+    def integer_fields():
+        """Returns a list of fields in word cloud preferences that should be integers"""
+        return [
+            'min_word_length', 'max_word_length', 'max_font_size', 'min_font_size', 'num_words_to_include',
+            'num_colors'
+        ]
 
     @staticmethod
     def freq_to_raw(freqs: str, output: str, key=lambda x: True, min_occurence=5):
@@ -243,7 +276,7 @@ class WordCloud:
     @staticmethod
     def assert_num_words_to_include(limit):
         assert isinstance(limit, int), "limit must be an integer"
-        assert 0 < limit, "This would be a very boring word cloud if I let you give a frequency less than 1"
+        assert 0 < limit, "This would be a very boring word cloud with no words"
 
     @staticmethod
     def assert_dimensions_for_wc(dimensions):
@@ -329,12 +362,24 @@ class WordCloud:
         assert os.path.isfile(file_path), "the specified file_path does not exist"
 
     def assert_image_name_for_wc(self, img_name):
-        isinstance(img_name, str), "image_name should be of type string"
+        assert isinstance(img_name, str), "image_name should be of type string"
         if self.__preferences['shape'] == 'image':
-            assert os.path.isfile(img_name), "the specified image file_path does not exist"
+            assert os.path.isfile(img_name), "the specified image file_path does not exist: {}".format(img_name)
         else:
-            assert img_name == 'None', 'Only word clouds of shape "image" can have a background image'
+            assert img_name == 'None', (
+                'Only word clouds of shape "image" can have a background image. Current type is '
+                '{}'.format(self.__preferences['shape'])
+            )
 
     @staticmethod
     def valid_picture(picture_name):
         return ' ' not in picture_name and ('.png' in picture_name or '.bmp' in picture_name)
+
+    @staticmethod
+    def hex_to_rgb(value):
+        """Return (red, green, blue) for the color given as #rrggbb.
+        http://stackoverflow.com/a/214657/6587177
+        """
+        value = value.lstrip('#')
+        lv = len(value)
+        return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))

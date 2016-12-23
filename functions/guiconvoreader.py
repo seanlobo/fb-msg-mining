@@ -1,8 +1,11 @@
 import json
+import os
+import subprocess
 
 
 from functions.customdate import CustomDate
 from functions.baseconvoreader import BaseConvoReader
+from functions.wordcloud import WordCloud
 
 
 class GUIConvoReader(BaseConvoReader):
@@ -78,6 +81,53 @@ class GUIConvoReader(BaseConvoReader):
         for i, p in enumerate(self.people_by_messages):
             if p == person:
                 return i + 1
+
+    def setup_new_word_cloud(self, preferences):
+        """Cleans up data from html form to work with kumo"""
+        for key in WordCloud.integer_fields():
+            if key in preferences and isinstance(preferences[key], str):
+                try:
+                    preferences[key] = int(preferences[key])
+                except ValueError:
+                    pass
+
+        if 'excluded_words' in preferences and isinstance(preferences['excluded_words'], str):
+            if preferences['excluded_words'] == 'None':
+                preferences['excluded_words'] = []
+            else:
+                preferences['excluded_words'] = [preferences['excluded_words']]
+
+        num_colors = preferences.get('num_colors')
+        if num_colors is not None:
+            colors = []
+            for i in range(1, num_colors + 1):
+                colors.append(list(WordCloud.hex_to_rgb(preferences['color{}'.format(str(i))])))
+            preferences['colors'] = colors
+        else:
+            preferences['colors'] = WordCloud.DEFAULT_COLORS
+
+        if 'output_name' in preferences and preferences['output_name'] == 'current_time.png':
+            preferences['output_name'] = WordCloud.DEFAULT_OUTPUT_NAME
+
+        if 'shape' in preferences and preferences['shape'] != 'image':
+            preferences['image_name'] = 'None'
+
+        return BaseConvoReader.setup_new_word_cloud(self, preferences)
+
+    def ready_for_word_cloud(self):
+        return self._word_cloud.ready()
+
+    def create_word_cloud(self):
+        """Calls the java kumo program, assuming that all conditions are met"""
+        assert isinstance(self._word_cloud, WordCloud) and self._word_cloud.ready(), (
+            "Word cloud preferences have either not been set or have unfixed issues. "
+            "Run setup_new_word_cloud to continue"
+        )
+        # grabbed from http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
+        # with additions by http://stackoverflow.com/questions/11269575/how-to-hide-output-of-subprocess-in-python-2-7k
+        # devnull = open(os.devnull, mode='w')
+        p = subprocess.Popen("java -jar data/word_clouds/wordclouds.jar", shell=True)
+        sts = os.waitpid(p.pid, 0)
 
     # -----------------------------------------------   PUBLIC METHODS   --------------------------------------------- #
 

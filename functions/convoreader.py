@@ -337,7 +337,7 @@ class ConvoReader(BaseConvoReader):
         word_cloud_preferences.update(self._get_word_cloud_preferences(preference_choices,
                                                                        previous_choices=word_cloud_preferences))
 
-        ready = self._setup_new_word_cloud(word_cloud_preferences)
+        ready = self.setup_new_word_cloud(word_cloud_preferences)
 
         if len(ready) == 0:
             # ready is a dictionary that contains mappings of preference types ('type', 'output_name' etc.) mapped
@@ -980,15 +980,6 @@ class ConvoReader(BaseConvoReader):
     # --------------------------------------   PRINTING CONVERSATION TO CONSOLE   ------------------------------------ #
 
     # -----------------------------------------   WORD CLOUD PRIVATE METHODS   --------------------------------------- #
-
-    @staticmethod
-    def __start_kumo():
-        """Calls the java program, assuming that all conditions are met"""
-        # grabbed from http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
-        # with additions by http://stackoverflow.com/questions/11269575/how-to-hide-output-of-subprocess-in-python-2-7k
-        # devnull = open(os.devnull, mode='w')
-        p = subprocess.Popen("java -jar data/word_clouds/wordclouds.jar", shell=True)
-        sts = os.waitpid(p.pid, 0)
 
     @staticmethod
     def _get_word_cloud_preferences(attributes_to_fns: dict, previous_choices=None):

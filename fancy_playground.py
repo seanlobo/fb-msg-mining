@@ -1,8 +1,11 @@
 import time
+import os
+import sys
 from flask import Flask, redirect, render_template, request, abort
 
 from functions.messagereader import MessageReader
 from functions.guiconvoreader import GUIConvoReader
+from functions.wordcloud import WordCloud
 
 
 app = Flask(__name__)
@@ -30,6 +33,7 @@ def graphs_home():
     return redirect('/graphs/conversation/', code=302)
 
 
+@app.route('/word_clouds/conversation/')
 @app.route('/graphs/conversation/')
 def table():
     sort = 'length'
@@ -122,6 +126,35 @@ def messages_by_time_data(convo_num, contact, window):
 
 # ----------------------------------------------------   GRAPHS   ---------------------------------------------------- #
 
+@app.route('/word_clouds/')
+def word_clouds_home():
+    return redirect('/word_clouds/conversation/', code=302)
+
+
+@app.route('/word_clouds/conversation/<int:convo_num>/', methods=['GET', 'POST'])
+def word_cloud(convo_num):
+    current_convo = load_all_gui(convo_num)
+    if request.method == 'GET':
+        input_word_files = WordCloud.get_input_text_files()
+        excluded_word_files = WordCloud.get_excluded_word_files()
+        image_files = WordCloud.get_image_files()
+        return render_template('word_clouds.html',
+                               excluded_word_files=excluded_word_files,
+                               image_files=image_files,
+                               input_word_files=input_word_files,
+                               excluded_word_path=WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH,
+                               input_word_path=WordCloud.WORD_CLOUD_INPUT_PATH,
+                               image_path=WordCloud.WORD_CLOUD_IMAGE_PATH)
+    else:
+        wc_preferences = {key: val for key, val in request.form.items()}
+        ready = current_convo.setup_new_word_cloud(wc_preferences)
+
+        print(str(ready), file=sys.stderr)
+        if current_convo.ready_for_word_cloud():
+            current_convo.create_word_cloud()
+            return 'created!'
+        else:
+            return str(ready)
 
 # -------------------------------------------------   COMING SOON   ------------------------------------------------- #
 

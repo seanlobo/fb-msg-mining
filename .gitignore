@@ -142,12 +142,14 @@ data.txt
 !index.html
 !table.html
 !coming_soon.html
+!word_clouds.html
 
 # static css files
 !graphs.css
 !bootstrap.min.css
 !home-page.css
 !table.css
+!word_clouds.css
 
 # Resources for web pages
 !down_arrow.png

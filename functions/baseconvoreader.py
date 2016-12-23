@@ -2,6 +2,7 @@ from collections import Counter
 from math import ceil
 import re
 import os
+import subprocess
 
 
 from functions.customdate import CustomDate
@@ -392,6 +393,15 @@ class BaseConvoReader:
     # -----------------------------------------------   PRIVATE METHODS ---------------------------------------------- #
 
     @staticmethod
+    def __start_kumo():
+        """Calls the java program, assuming that all conditions are met"""
+        # grabbed from http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
+        # with additions by http://stackoverflow.com/questions/11269575/how-to-hide-output-of-subprocess-in-python-2-7k
+        # devnull = open(os.devnull, mode='w')
+        p = subprocess.Popen("java -jar data/word_clouds/wordclouds.jar", shell=True)
+        sts = os.waitpid(p.pid, 0)
+
+    @staticmethod
     def list_to_combined_string(list_of_people):
         """Combines a list of people into a single string, converting each perons's name to lowercase, separating
         first/middle/last name(s) with hyphens (-) and various individual's names with underscores (_). Cuts off a
@@ -413,15 +423,19 @@ class BaseConvoReader:
 
         return name + '/'
 
-    def _setup_new_word_cloud(self, preferences):
+    def setup_new_word_cloud(self, preferences):
         """Takes in all the preferences for a word cloud, and writes everything to files"""
         assert 'type' in preferences, "You must pass a type argument"
         assert preferences['type'] in WordCloud.WORD_CLOUD_TYPES, "invalid type, {0} is not in {1}"\
             .format(preferences['type'], WordCloud.WORD_CLOUD_TYPES)
 
-        # Creates wordcloud with directory
+        # sets default values for wc based on type and updates with passed preferences
         wc_type = preferences['type']
-        self._word_cloud = WordCloud(wc_type, preferences)
+        wc_preferences = WordCloud.get_default_preferences(wc_type)
+        wc_preferences.update(preferences)
+
+        # Creates wordcloud with directory
+        self._word_cloud = WordCloud(wc_type, wc_preferences)
         self.save_word_freq(path=WordCloud.WORD_CLOUD_INPUT_PATH)
 
         # Returns the results from verifying settings for this wordcloud
