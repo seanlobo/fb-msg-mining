@@ -118,7 +118,8 @@ class WordCloud:
 
                 'num_text_sets': None,
                 'text_sets': [],
-                'image_names': []
+                'image_sets': [],
+                'color_sets': []
             }
         else:
             raise ValueError("Invalid word cloud type: {}".format(wc_type))
@@ -206,7 +207,7 @@ class WordCloud:
         """Returns a list of fields in word cloud preferences that should be integers"""
         return [
             'min_word_length', 'max_word_length', 'max_font_size', 'min_font_size', 'num_words_to_include',
-            'num_colors'
+            'num_colors', 'num_layers', 'height', 'width'
         ]
 
     @staticmethod
@@ -363,7 +364,7 @@ class WordCloud:
 
     def assert_image_name_for_wc(self, img_name):
         assert isinstance(img_name, str), "image_name should be of type string"
-        if self.__preferences['shape'] == 'image':
+        if self.__preferences['shape'] == 'image' or self.__preferences['type'] == 'layered':
             assert os.path.isfile(img_name), "the specified image file_path does not exist: {}".format(img_name)
         else:
             assert img_name == 'None', (

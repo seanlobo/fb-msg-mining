@@ -91,6 +91,8 @@ class GUIConvoReader(BaseConvoReader):
                 except ValueError:
                     pass
 
+        preferences['dimensions'] = [preferences['width'], preferences['height']]
+
         if 'excluded_words' in preferences and isinstance(preferences['excluded_words'], str):
             if preferences['excluded_words'] == 'None':
                 preferences['excluded_words'] = []
@@ -111,6 +113,23 @@ class GUIConvoReader(BaseConvoReader):
 
         if 'shape' in preferences and preferences['shape'] != 'image':
             preferences['image_name'] = 'None'
+
+        if 'type' in preferences and preferences['type'] == 'layered':
+            num_text_sets = preferences['num_layers']
+            image_sets, text_sets, color_sets = [], [], []
+            for layer in range(1, num_text_sets + 1):
+                num_colors = int(preferences['num_colors{}'.format(layer)])
+                colors = []
+                for i in range(1, num_colors + 1):
+                    colors.append(list(WordCloud.hex_to_rgb(preferences['layer{}_color{}'.format(layer, i)])))
+
+                image_sets.append(preferences['image_name{}'.format(layer)])
+                text_sets.append(preferences['input_words{}'.format(layer)])
+                color_sets.append(colors)
+
+            preferences['image_sets'] = image_sets
+            preferences['text_sets'] = text_sets
+            preferences['color_sets'] = color_sets
 
         return BaseConvoReader.setup_new_word_cloud(self, preferences)
 

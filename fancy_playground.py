@@ -134,6 +134,7 @@ def word_clouds_home():
 @app.route('/word_clouds/conversation/<int:convo_num>/', methods=['GET', 'POST'])
 def word_cloud(convo_num):
     current_convo = load_all_gui(convo_num)
+    current_convo.save_word_freq(path=WordCloud.WORD_CLOUD_INPUT_PATH)  # save conversation files to input dir
     if request.method == 'GET':
         input_word_files = WordCloud.get_input_text_files()
         excluded_word_files = WordCloud.get_excluded_word_files()
@@ -154,7 +155,7 @@ def word_cloud(convo_num):
             current_convo.create_word_cloud()
             return 'created!'
         else:
-            return str(ready)
+            return 'Preferences: {}<br><br>Issues: {}'.format(str(wc_preferences), str(ready))
 
 # -------------------------------------------------   COMING SOON   ------------------------------------------------- #
 

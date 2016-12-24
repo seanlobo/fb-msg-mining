@@ -1,16 +1,18 @@
 <!DOCTYPE HTML>
 <!--
-Design by Gokul Swamy
+Design by Gokul Swamy: http://gok.cool
 -->
 <head>
     <title>FMM - Word Clouds</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab" rel="stylesheet">
     <link href="{{ url_for('static', filename='word_clouds.css') }}" rel="stylesheet">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='resources/favicon.png') }}">
 </head>
 <body>
     <form class="input-set" method="post">
         <p class="title">Create a word cloud!</p>
         <div class="questions">
+            <div class="separator">Types and Shapes</div>
             <div class="word_cloud_type_controller">
                 <p class="question-stem">What kind of cloud do you want?</p>
                 <select class="dropdown" name="type">
@@ -19,7 +21,6 @@ Design by Gokul Swamy
                     <option value="polarity">Polarity</option>
                 </select>
             </div>
-
             <div class="not_layered shape-controller">
                 <p class="question-stem">What shape would you like the word cloud to be?</p>
                 <select class="dropdown" name="shape">
@@ -28,7 +29,6 @@ Design by Gokul Swamy
                     <option value="image">image-overlay</option>
                 </select>
             </div>
-
             <div class="only_default only_image">
                 <p class="question-stem">Which image would you like to use as a background? The cloud will overlay
                     words on all non transparent pixels.</p>
@@ -38,7 +38,44 @@ Design by Gokul Swamy
                     {% endfor %}
                 </select>
             </div>
+            <div class="only_layered num_layer_controller">
+                <p class="question-stem">How many layers would you like? (2-5)</p>
+                <input type="number" value="2" class="field" max="5" min="2" name="num_layers">
+            </div>
+            <div class="only_layered">
+                {% for i in range(1, 6) %}
+                    <div class="separator" data-layer="{{ i }}">Layer {{ i }}</div>
 
+                    <p class="question-stem" data-layer="{{ i }}">Which image would you like to use as a
+                        background of layer {{ i }}?</p>
+                    <select class="dropdown" name="image_name{{ i }}" data-layer="{{ i }}">
+                        {% for file in image_files %}
+                            <option value="{{ image_path + file }}" data-layer="{{ i }}">{{ file }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <p class="question-stem" data-layer="{{ i }}">What text set would you like to use for layer {{ i }}?</p>
+                    <select class="dropdown" name="input_words{{ i }}" data-layer="{{ i }}">
+                        {% for file in input_word_files %}
+                            <option value="{{ input_word_path + file }}" data-layer="{{ i }}">{{ file }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <p class="question-stem" data-layer="{{ i }}">How many colors would you like in layer {{ i }}? (max 5)</p>
+                    <input type="number" value="1" class="field num-colors-layer" max="5" min="1" name="num_colors{{ i }}"
+                    data-layer="{{ i }}">
+                    <p class="question-stem" data-layer="{{ i }}">What colors would you like?</p>
+                    <div class="color-container{{ i }}" data-layer="{{ i }}">
+                        <input type="color" value="#0000FF" class="color" data-color-ind="1" data-layer="{{ i }}" name="layer{{ i }}_color1">
+                        <input type="color" value="#FF0000" class="color" data-color-ind="2" data-layer="{{ i }}" name="layer{{ i }}_color2">
+                        <input type="color" value="#00FF00" class="color" data-color-ind="3" data-layer="{{ i }}" name="layer{{ i }}_color3">
+                        <input type="color" value="#FFFF00" class="color" data-color-ind="4" data-layer="{{ i }}" name="layer{{ i }}_color4">
+                        <input type="color" value="#FF00FF" class="color" data-color-ind="5" data-layer="{{ i }}" name="layer{{ i }}_color5">
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="separator only_default">Word Cloud Data</div>
             <div class="only_default">
                 <p class="question-stem">Which text file would you like to use as input? The (frequency of) the words
                 in this file will be used to create the cloud.</p>
@@ -48,8 +85,6 @@ Design by Gokul Swamy
                     {% endfor %}
                 </select>
             </div>
-
-
             <div class="only_default">
                 <p class="question-stem">Would you like to use any excluded word sets? No words from the file selected
                 will be used in the cloud.</p>
@@ -61,33 +96,30 @@ Design by Gokul Swamy
                 </select>
             </div>
 
-            <p class="question-stem">How many colors would you like in the cloud? (max 5)</p>
-            <input type="number" value="1" class="field num-colors-default" max="5" min="1" name="num_colors">
-
-            <p class="question-stem">What colors would you like?</p>
-            <div class="color-container">
+            <div class="separator not_layered">Dimensions and Styling</div>
+            <div class="separator only_layered">Gobal Dimensions and Styling (applies to all layers)</div>
+            <p class="question-stem only_default">How many colors would you like in the cloud? (max 5)</p>
+            <input type="number" value="1" class="field num-colors-default only_default" max="5" min="1" name="num_colors">
+            <p class="question-stem only_default">What colors would you like?</p>
+            <div class="color-container only_default">
                 <input type="color" value="#0000FF" class="color" data-color-ind="1" name="color1">
                 <input type="color" value="#FF0000" class="color" data-color-ind="2" name="color2">
                 <input type="color" value="#00FF00" class="color" data-color-ind="3" name="color3">
                 <input type="color" value="#FFFF00" class="color" data-color-ind="4" name="color4">
                 <input type="color" value="#FF00FF" class="color" data-color-ind="5" name="color5">
             </div>
-
             <p class="question-stem">What height would you like for the word cloud?</p>
             <input type="number" value="1000" class="field" name="height" min="1" max="10000">
-
             <p class="question-stem">How about the width?</p>
             <input type="number" value="1000" class="field" name="width" min="1" max="10000">
-
             <p class="question-stem">What would you like the maximum font size to be?</p>
             <input type="number" value="50" class="field" name="max_font_size" min="2" max="1000">
-
             <p class="question-stem">How about the minimum font size?</p>
             <input type="number" value="10" class="field" name="min_font_size" min="1" max="999">
-
             <p class="question-stem">How many words would you like to include (at maximum)?</p>
             <input type="number" value="1000" class="field" name="num_words" min="1" max="10000">
 
+            <div class="separator">Output Name</div>
             <div class="png-suffix">
                 <p class="question-stem">What should the output be named?</p>
                 <input type="text" value="current_time.png" class="field" name="output_name">
