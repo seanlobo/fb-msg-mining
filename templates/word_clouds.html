@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <!--
-Design by Gokul Swamy: http://gok.cool
+Page design by Gokul Swamy: http://gok.cool
 -->
 <head>
     <title>FMM - Word Clouds</title>
@@ -62,7 +62,7 @@ Design by Gokul Swamy: http://gok.cool
                     </select>
 
                     <p class="question-stem" data-layer="{{ i }}">How many colors would you like in layer {{ i }}? (max 5)</p>
-                    <input type="number" value="1" class="field num-colors-layer" max="5" min="1" name="num_colors{{ i }}"
+                    <input type="number" value="1" class="field num-colors-layer" max="{{ MAX_COLORS }}" min="1" name="num_colors{{ i }}"
                     data-layer="{{ i }}">
                     <p class="question-stem" data-layer="{{ i }}">What colors would you like?</p>
                     <div class="color-container{{ i }}" data-layer="{{ i }}">
@@ -73,6 +73,43 @@ Design by Gokul Swamy: http://gok.cool
                         <input type="color" value="#FF00FF" class="color" data-color-ind="5" data-layer="{{ i }}" name="layer{{ i }}_color5">
                     </div>
                 {% endfor %}
+            </div>
+
+            <div class="separator only_polarity">Layer 1</div>
+            <p class="question-stem only_polarity">What text set would you like to use for layer 1?</p>
+            <select class="dropdown only_polarity" name="input_words1_polarity">
+                {% for file in input_word_files %}
+                    <option value="{{ input_word_path + file }}">{{ file }}</option>
+                {% endfor %}
+            </select>
+            <p class="question-stem only_polarity">How many colors would you like in layer 1? (max 5)</p>
+            <input type="number" value="1" class="field num-colors-polarity only_polarity" max="{{ MAX_COLORS }}" min="1"
+                   name="num_colors1_polarity" data-polarity="1">
+            <p class="question-stem only_polarity">What colors would you like?</p>
+            <div class="color-container1_polarity only_polarity">
+                <input type="color" value="#0000FF" class="color" data-color-ind="1" name="polarity1_color1" data-polarity="1">
+                <input type="color" value="#FF0000" class="color" data-color-ind="2" name="polarity1_color2" data-polarity="1">
+                <input type="color" value="#00FF00" class="color" data-color-ind="3" name="polarity1_color3" data-polarity="1">
+                <input type="color" value="#FFFF00" class="color" data-color-ind="4" name="polarity1_color4" data-polarity="1">
+                <input type="color" value="#FF00FF" class="color" data-color-ind="5" name="polarity1_color5" data-polarity="1">
+            </div>
+            <div class="separator only_polarity">Layer 2</div>
+            <p class="question-stem only_polarity">What text set would you like to use for layer 2?</p>
+            <select class="dropdown only_polarity" name="input_words2_polarity">
+                {% for file in input_word_files %}
+                    <option value="{{ input_word_path + file }}">{{ file }}</option>
+                {% endfor %}
+            </select>
+            <p class="question-stem only_polarity">How many colors would you like in layer 2? (max 5)</p>
+            <input type="number" value="1" class="field num-colors-polarity only_polarity" max="{{ MAX_COLORS }}" min="1"
+                   name="num_colors2_polarity" data-polarity="2">
+            <p class="question-stem only_polarity">What colors would you like?</p>
+            <div class="color-container1_polarity only_polarity">
+                <input type="color" value="#0000FF" class="color" data-color-ind="1" name="polarity2_color1" data-polarity="2">
+                <input type="color" value="#FF0000" class="color" data-color-ind="2" name="polarity2_color2" data-polarity="2">
+                <input type="color" value="#00FF00" class="color" data-color-ind="3" name="polarity2_color3" data-polarity="2">
+                <input type="color" value="#FFFF00" class="color" data-color-ind="4" name="polarity2_color4" data-polarity="2">
+                <input type="color" value="#FF00FF" class="color" data-color-ind="5" name="polarity2_color5" data-polarity="2">
             </div>
 
             <div class="separator only_default">Word Cloud Data</div>
@@ -99,7 +136,7 @@ Design by Gokul Swamy: http://gok.cool
             <div class="separator not_layered">Dimensions and Styling</div>
             <div class="separator only_layered">Gobal Dimensions and Styling (applies to all layers)</div>
             <p class="question-stem only_default">How many colors would you like in the cloud? (max 5)</p>
-            <input type="number" value="1" class="field num-colors-default only_default" max="5" min="1" name="num_colors">
+            <input type="number" value="1" class="field num-colors-default only_default" max="{{ MAX_COLORS }}" min="1" name="num_colors">
             <p class="question-stem only_default">What colors would you like?</p>
             <div class="color-container only_default">
                 <input type="color" value="#0000FF" class="color" data-color-ind="1" name="color1">

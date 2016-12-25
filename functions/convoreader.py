@@ -342,7 +342,7 @@ class ConvoReader(BaseConvoReader):
         if len(ready) == 0:
             # ready is a dictionary that contains mappings of preference types ('type', 'output_name' etc.) mapped
             # to errors associated with them from checking user values. iff ready is empty is the word cloud created
-            self.__start_kumo()
+            self._start_kumo()
         else:
             print(Fore.LIGHTRED_EX + Back.BLACK + "Word Cloud creation failed due to the following issues:" +
                   Style.RESET_ALL)
@@ -370,7 +370,7 @@ class ConvoReader(BaseConvoReader):
 
         self.save_word_freq(path=WordCloud.WORD_CLOUD_INPUT_PATH)
         if len(self._word_cloud.verify_word_cloud_setup()) == 0:
-            self.__start_kumo()
+            self._start_kumo()
 
     def prettify(self, mode=None, **kwargs):
         """Prettily prints messages to the screen in 3 different modes

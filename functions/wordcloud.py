@@ -176,7 +176,7 @@ class WordCloud:
                 'min_font_size': lambda x: self.assert_font_size(x, 'min'),
                 'output_name': self.assert_output_name_for_wc,
                 'dimensions': self.assert_dimensions_for_wc,
-                'color_sets': lambda x: list(map(self._assert_color_for_wc, x)),
+                'color_sets': lambda x: list(map(self.assert_colors_for_wc, x)),
                 'image_sets': lambda x: list(map(self.assert_image_name_for_wc, x)),
                 'text_sets': self.assert_text_set,
                 'font_type': self.assert_font_type_for_wc,
@@ -207,7 +207,7 @@ class WordCloud:
         """Returns a list of fields in word cloud preferences that should be integers"""
         return [
             'min_word_length', 'max_word_length', 'max_font_size', 'min_font_size', 'num_words_to_include',
-            'num_colors', 'num_layers', 'height', 'width'
+            'num_colors', 'num_layers', 'height', 'width', 'num_colors1_polarity', 'num_colors2_polarity'
         ]
 
     @staticmethod
@@ -306,8 +306,10 @@ class WordCloud:
 
     @staticmethod
     def _assert_color_for_wc(color):
-        assert (isinstance(color, tuple) or isinstance(color, list)) and all(isinstance(ele, int) for ele in color), \
-            "Color must be a tuple (or list) with 3 ints, e.g. (100, 100, 100)"
+        assert (isinstance(color, tuple) or isinstance(color, list)) and all(isinstance(ele, int) for ele in color), (
+            "Color must be a tuple (or list) with 3 ints, e.g. "
+            "(100, 100, 100). Received {}: {}".format(type(color), str(color))
+        )
         assert all(0 <= val <= 255 for val in color), "All rgb values must be between 0 and 255"
 
     @staticmethod
@@ -334,8 +336,12 @@ class WordCloud:
 
     def assert_input_name_for_wc(self, name: str):
         if not os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + 'text.txt'):
-            assert os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + name), "{0} does not exist".format(name)
-            self.freq_to_raw(WordCloud.WORD_CLOUD_INPUT_PATH + name, WordCloud.WORD_CLOUD_INPUT_PATH + 'text.txt')
+            if os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + name):
+                self.freq_to_raw(WordCloud.WORD_CLOUD_INPUT_PATH + name,
+                                 WordCloud.WORD_CLOUD_INPUT_PATH + 'text.txt')
+            else:
+                assert os.path.isfile(name), "{0} does not exist".format(name)
+                self.freq_to_raw(name, WordCloud.WORD_CLOUD_INPUT_PATH + 'text.txt')
 
     def assert_text_set(self, name, set_num=None):
         if set_num is None:
@@ -343,9 +349,13 @@ class WordCloud:
                 self.assert_text_set(name[i - 1], i)
             return
         if not os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + 'text_set{0}.txt'.format(set_num)):
-            assert os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + name), "{0} does not exist".format(name)
-            self.freq_to_raw(WordCloud.WORD_CLOUD_INPUT_PATH + name, WordCloud.WORD_CLOUD_INPUT_PATH +
-                             'text_set{0}.txt'.format(set_num))
+            if os.path.isfile(WordCloud.WORD_CLOUD_INPUT_PATH + name):
+                self.freq_to_raw(WordCloud.WORD_CLOUD_INPUT_PATH + name,
+                                 WordCloud.WORD_CLOUD_INPUT_PATH + 'text_set{0}.txt'.format(set_num))
+            else:
+                assert os.path.isfile(name), "{0} does not exist".format(name)
+                self.freq_to_raw(name, WordCloud.WORD_CLOUD_INPUT_PATH +
+                                 'text_set{0}.txt'.format(set_num))
 
     def assert_font_size(self, value, min_or_max):
         assert min_or_max in ['min', 'max'], "Must pass a min_or_max in ['min', 'max']"
@@ -364,7 +374,7 @@ class WordCloud:
 
     def assert_image_name_for_wc(self, img_name):
         assert isinstance(img_name, str), "image_name should be of type string"
-        if self.__preferences['shape'] == 'image' or self.__preferences['type'] == 'layered':
+        if self.__preferences.get('shape') == 'image' or self.__preferences.get('type') == 'layered':
             assert os.path.isfile(img_name), "the specified image file_path does not exist: {}".format(img_name)
         else:
             assert img_name == 'None', (
@@ -378,7 +388,7 @@ class WordCloud:
 
     @staticmethod
     def hex_to_rgb(value):
-        """Return (red, green, blue) for the color given as #rrggbb.
+        """Return (red, green, blue) for the color given as a hex string '#rrggbb'.
         http://stackoverflow.com/a/214657/6587177
         """
         value = value.lstrip('#')

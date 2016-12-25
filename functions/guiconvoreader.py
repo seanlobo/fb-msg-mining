@@ -131,6 +131,18 @@ class GUIConvoReader(BaseConvoReader):
             preferences['text_sets'] = text_sets
             preferences['color_sets'] = color_sets
 
+        elif 'type' in preferences and preferences['type'] == 'polarity':
+            color1, color2 = [], []
+            for i in range(1, preferences['num_colors1_polarity'] + 1):
+                color1.append(list(WordCloud.hex_to_rgb(preferences['polarity1_color{}'.format(str(i))])))
+            for i in range(1, preferences['num_colors2_polarity'] + 1):
+                color2.append(list(WordCloud.hex_to_rgb(preferences['polarity2_color{}'.format(str(i))])))
+
+            preferences['color_set_1'] = color1
+            preferences['color_set_2'] = color2
+            preferences['text_set_1'] = preferences['input_words1_polarity']
+            preferences['text_set_2'] = preferences['input_words2_polarity']
+
         return BaseConvoReader.setup_new_word_cloud(self, preferences)
 
     def ready_for_word_cloud(self):

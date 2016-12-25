@@ -393,7 +393,7 @@ class BaseConvoReader:
     # -----------------------------------------------   PRIVATE METHODS ---------------------------------------------- #
 
     @staticmethod
-    def __start_kumo():
+    def _start_kumo():
         """Calls the java program, assuming that all conditions are met"""
         # grabbed from http://stackoverflow.com/questions/438594/how-to-call-java-objects-and-functions-from-cpython
         # with additions by http://stackoverflow.com/questions/11269575/how-to-hide-output-of-subprocess-in-python-2-7k
