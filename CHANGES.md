@@ -1,5 +1,9 @@
 # Change Log
 
+## 2016-12-27: v1.3.0
+* Web Browser Updates:
+  * Add word cloud creation UI
+
 ## 2016-09-12: v1.2.7
 * Web Browser Updates:
   * Switch to Nunito Font
