@@ -431,11 +431,14 @@ class BaseConvoReader:
 
         # sets default values for wc based on type and updates with passed preferences
         wc_type = preferences['type']
-        wc_preferences = WordCloud.get_default_preferences(wc_type)
-        wc_preferences.update(preferences)
+        default = WordCloud.get_default_preferences(wc_type)
+        for key, val in list(default.items()):
+            if key in preferences:
+                default[key] = preferences[key]
+        preferences = default
 
         # Creates wordcloud with directory
-        self._word_cloud = WordCloud(wc_type, wc_preferences)
+        self._word_cloud = WordCloud(wc_type, preferences)
         self.save_word_freq(path=WordCloud.WORD_CLOUD_INPUT_PATH)
 
         # Returns the results from verifying settings for this wordcloud

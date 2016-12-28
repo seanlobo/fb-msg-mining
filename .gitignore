@@ -143,6 +143,7 @@ data.txt
 !table.html
 !coming_soon.html
 !word_clouds.html
+!word_cloud_result.html
 
 # static css files
 !graphs.css

@@ -9,6 +9,9 @@ from functions.wordcloud import WordCloud
 
 
 class GUIConvoReader(BaseConvoReader):
+    MAX_NUM_LAYERS = 5
+    MAX_NUM_COLORS = 5
+
     def __init__(self, convo_name, convo_list, download_date, emojify=False):
         BaseConvoReader.__init__(self, convo_name, convo_list, 'gui', emojify=emojify)  # default value of gui for rank
         self._last_day = download_date
@@ -82,9 +85,41 @@ class GUIConvoReader(BaseConvoReader):
             if p == person:
                 return i + 1
 
+    @staticmethod
+    def integer_fields():
+        """Returns a list of fields in word cloud preferences that should be integers"""
+        return [
+            'min_word_length', 'max_word_length', 'max_font_size', 'min_font_size', 'num_words_to_include',
+            'num_colors', 'num_layers', 'height', 'width', 'num_colors1_polarity', 'num_colors2_polarity',
+            'num_words_to_include'
+        ]
+
+    @staticmethod
+    def removable_fields():
+        """Returns a list of fields from the html form that aren't needed for word_cloud creation"""
+        removable = [
+            'height', 'width', 'input_words', 'input_words1_polarity', 'input_words2_polarity', 'num_colors',
+            'num_colors1_polarity', 'num_colors2_polarity', 'num_text_sets', 'num_layers'
+        ]
+
+        # add in variables for colors and layers
+        for col_ind in range(1, GUIConvoReader.MAX_NUM_COLORS + 1):
+            removable.append('color{}'.format(str(col_ind)))
+            removable.append('polarity1_color{}'.format(str(col_ind)))
+            removable.append('polarity2_color{}'.format(str(col_ind)))
+        for layer_ind in range(1, GUIConvoReader.MAX_NUM_LAYERS + 1):
+            removable.append('image_name{}'.format(str(layer_ind)))
+            removable.append('input_words{}'.format(str(layer_ind)))
+            removable.append('num_colors{}'.format(str(layer_ind)))
+        for layer_ind in range(1, GUIConvoReader.MAX_NUM_LAYERS + 1):
+            for col_ind in range(1, GUIConvoReader.MAX_NUM_COLORS + 1):
+                removable.append("layer{layer}_color{color}".format(layer=str(layer_ind), color=str(col_ind)))
+
+        return removable
+
     def setup_new_word_cloud(self, preferences):
         """Cleans up data from html form to work with kumo"""
-        for key in WordCloud.integer_fields():
+        for key in self.integer_fields():
             if key in preferences and isinstance(preferences[key], str):
                 try:
                     preferences[key] = int(preferences[key])
@@ -99,7 +134,7 @@ class GUIConvoReader(BaseConvoReader):
             else:
                 preferences['excluded_words'] = [preferences['excluded_words']]
 
-        num_colors = preferences.get('num_colors')
+        num_colors = preferences['num_colors']
         if num_colors is not None:
             colors = []
             for i in range(1, num_colors + 1):
@@ -111,10 +146,10 @@ class GUIConvoReader(BaseConvoReader):
         if 'output_name' in preferences and preferences['output_name'] == 'current_time.png':
             preferences['output_name'] = WordCloud.DEFAULT_OUTPUT_NAME
 
-        if 'shape' in preferences and preferences['shape'] != 'image':
+        if preferences.get('shape') != 'image':
             preferences['image_name'] = 'None'
 
-        if 'type' in preferences and preferences['type'] == 'layered':
+        if preferences.get('type') == 'layered':
             num_text_sets = preferences['num_layers']
             image_sets, text_sets, color_sets = [], [], []
             for layer in range(1, num_text_sets + 1):
@@ -131,7 +166,7 @@ class GUIConvoReader(BaseConvoReader):
             preferences['text_sets'] = text_sets
             preferences['color_sets'] = color_sets
 
-        elif 'type' in preferences and preferences['type'] == 'polarity':
+        elif preferences.get('type') == 'polarity':
             color1, color2 = [], []
             for i in range(1, preferences['num_colors1_polarity'] + 1):
                 color1.append(list(WordCloud.hex_to_rgb(preferences['polarity1_color{}'.format(str(i))])))
@@ -142,6 +177,11 @@ class GUIConvoReader(BaseConvoReader):
             preferences['color_set_2'] = color2
             preferences['text_set_1'] = preferences['input_words1_polarity']
             preferences['text_set_2'] = preferences['input_words2_polarity']
+
+        # remove unnecessary fields from preferences
+        for key in self.removable_fields():
+            if key in preferences:
+                del preferences[key]
 
         return BaseConvoReader.setup_new_word_cloud(self, preferences)
 

@@ -1,0 +1,10 @@
+<!DOCTYPE HTML>
+<head>
+    <title>FMM - Word Clouds</title>
+    <link href="{{ url_for('static', filename='word_clouds.css') }}" rel="stylesheet">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='resources/favicon.png') }}">
+</head>
+<body>
+    <img src="{{ url_for('static', filename='resources/wc_output/' + cloud) }}"
+         style="margin: 10px auto; display: block;">
+</body>

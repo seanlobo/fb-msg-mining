@@ -1,6 +1,7 @@
 import os
 import shutil
 import json
+import glob
 
 
 class WordCloud:
@@ -48,6 +49,18 @@ class WordCloud:
         self.setup_word_cloud_starter_files()
 
     @staticmethod
+    def newest_file(path=WORD_CLOUD_OUTPUT_PATH, suffix='.png', strip_output=False):
+        """Returns the newest created file in the directory
+        http://stackoverflow.com/a/34551233/6587177
+        """
+
+        file = max(glob.iglob('{}*{}'.format(path, suffix)), key=os.path.getctime)
+        if strip_output:
+            return file.replace(path, '')
+        return file
+
+
+    @staticmethod
     def get_excluded_word_files():
         return [f for f in os.listdir(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH)
                 if os.path.isfile(os.path.join(WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH, f))]
@@ -85,6 +98,7 @@ class WordCloud:
                 'font_type': WordCloud.DEFAULT_FONT_TYPE,
                 'colors': WordCloud.DEFAULT_COLORS,
                 'shape': WordCloud.DEFAULT_SHAPE,
+                'type': wc_type,
             }
         elif wc_type == 'polarity':
             return {
@@ -103,6 +117,7 @@ class WordCloud:
                 'image_name': WordCloud.DEFAULT_IMAGE_NAME,
                 'font_type': WordCloud.DEFAULT_FONT_TYPE,
                 'shape': WordCloud.DEFAULT_SHAPE,
+                'type': wc_type,
             }
         elif wc_type == 'layered':
             return {
@@ -115,6 +130,7 @@ class WordCloud:
                 'output_name': WordCloud.DEFAULT_OUTPUT_NAME,
                 'dimensions': WordCloud.DEFAULT_DIMENSIONS,
                 'font_type': WordCloud.DEFAULT_FONT_TYPE,
+                'type': wc_type,
 
                 'num_text_sets': None,
                 'text_sets': [],
@@ -201,14 +217,6 @@ class WordCloud:
 
     def ready(self):
         return self.__safe_to_save
-
-    @staticmethod
-    def integer_fields():
-        """Returns a list of fields in word cloud preferences that should be integers"""
-        return [
-            'min_word_length', 'max_word_length', 'max_font_size', 'min_font_size', 'num_words_to_include',
-            'num_colors', 'num_layers', 'height', 'width', 'num_colors1_polarity', 'num_colors2_polarity'
-        ]
 
     @staticmethod
     def freq_to_raw(freqs: str, output: str, key=lambda x: True, min_occurence=5):

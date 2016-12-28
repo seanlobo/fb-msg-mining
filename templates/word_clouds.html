@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <!--
-Page design by Gokul Swamy: http://gok.cool
+Page styling by Gokul Swamy: http://gok.cool
 -->
 <head>
     <title>FMM - Word Clouds</title>
@@ -9,9 +9,14 @@ Page design by Gokul Swamy: http://gok.cool
     <link rel="shortcut icon" href="{{ url_for('static', filename='resources/favicon.png') }}">
 </head>
 <body>
+    <!-- DATA FROM FLASK IN DUMMY HTML FOR JAVASCRIPT USAGE -->
+    <input id="max_colors" value="{{ MAX_COLORS }}" style="display: none;">
+    <input id="max_layers" value="{{ MAX_LAYERS}}" style="display: none;">
+
     <form class="input-set" method="post">
         <p class="title">Create a word cloud!</p>
         <div class="questions">
+            <!-- First chunk of form - Types and Shapes centric data -->
             <div class="separator">Types and Shapes</div>
             <div class="word_cloud_type_controller">
                 <p class="question-stem">What kind of cloud do you want?</p>
@@ -38,8 +43,10 @@ Page design by Gokul Swamy: http://gok.cool
                     {% endfor %}
                 </select>
             </div>
+
+            <!-- type: "layered" form elements -->
             <div class="only_layered num_layer_controller">
-                <p class="question-stem">How many layers would you like? (2-5)</p>
+                <p class="question-stem">How many layers would you like? (2-{{ MAX_LAYERS }})</p>
                 <input type="number" value="2" class="field" max="5" min="2" name="num_layers">
             </div>
             <div class="only_layered">
@@ -62,7 +69,7 @@ Page design by Gokul Swamy: http://gok.cool
                     </select>
 
                     <p class="question-stem" data-layer="{{ i }}">How many colors would you like in layer {{ i }}? (max 5)</p>
-                    <input type="number" value="1" class="field num-colors-layer" max="{{ MAX_COLORS }}" min="1" name="num_colors{{ i }}"
+                    <input type="number" value="1" class="field num-colors" max="{{ MAX_COLORS }}" min="1" name="num_colors{{ i }}"
                     data-layer="{{ i }}">
                     <p class="question-stem" data-layer="{{ i }}">What colors would you like?</p>
                     <div class="color-container{{ i }}" data-layer="{{ i }}">
@@ -75,6 +82,7 @@ Page design by Gokul Swamy: http://gok.cool
                 {% endfor %}
             </div>
 
+            <!-- Type: "polarity" form elements -->
             <div class="separator only_polarity">Layer 1</div>
             <p class="question-stem only_polarity">What text set would you like to use for layer 1?</p>
             <select class="dropdown only_polarity" name="input_words1_polarity">
@@ -83,7 +91,7 @@ Page design by Gokul Swamy: http://gok.cool
                 {% endfor %}
             </select>
             <p class="question-stem only_polarity">How many colors would you like in layer 1? (max 5)</p>
-            <input type="number" value="1" class="field num-colors-polarity only_polarity" max="{{ MAX_COLORS }}" min="1"
+            <input type="number" value="1" class="field num-colors only_polarity" max="{{ MAX_COLORS }}" min="1"
                    name="num_colors1_polarity" data-polarity="1">
             <p class="question-stem only_polarity">What colors would you like?</p>
             <div class="color-container1_polarity only_polarity">
@@ -101,7 +109,7 @@ Page design by Gokul Swamy: http://gok.cool
                 {% endfor %}
             </select>
             <p class="question-stem only_polarity">How many colors would you like in layer 2? (max 5)</p>
-            <input type="number" value="1" class="field num-colors-polarity only_polarity" max="{{ MAX_COLORS }}" min="1"
+            <input type="number" value="1" class="field num-colors only_polarity" max="{{ MAX_COLORS }}" min="1"
                    name="num_colors2_polarity" data-polarity="2">
             <p class="question-stem only_polarity">What colors would you like?</p>
             <div class="color-container1_polarity only_polarity">
@@ -112,6 +120,7 @@ Page design by Gokul Swamy: http://gok.cool
                 <input type="color" value="#FF00FF" class="color" data-color-ind="5" name="polarity2_color5" data-polarity="2">
             </div>
 
+            <!-- Data form elements -->
             <div class="separator only_default">Word Cloud Data</div>
             <div class="only_default">
                 <p class="question-stem">Which text file would you like to use as input? The (frequency of) the words
@@ -133,10 +142,11 @@ Page design by Gokul Swamy: http://gok.cool
                 </select>
             </div>
 
+            <!-- Styling form elements -->
             <div class="separator not_layered">Dimensions and Styling</div>
             <div class="separator only_layered">Gobal Dimensions and Styling (applies to all layers)</div>
             <p class="question-stem only_default">How many colors would you like in the cloud? (max 5)</p>
-            <input type="number" value="1" class="field num-colors-default only_default" max="{{ MAX_COLORS }}" min="1" name="num_colors">
+            <input type="number" value="1" class="field num-colors only_default" max="{{ MAX_COLORS }}" min="1" name="num_colors">
             <p class="question-stem only_default">What colors would you like?</p>
             <div class="color-container only_default">
                 <input type="color" value="#0000FF" class="color" data-color-ind="1" name="color1">
@@ -145,17 +155,18 @@ Page design by Gokul Swamy: http://gok.cool
                 <input type="color" value="#FFFF00" class="color" data-color-ind="4" name="color4">
                 <input type="color" value="#FF00FF" class="color" data-color-ind="5" name="color5">
             </div>
-            <p class="question-stem">What height would you like for the word cloud?</p>
-            <input type="number" value="1000" class="field" name="height" min="1" max="10000">
-            <p class="question-stem">How about the width?</p>
-            <input type="number" value="1000" class="field" name="width" min="1" max="10000">
+            <p class="question-stem">What width would you like for the word cloud?</p>
+            <input type="number" value="750" class="field" name="width" min="1" max="10000">
+            <p class="question-stem">How about the height?</p>
+            <input type="number" value="750" class="field" name="height" min="1" max="10000">
             <p class="question-stem">What would you like the maximum font size to be?</p>
             <input type="number" value="50" class="field" name="max_font_size" min="2" max="1000">
             <p class="question-stem">How about the minimum font size?</p>
             <input type="number" value="10" class="field" name="min_font_size" min="1" max="999">
             <p class="question-stem">How many words would you like to include (at maximum)?</p>
-            <input type="number" value="1000" class="field" name="num_words" min="1" max="10000">
+            <input type="number" value="1000" class="field" name="num_words_to_include" min="1" max="10000">
 
+            <!-- Output name -->
             <div class="separator">Output Name</div>
             <div class="png-suffix">
                 <p class="question-stem">What should the output be named?</p>

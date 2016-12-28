@@ -147,17 +147,23 @@ def word_cloud(convo_num):
                                excluded_word_path=WordCloud.WORD_CLOUD_EXCLUDED_WORDS_PATH,
                                input_word_path=WordCloud.WORD_CLOUD_INPUT_PATH,
                                image_path=WordCloud.WORD_CLOUD_IMAGE_PATH,
-                               MAX_COLORS=5)
+                               MAX_COLORS=GUIConvoReader.MAX_NUM_COLORS,
+                               MAX_LAYERS=GUIConvoReader.MAX_NUM_LAYERS)
     else:
         wc_preferences = {key: val for key, val in request.form.items()}
         ready = current_convo.setup_new_word_cloud(wc_preferences)
-
-        print(str(ready), file=sys.stderr)
         if current_convo.ready_for_word_cloud():
             current_convo.create_word_cloud()
-            return 'created!'
+            return redirect('/word_clouds/conversation/{convo_num}/result'.format(convo_num=convo_num))
         else:
             return 'Preferences: {}<br><br>Issues: {}'.format(str(wc_preferences), str(ready))
+
+
+@app.route('/word_clouds/conversation/<int:convo_num>/result/')
+def word_cloud_result(convo_num):
+    current_convo = load_all_gui(convo_num)
+    cloud_path = WordCloud.newest_file(strip_output=True)
+    return render_template('word_cloud_result.html', cloud=cloud_path)
 
 # -------------------------------------------------   COMING SOON   ------------------------------------------------- #
 
