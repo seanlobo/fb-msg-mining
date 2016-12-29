@@ -2,6 +2,7 @@ import os
 import shutil
 import json
 import glob
+from PIL import Image
 
 
 class WordCloud:
@@ -59,6 +60,13 @@ class WordCloud:
             return file.replace(path, '')
         return file
 
+    @staticmethod
+    def get_image_size(fname):
+        try:
+            with Image.open(fname) as image:
+                return image.size
+        except OSError:
+            return 0, 0
 
     @staticmethod
     def get_excluded_word_files():

@@ -1,8 +1,15 @@
 /* Page design by Gokul Swamy: http://gok.cool */
+@font-face {
+    font-family: "Nunito-Light";
+    src: url("resources/nunito/Nunito-Light.ttf");
+}
+
 body {
     max-width: 1100px;
     margin: 10px auto;
+    font-family: "Nunito-Light";
 }
+
 input.hide {
     display: none;
 }

@@ -5,6 +5,7 @@ Page styling by Gokul Swamy: http://gok.cool
 <head>
     <title>FMM - Word Clouds</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lightbox.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='word_clouds.css') }}" rel="stylesheet">
     <link rel="shortcut icon" href="{{ url_for('static', filename='resources/favicon.png') }}">
 </head>
@@ -12,6 +13,13 @@ Page styling by Gokul Swamy: http://gok.cool
     <!-- DATA FROM FLASK IN DUMMY HTML FOR JAVASCRIPT USAGE -->
     <input id="max_colors" value="{{ MAX_COLORS }}" style="display: none;">
     <input id="max_layers" value="{{ MAX_LAYERS}}" style="display: none;">
+
+    {% for item in image_files|dictsort %}
+        <div data-image-name="{{ image_path + item[0] }}"
+             data-width="{{ item[1][0] }}"
+             data-height="{{ item[1][1] }}" style="display: none;"></div>
+    {% endfor %}
+
 
     <form class="input-set" method="post">
         <p class="title">Create a word cloud!</p>
@@ -37,9 +45,20 @@ Page styling by Gokul Swamy: http://gok.cool
             <div class="only_default only_image">
                 <p class="question-stem">Which image would you like to use as a background? The cloud will overlay
                     words on all non transparent pixels.</p>
-                <select class="dropdown" name="image_name">
-                    {% for file in image_files %}
-                        <option value="{{ image_path + file }}">{{ file }}</option>
+                <div>
+                    {% for item in image_files|dictsort %}
+                        <a href="{{ url_for('static', filename='resources/wc_backgrounds/' + item[0]) }}"
+                           data-lightbox="background-images"
+                           data-title="{{ item[0] + '   ({}, {})'.format(item[1][0], item[1][1]) }}">
+                            <img src="{{ url_for('static', filename='resources/wc_backgrounds/' + item[0]) }}"
+                            width="100" style="display: none;" data-img="{{ image_path + item[0] }}"></a>
+                    {% endfor %}
+                </div>
+                <select class="dropdown" id="only-image-choice" name="image_name">
+                    {% for item in image_files|dictsort %}
+                        <option value="{{ image_path + item[0] }}">
+                            {{ item[0] + '   ({}, {})'.format(item[1][0], item[1][1]) }}
+                        </option>
                     {% endfor %}
                 </select>
             </div>
@@ -56,8 +75,8 @@ Page styling by Gokul Swamy: http://gok.cool
                     <p class="question-stem" data-layer="{{ i }}">Which image would you like to use as a
                         background of layer {{ i }}?</p>
                     <select class="dropdown" name="image_name{{ i }}" data-layer="{{ i }}">
-                        {% for file in image_files %}
-                            <option value="{{ image_path + file }}" data-layer="{{ i }}">{{ file }}</option>
+                        {% for item in image_files|dictsort %}
+                            <option value="{{ image_path + item[0] }}">{{ item[0] }}</option>
                         {% endfor %}
                     </select>
 
@@ -156,9 +175,9 @@ Page styling by Gokul Swamy: http://gok.cool
                 <input type="color" value="#FF00FF" class="color" data-color-ind="5" name="color5">
             </div>
             <p class="question-stem">What width would you like for the word cloud?</p>
-            <input type="number" value="750" class="field" name="width" min="1" max="10000">
+            <input type="number" value="750" class="field" name="width" id="width" min="1" max="10000">
             <p class="question-stem">How about the height?</p>
-            <input type="number" value="750" class="field" name="height" min="1" max="10000">
+            <input type="number" value="750" class="field" name="height" id="height" min="1" max="10000">
             <p class="question-stem">What would you like the maximum font size to be?</p>
             <input type="number" value="50" class="field" name="max_font_size" min="2" max="1000">
             <p class="question-stem">How about the minimum font size?</p>
@@ -173,10 +192,12 @@ Page styling by Gokul Swamy: http://gok.cool
                 <input type="text" value="current_time.png" class="field" name="output_name">
             </div>
 
-            <input type="submit" value="👍" class="bottom-button" style="margin-top: 80px;">
+            <input id="submit" type="submit" value="👍" class="bottom-button" style="margin-top: 80px;">
         </div>
     </form>
+    <h1 style="margin: auto; text-align: center; display: none;">Creating word cloud!</h1>
 
     <script src="{{ url_for('static', filename='jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='lightbox.min.js') }}"></script>
     <script src="{{ url_for('static', filename='word_clouds.js') }}"></script>
 </body>

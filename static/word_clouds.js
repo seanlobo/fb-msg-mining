@@ -31,6 +31,7 @@ $(document).ready(function() {
     $('.shape-controller select').change(function () {
  	    if ($(this).val() == "image") {
  	        $(".only_image").fadeIn(750);
+ 	        $("#only-image-choice").trigger("change");
  	    } else {
  	        $(".only_image").fadeOut(1000);
  	    }
@@ -116,6 +117,32 @@ $(document).ready(function() {
             }
         }, 1);
 	});
+
+
+//	Setting height/width for image clouds and showing preview image
+    $("#only-image-choice").change(function () {
+        var divData = $("div[data-image-name='" + $(this).val() + "']");
+
+        $(".only_default.only_image img").hide();
+        $(".only_default.only_image img[data-img='" + $(this).val() + "']").show();
+
+        var width = parseInt(divData.data("width"));
+        var height = parseInt(divData.data("height"));
+
+
+        $("#width").val(width);
+        $("#height").val(height);
+
+    });
+
+
+    $("#submit").click(function () {
+        if (parseInt($("#width").val()) > 0 && parseInt($("#height").val()) > 0) {
+            $("form").fadeOut(3000);
+            $("h1").fadeIn(6000);
+        }
+    });
+
 
 
 //  On page load hiding

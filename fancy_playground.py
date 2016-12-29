@@ -139,7 +139,8 @@ def word_cloud(convo_num):
     if request.method == 'GET':
         input_word_files = WordCloud.get_input_text_files()
         excluded_word_files = WordCloud.get_excluded_word_files()
-        image_files = WordCloud.get_image_files()
+        image_files = {file: WordCloud.get_image_size(WordCloud.WORD_CLOUD_IMAGE_PATH + file)
+                       for file in WordCloud.get_image_files()}
         return render_template('word_clouds.html',
                                excluded_word_files=excluded_word_files,
                                image_files=image_files,
