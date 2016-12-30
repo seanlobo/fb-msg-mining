@@ -2,7 +2,6 @@ import json
 import os
 import subprocess
 
-
 from functions.customdate import CustomDate
 from functions.baseconvoreader import BaseConvoReader
 from functions.wordcloud import WordCloud
@@ -12,8 +11,8 @@ class GUIConvoReader(BaseConvoReader):
     MAX_NUM_LAYERS = 5
     MAX_NUM_COLORS = 5
 
-    def __init__(self, convo_name, convo_list, download_date, emojify=False):
-        BaseConvoReader.__init__(self, convo_name, convo_list, 'gui', emojify=emojify)  # default value of gui for rank
+    def __init__(self, convo_name, convo_list, download_date):
+        BaseConvoReader.__init__(self, convo_name, convo_list, 'gui')  # default value of gui for rank
         self._last_day = download_date
 
         self.people_by_messages = sorted(self.get_people(), key=lambda x: self.raw_messages(x), reverse=True)

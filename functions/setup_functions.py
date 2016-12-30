@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 import textwrap
+import json
 from bs4 import BeautifulSoup
 from colorama import init, Fore, Back, Style
 
@@ -161,7 +162,7 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
                 # the current message group, both in RED with a BLACK background
 
                 print(are_same_color + "\nAre these two chunks from the same conversation? You might have "
-                                       "to look this up on facebook.com. [Y/n]" + Style.RESET_ALL)
+                                       "to look this up on facebook.com/messages [Y/n]" + Style.RESET_ALL)
 
                 are_same = user_says_yes()
                 # User input for whether the two message groups are in the same conversation
@@ -233,7 +234,12 @@ def get_all_msgs_dict(msg_html_path, unordered_threads, footer, times):
     # This timing counts the time that user input starts, as there can be a lag before
     times.append(time.time())  # Background setup done
     print('\n' + one_line() + '\n')
-    input("Press enter when you're ready to continue to user input: \n")
+    input_text = (
+        "Press enter when you're ready to continue to user input: (Consider making your terminal full screen to "
+        "easier read the messages printed)\n"
+    )
+    input_text = textwrap.fill(input_text, width=min(shutil.get_terminal_size().columns, 150))
+    input(input_text)
     # this time is user input prompt time
     times.append(time.time())  # User selection is starting
 
@@ -306,6 +312,15 @@ def clean_convo_name(name, split_factor=', ') -> str:
     return split_factor.join(sorted(name.split(split_factor)))
 
 
+def data_as_json(msgs, footer, preferences):
+    all_data = {
+        'conversation_data': msgs,
+        'footer': footer,
+        'preferences': preferences
+    }
+    return json.dumps(all_data)
+
+
 class PreferencesSearcher:
     QUALITIES = ['alpha', 'length', 'contacted']
 
@@ -343,8 +358,8 @@ class PreferencesSearcher:
         for i, entry in enumerate(by_recently_contacted):
             date = entry[1][-1][2]
             name = entry[0]
-            by_recent_dict[i + 1] = (name, date)
-            by_recent_dict[name] = (i + 1, date)
+            by_recent_dict[str(i + 1)] = (name, date)
+            by_recent_dict[name] = (str(i + 1), date)
         preferences['contacted'] = by_recent_dict
 
         return cls(preferences)
@@ -356,7 +371,7 @@ class PreferencesSearcher:
             .format(str(PreferencesSearcher.QUALITIES))
         assert value in [True, False], "value must be a boolean"
 
-        data = self.preferences[quality][index]
+        data = self.preferences[quality][str(index)]
         if value:
             return data[1]
         else:

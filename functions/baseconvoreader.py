@@ -4,7 +4,6 @@ import re
 import os
 import subprocess
 
-
 from functions.customdate import CustomDate
 import functions.emojis as emojis
 from functions.wordcloud import WordCloud
@@ -15,17 +14,13 @@ class BaseConvoReader:
 
     BASE_PATH = 'data/conversation_data/'
 
-    def __init__(self, convo_name, convo_list, rank, emojify=True):
+    def __init__(self, convo_name, convo_list, rank):
         """Parameters:
             convo_name: A string for the conversation name, found in your facebook archive
-            convo)list: A 2D list with inner lists of the format [person_name (str), message (str), date-time (str)]
-            emojify: A boolean, whether to convert python src encodings for emojis in message to unicode
+            convo_list: A 2D list with inner lists of the format [person_name (str), message (str), date-time (str)]
         """
         self._name = convo_name.lower()
-        if emojify:
-            self._convo = [[name.lower(), emojis.emojify(msg), CustomDate(date)] for name, msg, date in convo_list]
-        else:
-            self._convo = [[name.lower(), msg, CustomDate(date)] for name, msg, date in convo_list]
+        self._convo = [[name.lower(), msg, CustomDate(date)] for name, msg, date in convo_list]
         self._people = self.get_people()
         self._kicked_or_left = [person for person in self._people if person not in self._name.split(', ')]
         self._individual_words = self._cleaned_word_freqs()

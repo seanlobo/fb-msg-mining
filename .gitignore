@@ -113,6 +113,7 @@ activate
 # my extra files that I don't want
 misc.
 *.txt
+*.json
 !requirements.txt
 *.htm
 *html
@@ -122,13 +123,12 @@ test.py
 facebook*
 temp.py
 testing
-!msgs_over_time.html
 tmp.py
 
 conversation_data
 output
 wordClouds
-data.txt
+!bower.json
 
 # Word Cloud stuff
 *.bmp

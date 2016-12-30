@@ -5,11 +5,13 @@ import random
 import ast
 import inspect
 import re
+import json
+
 from colorama import Fore, Back, Style, init
 
-
-from functions.setup_functions import (PreferencesSearcher, clear_screen, user_says_yes, fit_colored_text_to_console,
-                                       one_line)
+from functions.setup_functions import (
+    PreferencesSearcher, clear_screen, user_says_yes, fit_colored_text_to_console, one_line, data_as_json
+)
 from functions.baseconvoreader import BaseConvoReader
 from functions.convoreader import ConvoReader, color_method, get_user_choice_from_range
 from functions.guiconvoreader import GUIConvoReader
@@ -21,23 +23,27 @@ init(autoreset=True)
 class MessageReader:
 
     def __init__(self, preload_conversations=False):
-        with open('data/data.txt', mode='r', encoding='UTF8') as f:
+        with open('data/data.json', mode='r', encoding='UTF8') as f:
             try:
-                self.data = ast.literal_eval(f.readline())
-                self.download = f.readline()
-
-                tmp_preference = ast.literal_eval(f.readline())
-                tmp_contacted = tmp_preference['contacted']
-                new_contacted = dict()
-                for key, val in tmp_contacted.items():
-                    new_contacted[key] = (val[0], CustomDate(val[1]))
-                tmp_preference['contacted'] = new_contacted
-
-                self.quick_stats = PreferencesSearcher(tmp_preference)
+                all_data = f.read()
             except Exception as e:
                 print(Fore.LIGHTRED_EX + Back.BLACK + "An error occurred when reading in your data file. Please make "
                                                       "sure setup.py finished properly" + Style.RESET_ALL)
                 raise e
+
+        all_data = json.loads(all_data)
+        self.data = all_data['conversation_data']
+        self.download = all_data['footer']
+
+        tmp_preference = all_data['preferences']
+        tmp_contacted = tmp_preference['contacted']
+        new_contacted = dict()
+        for key, val in tmp_contacted.items():
+            new_contacted[key] = (val[0], CustomDate(val[1]))
+        tmp_preference['contacted'] = new_contacted
+
+        self.quick_stats = PreferencesSearcher(tmp_preference)
+
         self.names = self._get_convo_names_freq()
         self.person = " ".join(self.download.split(' ')[2:-8])
         self.download_date = CustomDate(" ".join(self.download.split()[-7:]))
@@ -319,10 +325,9 @@ class MessageReader:
             if os.path.isfile(path):
                 shutil.rmtree(path)
 
-        with open('data/data.txt', mode='w', encoding='utf-8') as f:
-            f.write(repr(self.data) + '\n')
-            f.write(self.download)
-            f.write(str(PreferencesSearcher.from_msgs_dict(self.data).preferences))
+        data = data_as_json(self.data, self.download, PreferencesSearcher.from_msgs_dict(self.data).preferences)
+        with open('data/data.json', mode='w', encoding='utf-8') as f:
+            f.write(data)
 
     def save_subset_of_data(self, conversation_names, file_name, skip_messages=False):
         """Saves to a file the data for the conversations specified
@@ -364,10 +369,10 @@ class MessageReader:
             download = self.download
             quick_settings = PreferencesSearcher.from_msgs_dict(new_data)
 
+            writable_data = data_as_json(new_data, download, quick_settings)
+
             with open(file_name, mode='w', encoding='utf-8') as f:
-                f.write(str(new_data) + '\n')
-                f.write(download)
-                f.write(str(quick_settings.preferences))
+                f.write(writable_data)
         except AssertionError as e:
             print(e)
             return
