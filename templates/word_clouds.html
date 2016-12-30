@@ -74,7 +74,16 @@ Page styling by Gokul Swamy: http://gok.cool
 
                     <p class="question-stem" data-layer="{{ i }}">Which image would you like to use as a
                         background of layer {{ i }}?</p>
-                    <select class="dropdown" name="image_name{{ i }}" data-layer="{{ i }}">
+                    <div class="lightbox2-container" data-layer="{{ i }}">
+                        {% for item in image_files|dictsort %}
+                            <a href="{{ url_for('static', filename='resources/wc_backgrounds/' + item[0]) }}"
+                               data-lightbox="background-images{{ i }}"
+                               data-title="{{ item[0] + '   ({}, {})'.format(item[1][0], item[1][1]) }}">
+                                <img src="{{ url_for('static', filename='resources/wc_backgrounds/' + item[0]) }}"
+                                width="100" style="display: none;" data-img="{{ image_path + item[0] }}"></a>
+                        {% endfor %}
+                    </div>
+                    <select class="dropdown background-image" name="image_name{{ i }}" data-layer="{{ i }}">
                         {% for item in image_files|dictsort %}
                             <option value="{{ image_path + item[0] }}">{{ item[0] }}</option>
                         {% endfor %}

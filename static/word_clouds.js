@@ -136,6 +136,19 @@ $(document).ready(function() {
     });
 
 
+//    Layered cloud lightbox images
+    $(".only_layered select.background-image").change(function () {
+        var layer = $(this).data("layer");
+        $(".only_layered .lightbox2-container[data-layer='" + layer + "'] img").hide();
+        $(".only_layered .lightbox2-container[data-layer='" + layer + "'] img[data-img='" + $(this).val() + "']").show();
+
+        var divData = $("div[data-image-name='" + $(this).val() + "']");
+        $("#width").val(parseInt(divData.data("width")));
+        $("#height").val(parseInt(divData.data("height")));
+    });
+    $(".only_layered select.background-image").trigger("change");
+
+
     $("#submit").click(function () {
         if (parseInt($("#width").val()) > 0 && parseInt($("#height").val()) > 0) {
             $("form").fadeOut(3000);
