@@ -3,6 +3,7 @@ from math import ceil
 import re
 import os
 import subprocess
+from difflib import SequenceMatcher
 
 from functions.customdate import CustomDate
 import functions.emojis as emojis
@@ -343,6 +344,7 @@ class BaseConvoReader:
         key = lambda x: x
         if ignore_case:
             key = lambda x: x.lower()
+            query = query.lower()
         indexes = []
         for i in range(len(self._convo)):
             if query in key(self._convo[i][1]):
@@ -368,6 +370,38 @@ class BaseConvoReader:
             return indexes
         except re.error:
             raise re.error("\"{0}\" is not a valid regex string".format(query))
+
+    def raw_fuzzy_match_indexes(self, query, ignore_case=False, junk=' ', min_ratio=0.6):
+        """Returns a list with the indexes of each message that match the passed message with at least min_ratio
+        Parameters:
+            query (str): The text to search for
+            ignore_case (bool): Whether or not to ignore case
+            junk (str): A string in which each character is treated as "junk" and is ignored for the sake of computing
+                        a similarity/difference score
+            min_ratio (double): The minimum similarity ratio needed to consider a string as "matched". Between 0 and 1
+                                with 0 being no match and 1 being a full match
+        """
+        assert isinstance(query, str), "query must be a string. Received {}: {}".format(type(query), str(query))
+        assert isinstance(ignore_case, bool), "ignore_case must be a boolean. Received {}: {}"\
+            .format(type(ignore_case), str(ignore_case))
+        assert isinstance(junk, str), "junk must be a string. Received {}: {}".format(type(junk), str(junk))
+        assert isinstance(min_ratio, float) or isinstance(min_ratio, int), (
+            "min_ratio must be a float or int. Received {}: {}".format(type(min_ratio), str(min_ratio))
+        )
+        assert 0 <= min_ratio <= 1, "min_ratio must be between 0 and 1 (inclusive)"
+
+        if ignore_case:
+            query = query.lower()
+            clean_msg = lambda x: x.lower()
+        else:
+            clean_msg = lambda x: x
+        isjunk = lambda string: string in junk
+        close_enough = lambda str_to_match: SequenceMatcher(isjunk, query, str_to_match).ratio() >= min_ratio
+        matched = []
+        for i in range(len(self)):
+            if close_enough(clean_msg(self._convo[i][1])):
+                matched.append(i)
+        return matched
 
     def raw_longest_messages(self, num=None) -> list:
         """Returns a list of integers corresponding to message indexes, sorted in reverse order based on length (longest

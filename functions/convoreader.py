@@ -640,7 +640,7 @@ class ConvoReader(BaseConvoReader):
             print()
             return
         for i in indexes:
-            self._print_messages(start=i, end=i)
+            self._print_messages(i+1, i+1)
 
     def times(self, query: str, ignore_case=False, regex=False):
         """Returns the number of times a message matching the query string occurs in the conversation
@@ -858,7 +858,7 @@ class ConvoReader(BaseConvoReader):
         """Helper method used to prettily print to the screen the person, message and date
         corresponding to the passed parameter number
         Parameter:
-            number: The message number to print, must be 0 < num < len(self)
+            number: The message number to print, must be 0 <= num < len(self)
         """
         try:
             assert type(number) is int, "number must be an integer"
@@ -914,9 +914,6 @@ class ConvoReader(BaseConvoReader):
             print(str(e))
             return
         # Making sure user input is good
-
-        if start == end:  # normally if end == start then the range object below is empty. This ensures we have 1
-            end += 1
 
         max_len_index = len('{0:,}'.format(end + 1)) + 2
         for i in range(start - 1, end):
