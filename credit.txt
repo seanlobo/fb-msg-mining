@@ -1,5 +1,5 @@
 The following libraries are used in one way or another throughout this project, all credit for those features go to their
-respective authors/ owners. Licenses for most of the below can be found in the project, with exceptions for HighCharts
+respective authors/owners. Licenses for most of the below can be found in the project, with exceptions for HighCharts
 (see README.md), jQuery (comments can be found in the minified file) and BeautifulSoup (I couldn't find a license online,
 see the url below)
 
@@ -19,6 +19,9 @@ http://www.highcharts.com/
 
 # JavaScript - FloatThead
 https://github.com/mkoryak/floatThead/
+
+# JavaScript - Lightbox2
+http://lokeshdhakar.com/projects/lightbox2/
 
 # CSS - Bootstrap
 http://getbootstrap.com/

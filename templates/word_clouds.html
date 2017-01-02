@@ -5,12 +5,12 @@ Page styling by Gokul Swamy: http://gok.cool
 <head>
     <title>FMM - Word Clouds</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab" rel="stylesheet">
-    <link href="{{ url_for('static', filename='lightbox.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lightbox.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='word_clouds.css') }}" rel="stylesheet">
     <link rel="shortcut icon" href="{{ url_for('static', filename='resources/favicon.png') }}">
 </head>
 <body>
-    <!-- DATA FROM FLASK IN DUMMY HTML FOR JAVASCRIPT USAGE -->
+    <!-- DATA FROM FLASK IN DUMMY HTML FOR JAVASCRIPT USAGE  -->
     <input id="max_colors" value="{{ MAX_COLORS }}" style="display: none;">
     <input id="max_layers" value="{{ MAX_LAYERS}}" style="display: none;">
 
@@ -207,6 +207,6 @@ Page styling by Gokul Swamy: http://gok.cool
     <h1 style="margin: auto; text-align: center; display: none;">Creating word cloud!</h1>
 
     <script src="{{ url_for('static', filename='jquery.js') }}"></script>
-    <script src="{{ url_for('static', filename='lightbox.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lightbox.js') }}"></script>
     <script src="{{ url_for('static', filename='word_clouds.js') }}"></script>
 </body>

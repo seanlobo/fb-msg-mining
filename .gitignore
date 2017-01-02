@@ -121,9 +121,7 @@ misc.
 .DS_Store
 test.py
 facebook*
-temp.py
 testing
-tmp.py
 
 conversation_data
 output
@@ -151,11 +149,14 @@ wordClouds
 !home-page.css
 !table.css
 !word_clouds.css
-!lightbox.min.css
+!lightbox.css
 
 # Resources for web pages
 !down_arrow.png
 !up_arrow.png
+!close.png
+!next.png
+!prev.png
 
 # License
 !LICENSE.txt
