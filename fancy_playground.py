@@ -10,8 +10,10 @@ from functions.wordcloud import WordCloud
 
 app = Flask(__name__)
 
-print("For the time being please use Chrome")
-print("Setting up could take a few moments ", end="")
+if __name__ == '__main__':
+    print("For the time being please use Chrome")
+    print("Setting up could take a few moments ", end="")
+
 initial_time = time.time()
 m = MessageReader()
 all_gui_convo_readers = [m.get_convo_gui(i) for i in range(1, len(m) + 1)]
@@ -178,6 +180,6 @@ def load_all_gui(convo_num) -> GUIConvoReader:
         abort(404)
     return all_gui_convo_readers[convo_num - 1]
 
-print("(took {0:.2f} seconds to load)".format(time.time() - initial_time))
 if __name__ == '__main__':
+    print("(took {0:.2f} seconds to load)".format(time.time() - initial_time))
     app.run()

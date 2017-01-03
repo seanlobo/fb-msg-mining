@@ -123,4 +123,12 @@ print("If you've made it this far then you should be good to start analyzing you
       .format(Fore.LIGHTGREEN_EX + Back.BLACK + 'python3 -i playground.py' + Style.RESET_ALL,
               Fore.LIGHTCYAN_EX + Back.BLACK + 'python3 fancy_playground.py' + Style.RESET_ALL))
 print()
+
+from fancy_playground import *
+
+print(setup_functions.one_line())
+print()
+print("Would you like to launch the gui now?")
+if setup_functions.user_says_yes():
+    app.run()
 # -------------------------------------------------  PRINTING TIMES  ------------------------------------------------- #
